@@ -5,6 +5,10 @@ cmake_minimum_required(VERSION 3.14)
 set(PROJECT_NAME ict397)
 project(${PROJECT_NAME} LANGUAGES CXX)
 
+# Clang sanitizer flags.
+set(SANITIZER_FLAGS "-fsanitize=address,undefined,leak")
+set(SANITIZER_OS "Darwin,Linux")
+
 # If enabled, the post build symlink will copy instead.
 option(CopyResources "CopyResources" OFF)
 # Disables any post build steps.
@@ -46,33 +50,43 @@ endif()
 
 # Treat warnings as errors if enabled.
 if (WarningsAsErrors)
-    target_compile_options(${PROJECT_NAME} PUBLIC
+    target_compile_options(${PROJECT_NAME} PRIVATE
         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-            -Werror>)
-    target_compile_options(${PROJECT_NAME} PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/WX>)
+            -Werror>
+    )
+
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:
+            /WX>
+    )
 endif()
 
-# Set Clang compile flags.
-target_compile_options(${PROJECT_NAME} PUBLIC
+# Set compile flags.
+target_compile_options(${PROJECT_NAME} PRIVATE
+    # Clang
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-    -Weverything -fcolor-diagnostics
-    # These warnings are not useful.
-    -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded
-    -Wno-deprecated-declarations -Wno-exit-time-destructors -Wno-switch-enum
-	-Wno-weak-vtables>)
-# Set GCC compile flags.
-target_compile_options(${PROJECT_NAME} PUBLIC $<$<CXX_COMPILER_ID:GNU>:
-    -Wall -Wextra -Wpedantic -fdiagnostics-color=always>)
-# Set MSVC compile flags.
-target_compile_options(${PROJECT_NAME} PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/W4>)
+        -Weverything -fcolor-diagnostics
+        # Disable specific warnings.
+        -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded
+        -Wno-deprecated-declarations -Wno-exit-time-destructors
+        -Wno-switch-enum -Wno-weak-vtables>
+    # GCC
+    $<$<CXX_COMPILER_ID:GNU>:
+        -Wall -Wextra -Wpedantic -fdiagnostics-color=always>
+    # Visual Studio
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4>
 
-# Enable Clang's address and memory sanitizers.
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	target_compile_options(${PROJECT_NAME} PUBLIC
-		$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>>:-fsanitize=address,undefined,leak>)
-	target_link_libraries(${PROJECT_NAME} PUBLIC
-		$<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>>:-fsanitize=address,undefined,leak>)
-endif()
+    # Enable the clang address and memory sanitizer.
+    $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:
+        ${SANITIZER_FLAGS}>
+)
+
+# Enable the clang address and memory sanitizer.
+target_link_options(${PROJECT_NAME} PRIVATE
+    $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:
+        ${SANITIZER_FLAGS}>
+)
 
 # Find dependencies.
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
@@ -81,7 +95,7 @@ find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 # Include and link against dependencies.
-target_link_libraries(${PROJECT_NAME} PUBLIC OpenGL::GL OpenGL::GLU)
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
 
 # Symlink or copy the resources to the binary location.
 if (NOT DisablePostBuild)
