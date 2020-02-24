@@ -1,7 +1,7 @@
 ## Contributing
 
-* Please follow these [best practises](git-practises)
-* Please familiarise yourself with [the branching model](git-model)
+* Please follow these [best practises][1]
+* Please familiarise yourself with [the branching model][2]
 * Please name your branches with the following convention:
 
 <table>
@@ -50,5 +50,5 @@
   * Include as much information as possible
   * Reference the issue the pull request addresses
 
-[git-model]: https://nvie.com/posts/a-successful-git-branching-model/
-[git-practises]: https://programmerfriend.com/git-best-practices/
+[1]: https://nvie.com/posts/a-successful-git-branching-model/
+[2]: https://programmerfriend.com/git-best-practices/
