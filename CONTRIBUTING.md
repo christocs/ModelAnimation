@@ -6,16 +6,16 @@
 * Please name your branches with the following convention:
 
 <table>
-  <th>
+  <thead>
     <tr>
-      <td>
-      Type
-      </td>
-      <td>
-      Description
-      </td>
+      <th>
+        Type
+      </th>
+      <th>
+        Description
+      </th>
     </tr>
-  </th>
+  </thead>
 
   <tr>
     <td>
