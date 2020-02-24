@@ -45,5 +45,10 @@
   </tr>
 </table>
 
+* To have a branch merged:
+  * Create an pull request
+  * Include as much information as possible
+  * Reference the issue the pull request addresses
+
 [git-model]: https://nvie.com/posts/a-successful-git-branching-model/
 [git-practises]: https://programmerfriend.com/git-best-practices/
