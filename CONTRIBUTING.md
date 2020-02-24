@@ -2,7 +2,6 @@
 
 * Please follow these [best practises](git-practises)
 * Please familiarise yourself with [the branching model](git-model)
-
 * Please name your branches with the following convention:
 
 <table>
