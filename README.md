@@ -1,5 +1,5 @@
 <div align=center>
-  <img src="" alt="ict397-logo" width="500">
+  <img src="https://i.imgur.com/cRIXVe7.png" alt="ict397-logo" width="200">
   <p>
     ICT397 Assignment
   </p>
