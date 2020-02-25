@@ -6,17 +6,54 @@
 </div>
 
 ## Table of Contents
-* [1&nbsp;&nbsp;Features](#features)
-* [2&nbsp;&nbsp;Building](#building)
-* [3&nbsp;&nbsp;Contributing](#building)
-* [4&nbsp;&nbsp;Meta](#meta)
+* [1&nbsp;&nbsp;Building](#building)
+* [2&nbsp;&nbsp;Contributing](#building)
+  * [2.1&nbsp;&nbsp;macOS](#macos)
+  * [2.2&nbsp;&nbsp;Linux](#linux)
+  * [2.3&nbsp;&nbsp;Windows](#windows)
+* [3&nbsp;&nbsp;Meta](#meta)
   * [3.1&nbsp;&nbsp;License](#license)
   * [3.2&nbsp;&nbsp;Built With](#built-with)
 
-## Features
-TODO
-
 ## Building
+### macOS
+Install build tools:
+```
+brew install cmake ninja llvm --with-toolchain
+```
+
+Install dependencies:
+```
+brew install sfml
+```
+
+Generate build files:
+```
+cmake . -B build -G Ninja -D CMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -D CMAKE_EXPORT_COMPILE_COMMANDS=1
+```
+
+Compile:
+```
+cd build && ninja && ./ict397
+```
+
+### Linux
+Install build tools:
+```
+apt install build-essential clang ninja
+```
+
+Generate build files:
+```
+cmake . -B build -G Ninja -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_EXPORT_COMPILE_COMMANDS=1
+```
+
+Compile:
+```
+cd build && ninja && ./ict397
+```
+
+### Windows
 TODO
 
 ## Contributing
