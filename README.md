@@ -65,8 +65,8 @@ Enable developer mode:
 * Enable Developer Mode
 
 Install build tools:
-* [Visual Studio Community][1] (2019 or newer)
-* [vcpkg][2]
+* [vcpkg][1]
+* [Visual Studio Community][2] (2019 or newer)
 
 Install dependencies:
 ```
@@ -90,5 +90,5 @@ file for details. Individual authors can be found inside the [`AUTHORS.md`](AUTH
 ### Built With
 TODO
 
-[1]: https://visualstudio.microsoft.com/downloads/
-[2]: https://github.com/microsoft/vcpkg#quick-start
+[1]: https://github.com/microsoft/vcpkg#quick-start
+[2]: https://visualstudio.microsoft.com/downloads/
