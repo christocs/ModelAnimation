@@ -59,7 +59,25 @@ cd build && ninja && ./ict397
 ```
 
 ### Windows
-TODO
+Enable developer mode:
+* Open Settings
+* Navitgate to Update & Security → For developers
+* Enable Developer Mode
+
+Install build tools:
+* [Visual Studio Community][1]
+* [vcpkg][2]
+
+Install dependencies:
+```
+./vcpkg.exe install --triplet x64-windows sfml
+```
+
+Compile:
+* Open Visual Studio
+* Select Open → CMake
+* Select `CMakeLists.txt`
+* Set the startup item to `ict397.exe`
 
 ## Contributing
 Please see the [`CONTRIBUTING.md`](CONTRIBUTING.md) file for instructions.
@@ -71,3 +89,6 @@ file for details. Individual authors can be found inside the [`AUTHORS.md`](AUTH
 
 ### Built With
 TODO
+
+[1]: https://visualstudio.microsoft.com/downloads/
+[2]: https://github.com/microsoft/vcpkg#quick-start
