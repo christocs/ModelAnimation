@@ -65,7 +65,7 @@ Enable developer mode:
 * Enable Developer Mode
 
 Install build tools:
-* [Visual Studio Community][1]
+* [Visual Studio Community][1] (2019 or newer)
 * [vcpkg][2]
 
 Install dependencies:
