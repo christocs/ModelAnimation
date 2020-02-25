@@ -67,6 +67,7 @@ Enable developer mode:
 Install build tools:
 * [vcpkg][1]
 * [Visual Studio Community][2] (2019 or newer)
+  * Install the "C++ CMake tools for Windows" component
 
 Install dependencies:
 ```
