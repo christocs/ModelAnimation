@@ -5,9 +5,9 @@ cmake_minimum_required(VERSION 3.14)
 set(PROJECT_NAME ict397)
 project(${PROJECT_NAME} LANGUAGES CXX)
 
-# Clang sanitizer flags.
-set(SANITIZER_FLAGS "-fsanitize=address,undefined,leak")
+# Clang sanitizer settings.
 set(SANITIZER_OS "Darwin,Linux")
+set(SANITIZER_FLAGS "-fsanitize=address,undefined,leak")
 
 # If enabled, the post build symlink will copy instead.
 option(CopyResources "CopyResources" OFF)
@@ -89,13 +89,15 @@ target_link_options(${PROJECT_NAME} PRIVATE
 )
 
 # Find dependencies.
-find_package(OpenGL REQUIRED COMPONENTS OpenGL)
+find_package(OpenGL COMPONENTS OpenGL REQUIRED)
+find_package(SFML 2.5 COMPONENTS network audio graphics window system REQUIRED)
 
 # Include project header files.
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 # Include and link against dependencies.
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU
+    sfml-network sfml-network sfml-graphics sfml-window sfml-system)
 
 # Symlink or copy the resources to the binary location.
 if (NOT DisablePostBuild)
