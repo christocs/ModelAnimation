@@ -1,8 +1,8 @@
 ## Contributing
 
-* Please follow these [best practises][1]
-* Please familiarise yourself with [the branching model][2]
-* Please name your branches with the following convention:
+* Follow these [best practises][1]
+* Familiarise yourself with our [branching model][2]
+* Use the following branch naming convention:
 
 <table>
   <thead>
@@ -30,7 +30,7 @@
       wip/foo
     </td>
     <td>
-      Work in progress branch. Used to experiment; merge into a feature branch
+      Work in progress branch, merge into a feature branch
       when ready.
     </td>
   </tr>
