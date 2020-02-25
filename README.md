@@ -43,6 +43,11 @@ Install build tools:
 apt install build-essential clang ninja
 ```
 
+Install dependencies:
+```
+apt install libcsfml-dev
+```
+
 Generate build files:
 ```
 cmake . -B build -G Ninja -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_EXPORT_COMPILE_COMMANDS=1
