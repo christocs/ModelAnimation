@@ -40,7 +40,7 @@ cd build && ninja && ./ict397
 ### Linux
 Install build tools:
 ```
-apt install build-essential clang ninja
+apt install build-essential clang ninja-build
 ```
 
 Install dependencies:
