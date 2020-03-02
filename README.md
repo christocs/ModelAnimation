@@ -22,6 +22,11 @@ Install build tools:
 brew install cmake ninja llvm --with-toolchain
 ```
 
+Clone repository:
+```
+git clone --recurse-submodules git@github.com:opeik/ICT397.git
+```
+
 Generate build files:
 ```
 cmake . -B build -G Ninja -D CMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -D CMAKE_EXPORT_COMPILE_COMMANDS=1
@@ -36,6 +41,11 @@ cd build && ninja && ./ict397
 Install build tools:
 ```
 apt install build-essential clang ninja-build
+```
+
+Clone repository:
+```
+git clone --recurse-submodules git@github.com:opeik/ICT397.git
 ```
 
 Generate build files:
@@ -58,6 +68,11 @@ Install build tools:
 * [vcpkg][1]
 * [Visual Studio Community][2] (2019 or newer)
   * Install the "C++ CMake tools for Windows" component
+
+Clone repository:
+```
+git clone --recurse-submodules git@github.com:opeik/ICT397.git
+```
 
 Compile:
 * Open Visual Studio
