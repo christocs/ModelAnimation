@@ -21,21 +21,20 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-# Define source files.
-set (SOURCES
-    src/Main.cpp
-)
-
 # Set build output directories.
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
-# Build SFML.
+# Build libraries.
+add_subdirectory(lib/entt)
 add_subdirectory(lib/SFML)
+add_subdirectory(lib/assimp)
 
 # Define the executable.
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME}
+    src/Main.cpp
+)
 
 # Set C++ standard.
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -87,14 +86,14 @@ target_link_options(${PROJECT_NAME} PRIVATE
 
 # Find dependencies.
 find_package(OpenGL COMPONENTS OpenGL REQUIRED)
-#find_package(SFML 2.5 COMPONENTS network audio graphics window system REQUIRED)
 
 # Include project header files.
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 # Include and link against dependencies.
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU
-    sfml-network sfml-network sfml-graphics sfml-window sfml-system)
+    sfml-network sfml-network sfml-graphics sfml-window sfml-system
+    assimp EnTT::EnTT)
 
 # Symlink resources to the binary location.
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
