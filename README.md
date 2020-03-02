@@ -43,6 +43,12 @@ Install build tools:
 apt install build-essential clang ninja-build
 ```
 
+Install dependencies:
+```
+sudo apt install libgl1-mesa-dev libx11-dev libxrandr-dev libudev-dev \
+    libfreetype6-dev libopenal-dev libflac++-dev libvorbis-dev
+```
+
 Clone repository:
 ```
 git clone --recurse-submodules git@github.com:opeik/ICT397.git
