@@ -22,18 +22,32 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Set build output directories.
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out/lib)
+
+SET(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Build assimp tests.")
+SET(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Build assimp tools.")
+SET(INJECT_DEBUG_POSTFIX OFF CACHE BOOL "Append 'd' to debug library.")
 
 # Build libraries.
 add_subdirectory(lib/entt)
 add_subdirectory(lib/SFML)
 add_subdirectory(lib/assimp)
+add_subdirectory(lib/react)
 
 # Define the executable.
 add_executable(${PROJECT_NAME}
     src/Main.cpp
+)
+
+# Ignore warnings from libraries.
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
+    lib/entt/src
+    lib/sfml/include
+    lib/assimp/include
+    lib/react/src
 )
 
 # Set C++ standard.
@@ -91,9 +105,9 @@ find_package(OpenGL COMPONENTS OpenGL REQUIRED)
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 # Include and link against dependencies.
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU
+target_link_libraries(${PROJECT_NAME} PUBLIC OpenGL::GL OpenGL::GLU EnTT::EnTT
     sfml-network sfml-network sfml-graphics sfml-window sfml-system
-    assimp EnTT::EnTT)
+    assimp reactphysics3d)
 
 # Symlink resources to the binary location.
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
