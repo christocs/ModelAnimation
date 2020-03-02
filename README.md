@@ -22,11 +22,6 @@ Install build tools:
 brew install cmake ninja llvm --with-toolchain
 ```
 
-Install dependencies:
-```
-brew install sfml
-```
-
 Generate build files:
 ```
 cmake . -B build -G Ninja -D CMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -D CMAKE_EXPORT_COMPILE_COMMANDS=1
@@ -41,11 +36,6 @@ cd build && ninja && ./ict397
 Install build tools:
 ```
 apt install build-essential clang ninja-build
-```
-
-Install dependencies:
-```
-apt install libcsfml-dev
 ```
 
 Generate build files:
@@ -68,11 +58,6 @@ Install build tools:
 * [vcpkg][1]
 * [Visual Studio Community][2] (2019 or newer)
   * Install the "C++ CMake tools for Windows" component
-
-Install dependencies:
-```
-./vcpkg.exe install --triplet x64-windows sfml
-```
 
 Compile:
 * Open Visual Studio

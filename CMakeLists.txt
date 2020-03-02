@@ -26,6 +26,8 @@ set (SOURCES
     src/Main.cpp
 )
 
+add_subdirectory(lib/SFML)
+
 # Define the executable.
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -79,7 +81,7 @@ target_link_options(${PROJECT_NAME} PRIVATE
 
 # Find dependencies.
 find_package(OpenGL COMPONENTS OpenGL REQUIRED)
-find_package(SFML 2.5 COMPONENTS network audio graphics window system REQUIRED)
+#find_package(SFML 2.5 COMPONENTS network audio graphics window system REQUIRED)
 
 # Include project header files.
 target_include_directories(${PROJECT_NAME} PRIVATE src)
