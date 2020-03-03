@@ -1,7 +1,7 @@
 ﻿{
   "configurations": [
     {
-      "name": "x64-Debug",
+      "name": "(msvc) Debug",
       "generator": "Ninja",
       "configurationType": "Debug",
       "buildRoot": "${workspaceRoot}\\build\\${name}",
@@ -13,7 +13,7 @@
       "variables": []
     },
     {
-      "name": "x64-Release",
+      "name": "(msvc) Release",
       "generator": "Ninja",
       "configurationType": "Release",
       "buildRoot": "${workspaceRoot}\\build\\${name}",
@@ -25,7 +25,7 @@
       "variables": []
     },
     {
-      "name": "x64-Clang-Debug",
+      "name": "(clang) Debug",
       "generator": "Ninja",
       "configurationType": "Debug",
       "buildRoot": "${workspaceRoot}\\build\\${name}",
@@ -37,7 +37,7 @@
       "variables": []
     },
     {
-      "name": "x64-Clang-Release",
+      "name": "(clang) Release",
       "generator": "Ninja",
       "configurationType": "Release",
       "buildRoot": "${workspaceRoot}\\build\\${name}",
