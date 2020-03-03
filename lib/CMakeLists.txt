@@ -15,8 +15,10 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/W0>
 )
 
-
 add_subdirectory(entt EXCLUDE_FROM_ALL)
 add_subdirectory(sfml EXCLUDE_FROM_ALL)
 add_subdirectory(assimp EXCLUDE_FROM_ALL)
-add_subdirectory(react EXCLUDE_FROM_ALL)
+
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    add_subdirectory(react EXCLUDE_FROM_ALL)
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS OFF)
