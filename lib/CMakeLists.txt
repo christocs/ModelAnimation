@@ -1,10 +1,10 @@
 # Assimp build options.
-SET(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Build assimp tests.")
-SET(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Build assimp tools.")
-SET(INJECT_DEBUG_POSTFIX OFF CACHE BOOL "Append 'd' to debug library.")
+option(ASSIMP_BUILD_TESTS OFF)
+option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
+option(INJECT_DEBUG_POSTFIX OFF)
 
 # Build libraries.
-add_compile_options("-Wno-everything")
+string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
 add_compile_options(
     # Clang
@@ -12,7 +12,7 @@ add_compile_options(
     # GCC
     $<$<CXX_COMPILER_ID:GNU>:-w>
     # Visual Studio
-    $<$<CXX_COMPILER_ID:MSVC>:/w>
+    $<$<CXX_COMPILER_ID:MSVC>:/W0>
 )
 
 

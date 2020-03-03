@@ -21,9 +21,6 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-# Always build shared libraries.
-set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
-
 # Set build output directories.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out     CACHE STRING "" FORCE)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out/lib CACHE STRING "" FORCE)
