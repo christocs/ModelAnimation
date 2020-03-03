@@ -21,30 +21,30 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+# Always build shared libraries.
+set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+
 # Set build output directories.
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out     CACHE STRING "" FORCE)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out/lib CACHE STRING "" FORCE)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out/lib CACHE STRING "" FORCE)
 
-SET(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Build assimp tests.")
-SET(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Build assimp tools.")
-SET(INJECT_DEBUG_POSTFIX OFF CACHE BOOL "Append 'd' to debug library.")
-
-# Build libraries.
-add_subdirectory(lib/entt)
-add_subdirectory(lib/SFML)
-add_subdirectory(lib/assimp)
-add_subdirectory(lib/react)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out     CACHE STRING "" FORCE)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out     CACHE STRING "" FORCE)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out/lib CACHE STRING "" FORCE)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out/lib CACHE STRING "" FORCE)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out/lib CACHE STRING "" FORCE)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out/lib CACHE STRING "" FORCE)
 
 # Define the executable.
 add_executable(${PROJECT_NAME}
     src/Main.cpp
 )
 
-# Ignore warnings from libraries.
+# Build libraries.
+add_subdirectory(lib)
+
+# Ignore warnings from library headers.
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
     lib/entt/src
     lib/sfml/include
@@ -84,11 +84,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE
         -Wno-deprecated-declarations -Wno-exit-time-destructors
         -Wno-switch-enum -Wno-weak-vtables>
     # GCC
-    $<$<CXX_COMPILER_ID:GNU>:
-        -Wall -Wextra -Wpedantic -fdiagnostics-color=always>
+    $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -fdiagnostics-color=always>
     # Visual Studio
-    $<$<CXX_COMPILER_ID:MSVC>:
-        /W4>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>
     # Enable the clang address and memory sanitizer.
     $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:
         ${SANITIZER_FLAGS}>
