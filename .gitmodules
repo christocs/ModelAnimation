@@ -4,7 +4,7 @@
 [submodule "lib/assimp"]
 	path = lib/assimp
 	url = https://github.com/assimp/assimp
-[submodule "lib/react"]
+[submodule "lib/reactphysics3d"]
 	path = lib/react
 	url = https://github.com/DanielChappuis/reactphysics3d
 [submodule "lib/sfml"]

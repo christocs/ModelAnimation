@@ -6,6 +6,7 @@ option(INJECT_DEBUG_POSTFIX OFF)
 # Build libraries.
 string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
+# Disable compiler warnings.
 add_compile_options(
     # Clang
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-everything>
@@ -15,15 +16,16 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/W0>
 )
 
-add_subdirectory(entt EXCLUDE_FROM_ALL)
-add_subdirectory(sfml EXCLUDE_FROM_ALL)
-add_subdirectory(assimp EXCLUDE_FROM_ALL)
-add_subdirectory(glad EXCLUDE_FROM_ALL)
-add_subdirectory(cpplocate EXCLUDE_FROM_ALL)
+add_subdirectory(entt)
+add_subdirectory(sfml)
+add_subdirectory(assimp)
+add_subdirectory(glad)
+add_subdirectory(cpplocate)
+add_subdirectory(reactphysics3d)
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-add_subdirectory(react EXCLUDE_FROM_ALL)
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS OFF)
+# DLL's were a mistake.
+set_target_properties(reactphysics3d PROPERTIES ENABLE_EXPORTS ON)
+set_target_properties(reactphysics3d PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # Ignore warnings from library headers.
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
@@ -33,4 +35,3 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
     react/src
     glad/include
 )
-
