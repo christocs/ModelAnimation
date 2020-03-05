@@ -47,6 +47,7 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
     lib/sfml/include
     lib/assimp/include
     lib/react/src
+    lib/glad/include
 )
 
 # Set C++ standard.
@@ -104,9 +105,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE src)
 # Include and link against dependencies.
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU EnTT::EnTT
     sfml-network sfml-network sfml-graphics sfml-window sfml-system
-    assimp reactphysics3d)
+    assimp reactphysics3d glad)
 
 # Symlink resources to the binary location.
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
     ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:${PROJECT_NAME}>/res)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${CMAKE_SOURCE_DIR}/src/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)
