@@ -10,3 +10,6 @@
 [submodule "lib/sfml"]
 	path = lib/sfml
 	url = https://github.com/SFML/SFML
+[submodule "lib/cpplocate"]
+	path = lib/cpplocate
+	url = https://github.com/cginternals/cpplocate

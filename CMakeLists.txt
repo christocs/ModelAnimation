@@ -34,21 +34,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out/lib)
 
 # Define the executable.
-add_executable(${PROJECT_NAME}
-    src/Main.cpp
-)
-
-# Build libraries.
-add_subdirectory(lib)
-
-# Ignore warnings from library headers.
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
-    lib/entt/src
-    lib/sfml/include
-    lib/assimp/include
-    lib/react/src
-    lib/glad/include
-)
+add_executable(${PROJECT_NAME})
 
 # Set C++ standard.
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -57,18 +43,21 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_EXTENSIONS OFF
 )
 
+# Add source files.
+add_subdirectory(src)
+# Add third party libraries.
+add_subdirectory(lib)
+
 # Remove the default warning level from MSVC.
 if (MSVC)
-    string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
 # Treat warnings as errors if enabled.
 if (WarningsAsErrors)
     target_compile_options(${PROJECT_NAME} PRIVATE
-        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-            -Werror>
-        $<$<CXX_COMPILER_ID:MSVC>:
-            /WX>
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Werror>
+        $<$<CXX_COMPILER_ID:MSVC>:/WX>
     )
 endif()
 
@@ -85,27 +74,22 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -fdiagnostics-color=always>
     # Visual Studio
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
-    # Enable the clang address and memory sanitizer.
-    $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:
-        ${SANITIZER_FLAGS}>
+    # Enable the clang sanitizer.
+    $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:${SANITIZER_FLAGS}>
 )
 
-# Enable the clang address and memory sanitizer.
+# Link against the clang sanitizer.
 target_link_options(${PROJECT_NAME} PRIVATE
-    $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:
-        ${SANITIZER_FLAGS}>
+    $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:${SANITIZER_FLAGS}>
 )
 
 # Find dependencies.
 find_package(OpenGL COMPONENTS OpenGL REQUIRED)
 
-# Include project header files.
-target_include_directories(${PROJECT_NAME} PRIVATE src)
-
 # Include and link against dependencies.
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU EnTT::EnTT
     sfml-network sfml-network sfml-graphics sfml-window sfml-system
-    assimp reactphysics3d glad)
+    assimp reactphysics3d glad cpplocate)
 
 # Symlink resources to the binary location.
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

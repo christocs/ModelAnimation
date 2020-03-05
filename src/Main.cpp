@@ -10,6 +10,7 @@
 
 #include <SFML/Window.hpp>
 #include <assimp/Importer.hpp>
+#include <cpplocate/cpplocate.h>
 #include <glad/glad.h>
 
 using sf::Window;
@@ -23,8 +24,13 @@ constexpr auto points = array<float, 9>{0.0f,  0.5f,  0.0f,  //
                                         0.5f,  -0.5f, 0.0f,  //
                                         -0.5f, -0.5f, 0.0f}; //
 
-auto compileShader(const string path, GLuint type) -> GLuint {
-    auto file = ifstream{path};
+auto compileShader(const string &path, GLuint type) -> GLuint {
+    auto absPath = cpplocate::getModulePath() + '/' + path;
+    auto file    = ifstream{absPath};
+
+    if (!file) {
+        throw runtime_error{string{"Unable to open file '"} + absPath + "'"};
+    }
 
     const auto source = string{(std::istreambuf_iterator<char>(file)),
                                std::istreambuf_iterator<char>()} +
