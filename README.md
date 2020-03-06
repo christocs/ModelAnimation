@@ -73,9 +73,9 @@ Enable developer mode:
 * Enable Developer Mode
 
 Install build tools:
-* [vcpkg][1]
 * [Visual Studio Community][2] (2019 or newer)
   * Install the "C++ CMake tools for Windows" component
+  * (Optional) Install the "Clang compiler for Windows" component
 
 Clone repository:
 ```
