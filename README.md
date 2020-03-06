@@ -7,10 +7,10 @@
 
 ## Table of Contents
 * [1&nbsp;&nbsp;Building](#building)
-* [2&nbsp;&nbsp;Contributing](#building)
-  * [2.1&nbsp;&nbsp;macOS](#macos)
-  * [2.2&nbsp;&nbsp;Linux](#linux)
-  * [2.3&nbsp;&nbsp;Windows](#windows)
+  * [1.1&nbsp;&nbsp;macOS](#macos)
+  * [1.2&nbsp;&nbsp;Linux](#linux)
+  * [1.3&nbsp;&nbsp;Windows](#windows)
+* [2&nbsp;&nbsp;Contributing](#contributing)
 * [3&nbsp;&nbsp;Meta](#meta)
   * [3.1&nbsp;&nbsp;License](#license)
   * [3.2&nbsp;&nbsp;Built With](#built-with)
@@ -24,7 +24,8 @@ brew install cmake ninja llvm --with-toolchain
 
 Clone repository:
 ```
-git clone --recurse-submodules git@github.com:opeik/ICT397.git
+git clone https://github.com/opeik/ICT397.git
+git submodule update --init --recursive --depth 1
 ```
 
 Generate build files:
@@ -51,7 +52,8 @@ sudo apt install libgl1-mesa-dev libx11-dev libxrandr-dev libudev-dev \
 
 Clone repository:
 ```
-git clone --recurse-submodules git@github.com:opeik/ICT397.git
+git clone https://github.com/opeik/ICT397.git
+git submodule update --init --recursive --depth 1
 ```
 
 Generate build files:
@@ -77,7 +79,8 @@ Install build tools:
 
 Clone repository:
 ```
-git clone --recurse-submodules git@github.com:opeik/ICT397.git
+git clone https://github.com/opeik/ICT397.git
+git submodule update --init --recursive --depth 1
 ```
 
 Compile:
