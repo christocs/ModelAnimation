@@ -87,7 +87,7 @@ target_link_options(${PROJECT_NAME} PRIVATE
 find_package(OpenGL COMPONENTS OpenGL REQUIRED)
 
 # Include and link against dependencies.
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU EnTT::EnTT
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL EnTT::EnTT
     sfml-network sfml-network sfml-graphics sfml-window sfml-system
     assimp reactphysics3d glad cpplocate)
 

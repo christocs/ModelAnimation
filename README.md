@@ -30,7 +30,7 @@ git submodule update --init --recursive --depth 1
 
 Generate build files:
 ```
-cmake . -B build -G Ninja -D CMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -D CMAKE_EXPORT_COMPILE_COMMANDS=1
+cmake -S . -B build -G Ninja -D CMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -D CMAKE_EXPORT_COMPILE_COMMANDS=1
 ```
 
 Compile:
@@ -58,7 +58,7 @@ git submodule update --init --recursive --depth 1
 
 Generate build files:
 ```
-cmake . -B build -G Ninja -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_EXPORT_COMPILE_COMMANDS=1
+cmake -S . -B build -G Ninja -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_EXPORT_COMPILE_COMMANDS=1
 ```
 
 Compile:
