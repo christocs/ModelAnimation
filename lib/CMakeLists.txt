@@ -24,6 +24,8 @@ add_subdirectory(assimp)
 add_subdirectory(glad)
 add_subdirectory(cpplocate)
 add_subdirectory(reactphysics3d)
+add_subdirectory(lua)
+add_subdirectory(lua-bridge)
 
 # DLL's were a mistake.
 set_target_properties(reactphysics3d PROPERTIES ENABLE_EXPORTS ON)
@@ -36,4 +38,6 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
     assimp/include
     react/src
     glad/include
+    lua/src
+    lib/lua-bridge/Source
 )
