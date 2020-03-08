@@ -13,3 +13,9 @@
 [submodule "lib/cpplocate"]
 	path = lib/cpplocate
 	url = https://github.com/cginternals/cpplocate
+[submodule "lib/lua"]
+	path = lib/lua
+	url = https://github.com/opeik/lua-cmake
+[submodule "lib/lua-bridge"]
+	path = lib/lua-bridge
+	url = https://github.com/vinniefalco/LuaBridge
