@@ -75,7 +75,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
     glEnable(GL_DEPTH_TEST);
 
     auto camera = Camera{glm::vec3{0.0f, 0.0f, 3.0f}};
-    auto shader = Shader{"shader/model.vs", "shader/model.fs"};
+    auto shader = Shader{"shader/vertex.glsl", "shader/fragment.glsl"};
     auto models = vector<Model>{Model{"res/nanosuit/nanosuit.obj"}};
 
     auto clock    = sf::Clock{};
