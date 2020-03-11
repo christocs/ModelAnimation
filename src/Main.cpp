@@ -1,116 +1,89 @@
-#include "Main.hpp"
-
-#include <array>
-#include <exception>
-#include <fstream>
 #include <iostream>
-#include <iterator>
-#include <string>
+#include <stdexcept>
 #include <vector>
 
+#include <SFML/System.hpp>
 #include <SFML/Window.hpp>
-#include <assimp/Importer.hpp>
-#include <cpplocate/cpplocate.h>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-using sf::Window;
-using std::array;
-using std::ifstream;
+#include "Camera.hpp"
+#include "Model.hpp"
+#include "Shader.hpp"
+
+using glm::mat4;
+using glm::vec3;
 using std::runtime_error;
-using std::string;
 using std::vector;
 
-constexpr auto points = array<float, 9>{0.0f,  0.5f,  0.0f,  //
-                                        0.5f,  -0.5f, 0.0f,  //
-                                        -0.5f, -0.5f, 0.0f}; //
+auto handleMouse(Camera &camera, const sf::Window &window) -> void;
+auto handleKeys(Camera &camera, float deltaTime) -> void;
 
-auto compileShader(const string &path, GLuint type) -> GLuint {
-    auto absPath = cpplocate::getModulePath() + '/' + path;
-    auto file    = ifstream{absPath};
+auto handleMouse(Camera &camera, const sf::Window &window) -> void {
+    static auto firstFrame = true;
 
-    if (!file) {
-        throw runtime_error{string{"Unable to open shader '"} + absPath + "'"};
+    const auto [windowW, windowH] = window.getSize();
+    const auto centerX            = windowW / 2;
+    const auto centerY            = windowH / 2;
+
+    const auto [x, y]  = sf::Mouse::getPosition(window);
+    const auto offsetX = static_cast<int>(x) - static_cast<int>(centerX);
+    const auto offsetY = static_cast<int>(centerY) - static_cast<int>(y);
+
+    if (!firstFrame) {
+        camera.processMouse(offsetX, offsetY);
+    } else {
+        firstFrame = false;
     }
 
-    const auto source = string{(std::istreambuf_iterator<char>(file)),
-                               std::istreambuf_iterator<char>()} +
-                        '\0';
-
-    const auto shader      = glCreateShader(type);
-    const auto shaderArray = source.c_str();
-    glShaderSource(shader, 1, &shaderArray, nullptr);
-    glCompileShader(shader);
-
-    auto didSucceed = GLint{};
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &didSucceed);
-
-    if (!didSucceed) {
-        auto errorLength = GLint{0};
-        auto errorMsg    = vector<GLchar>{};
-
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &errorLength);
-        errorMsg.resize(static_cast<size_t>(errorLength));
-
-        glGetShaderInfoLog(shader, errorLength, &errorLength, errorMsg.data());
-        glDeleteShader(shader);
-
-        throw runtime_error{path + ": " + errorMsg.data()};
-    }
-
-    return shader;
+    sf::Mouse::setPosition(
+        sf::Vector2i{static_cast<int>(centerX), static_cast<int>(centerY)}, window);
 }
 
-auto main() -> int {
-    // Setup window and OpenGL context.
-    auto settings           = sf::ContextSettings{};
-    settings.majorVersion   = 4;
-    settings.minorVersion   = 1;
-    settings.attributeFlags = sf::ContextSettings::Core;
+auto handleKeys(Camera &camera, float deltaTime) -> void {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+        camera.processKeys(FORWARD, deltaTime);
+    }
 
-    auto window = sf::Window{sf::VideoMode(800, 600), "ICT397",
-                             sf::Style::Default, settings};
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+        camera.processKeys(LEFT, deltaTime);
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+        camera.processKeys(BACKWARD, deltaTime);
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+        camera.processKeys(RIGHT, deltaTime);
+    }
+}
+
+auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
+    // Setup window and OpenGL context.
+    auto window =
+        sf::Window{sf::VideoMode{1920, 1080}, "ICT397", sf::Style::Default,
+                   sf::ContextSettings{32, 8, 4, 4, 1, sf::ContextSettings::Core}};
+
+    window.setMouseCursorVisible(false);
 
     if (!gladLoadGL()) {
         throw runtime_error{"Failed to initialize GLAD"};
     }
 
-    // Setup VBO.
-    auto vbo = GLuint{};
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(float), points.data(),
-                 GL_STATIC_DRAW);
+    glEnable(GL_DEPTH_TEST);
 
-    // Setup VAO.
-    auto vao = GLuint{};
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    auto camera = Camera{glm::vec3{0.0f, 0.0f, 3.0f}};
+    auto shader = Shader{"shader/model.vs", "shader/model.fs"};
+    auto models = vector<Model>{Model{"res/nanosuit/nanosuit.obj"}};
 
-    // Compile shaders.
-    const auto vertexShader =
-        compileShader("shader/vertex/default.glsl", GL_VERTEX_SHADER);
-    const auto fragmentShader =
-        compileShader("shader/fragment/default.glsl", GL_FRAGMENT_SHADER);
-
-    // Setup shader program.
-    const auto shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, fragmentShader);
-    glAttachShader(shaderProgram, vertexShader);
-    glLinkProgram(shaderProgram);
+    auto clock    = sf::Clock{};
+    auto lastTime = clock.getElapsedTime().asSeconds();
 
     while (window.isOpen()) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glUseProgram(shaderProgram);
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        window.display();
-
         auto event = sf::Event{};
+
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 window.close();
@@ -119,5 +92,42 @@ auto main() -> int {
                            static_cast<GLsizei>(event.size.height));
             }
         }
+
+        const auto deltaTime = clock.getElapsedTime().asSeconds() - lastTime;
+        lastTime             = clock.getElapsedTime().asSeconds();
+
+        std::cout << camera.position.x << '\t' << camera.position.y << '\t'
+                  << camera.position.z << '\n';
+
+        handleKeys(camera, deltaTime);
+        handleMouse(camera, window);
+
+        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        shader.use();
+
+        const auto [width, height] = window.getSize();
+        const auto projection      = glm::perspective(
+            glm::radians(camera.getFov()),
+            static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
+        const auto view = camera.getViewMatrix();
+
+        shader.setUniform("projection", projection);
+        shader.setUniform("view", view);
+
+        auto model = mat4(1.0f);
+        model      = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
+        model      = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+
+        shader.setUniform("model", model);
+
+        for (auto &i : models) {
+            i.draw(shader);
+        }
+
+        window.display();
     }
+
+    return 0;
 }

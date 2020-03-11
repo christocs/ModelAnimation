@@ -1,6 +1,10 @@
 # Add source files.
 target_sources(${PROJECT_NAME} PRIVATE
     Main.cpp
+    Model.cpp
+    Shader.cpp
+    Mesh.cpp
+    Camera.cpp
 )
 
 # Include project header files.

@@ -19,3 +19,6 @@
 [submodule "lib/lua-bridge"]
 	path = lib/lua-bridge
 	url = https://github.com/vinniefalco/LuaBridge
+[submodule "lib/glm"]
+	path = lib/glm
+	url = https://github.com/g-truc/glm
