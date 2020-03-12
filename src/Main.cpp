@@ -24,13 +24,13 @@ auto handleKeys(Camera &camera, float deltaTime) -> void;
 auto handleMouse(Camera &camera, const sf::Window &window) -> void {
     static auto firstFrame = true;
 
-    const auto [windowW, windowH] = window.getSize();
+    const auto [windowW, windowH] = static_cast<sf::Vector2i>(window.getSize());
     const auto centerX            = windowW / 2;
     const auto centerY            = windowH / 2;
 
-    const auto [x, y]  = sf::Mouse::getPosition(window);
-    const auto offsetX = static_cast<int>(x) - static_cast<int>(centerX);
-    const auto offsetY = static_cast<int>(centerY) - static_cast<int>(y);
+    const auto [x, y] = static_cast<sf::Vector2i>(sf::Mouse::getPosition(window));
+    const auto offsetX = x - centerX;
+    const auto offsetY = centerY - y;
 
     if (!firstFrame) {
         camera.processMouse(offsetX, offsetY);
@@ -67,6 +67,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
                    sf::ContextSettings{32, 8, 4, 4, 1, sf::ContextSettings::Core}};
 
     window.setMouseCursorVisible(false);
+    window.setVerticalSyncEnabled(true);
 
     if (!gladLoadGL()) {
         throw runtime_error{"Failed to initialize GLAD"};
@@ -76,6 +77,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
 
     auto camera = Camera{glm::vec3{0.0f, 0.0f, 3.0f}};
     auto shader = Shader{"shader/vertex.glsl", "shader/fragment.glsl"};
+
     auto models = vector<Model>{Model{"res/nanosuit/nanosuit.obj"}};
 
     auto clock    = sf::Clock{};
@@ -95,9 +97,6 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
 
         const auto deltaTime = clock.getElapsedTime().asSeconds() - lastTime;
         lastTime             = clock.getElapsedTime().asSeconds();
-
-        std::cout << camera.position.x << '\t' << camera.position.y << '\t'
-                  << camera.position.z << '\n';
 
         handleKeys(camera, deltaTime);
         handleMouse(camera, window);

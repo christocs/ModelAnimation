@@ -8,28 +8,27 @@ enum Movement { FORWARD, BACKWARD, LEFT, RIGHT };
 
 class Camera {
   public:
-    static constexpr auto YAW         = -90.0f;
-    static constexpr auto PITCH       = 0.0f;
-    static constexpr auto SPEED       = 2.5f;
-    static constexpr auto SENSITIVITY = 0.1f;
-    static constexpr auto FOV         = 45.0f;
+    static constexpr auto DEFAULT_YAW         = -90.0f;
+    static constexpr auto DEFAULT_PITCH       = 0.0f;
+    static constexpr auto DEFAULT_SPEED       = 2.5f;
+    static constexpr auto DEFAULT_SENSITIVITY = 0.1f;
+    static constexpr auto DEFAULT_FOV         = 45.0f;
 
-    // Camera Attributes
     glm::vec3 position;
     glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 up    = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 right;
     glm::vec3 worldUp = up;
 
-    float yaw         = YAW;
-    float pitch       = PITCH;
-    float speed       = SPEED;
-    float sensitivity = SENSITIVITY;
-    float fov         = FOV;
+    float yaw         = DEFAULT_YAW;
+    float pitch       = DEFAULT_PITCH;
+    float speed       = DEFAULT_SPEED;
+    float sensitivity = DEFAULT_SENSITIVITY;
+    float fov         = DEFAULT_FOV;
 
   public:
-    Camera(glm::vec3 _position = glm::vec3(0.0f, 0.0f, 0.0f), float _yaw = YAW,
-           float _pitch = PITCH);
+    Camera(glm::vec3 _position = glm::vec3(0.0f, 0.0f, 0.0f),
+           float _yaw = DEFAULT_YAW, float _pitch = DEFAULT_PITCH);
 
     auto getFov() const -> float;
     auto getViewMatrix() const -> glm::mat4;

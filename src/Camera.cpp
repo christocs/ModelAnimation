@@ -1,6 +1,7 @@
 #include "Camera.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -45,11 +46,13 @@ auto Camera::processMouse(float xoffset, float yoffset) -> void {
 }
 
 auto Camera::updateCameraVectors() -> void {
-    this->front.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-    this->front.y = sin(glm::radians(this->pitch));
-    this->front.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-    this->front   = glm::normalize(this->front);
+    this->front.x =
+        std::cos(glm::radians(this->yaw)) * std::cos(glm::radians(this->pitch));
+    this->front.y = std::sin(glm::radians(this->pitch));
+    this->front.z =
+        std::sin(glm::radians(this->yaw)) * std::cos(glm::radians(this->pitch));
 
+    this->front = glm::normalize(this->front);
     this->right = glm::normalize(glm::cross(this->front, this->worldUp));
     this->up    = glm::normalize(glm::cross(this->right, this->front));
 }
