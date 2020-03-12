@@ -28,6 +28,12 @@ add_subdirectory(lua)
 add_subdirectory(lua-bridge)
 add_subdirectory(glm)
 
+if (WIN32 OR LINUX)
+    message(STATUS "HI")
+    set(DISABLE_FORCE_DEBUG_POSTFIX ON)
+    add_subdirectory(freetype)
+endif()
+
 # DLL's were a mistake.
 set_target_properties(reactphysics3d PROPERTIES ENABLE_EXPORTS ON)
 set_target_properties(reactphysics3d PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -41,4 +47,5 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
     glad/include
     lua/src
     lib/lua-bridge/Source
+    lib/freetype/include
 )

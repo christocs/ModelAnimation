@@ -21,6 +21,11 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+# Add Linux flag.
+if(UNIX AND NOT APPLE)
+    set(LINUX TRUE)
+endif()
+
 # Set build output directories.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out/lib)
@@ -98,7 +103,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     LuaBridge
     glm
     sfml-audio sfml-graphics sfml-network sfml-system sfml-window
-
+    $<$<OR:$<PLATFORM_ID:Windows>,$<PLATFORM_ID:Linux>>:freetype>
     $<$<PLATFORM_ID:Windows>:sfml-main>
 )
 
@@ -108,5 +113,5 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:${PROJECT_NAME}>/res)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/src/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)
