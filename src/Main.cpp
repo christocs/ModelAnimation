@@ -82,8 +82,6 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
 
     // Set OpenGL options.
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CCW);
 
     // Load assets.
     auto shader = Shader{"shader/vertex.glsl", "shader/fragment.glsl"};
@@ -93,7 +91,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
     auto camera = Camera{vec3{0.0f, 50.0f, 0.0f}};
 
     // Scale and rotate the world.
-    models[0].setScale(vec3{0.5f, 0.5f, 0.5f});
+    models[0].setScale(vec3{0.25f});
     models[0].setRotation(
         glm::angleAxis(glm::radians(-90.0f), vec3{1.0f, 0.0f, 0.0f}));
 
@@ -121,10 +119,11 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
 
         // Calculate the new projection and view matrix.
         const auto [width, height] = window.getSize();
-        const auto projection      = glm::perspective(
-            glm::radians(camera.getFov()),
-            static_cast<float>(width) / static_cast<float>(height), 0.1f, 10000.0f);
-        const auto view = camera.getViewMatrix();
+        const auto projection = glm::perspective(glm::radians(camera.getFov()),
+                                                 static_cast<float>(width) /
+                                                     static_cast<float>(height),
+                                                 100.0f, 10000.0f);
+        const auto view       = camera.getViewMatrix();
 
         // Clear the screen.
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
