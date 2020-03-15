@@ -18,6 +18,12 @@ using glm::vec3;
 using std::runtime_error;
 using std::vector;
 
+#ifdef __APPLE__
+constexpr auto depthBufferSize = 32;
+#else
+constexpr auto depthBufferSize = 24;
+#endif
+
 auto handleMouse(Camera &camera, const sf::Window &window) -> void;
 auto handleKeys(Camera &camera, float deltaTime) -> void;
 
@@ -64,7 +70,8 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
     // Setup window and OpenGL context.
     auto window =
         sf::Window{sf::VideoMode{1920, 1080}, "ICT397", sf::Style::Fullscreen,
-                   sf::ContextSettings{32, 8, 4, 4, 1, sf::ContextSettings::Core}};
+                   sf::ContextSettings{depthBufferSize, 8, 4, 4, 1,
+                                       sf::ContextSettings::Core}};
 
     window.setMouseCursorVisible(false);
     window.setVerticalSyncEnabled(true);
@@ -75,6 +82,8 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
 
     // Set OpenGL options.
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
 
     // Load assets.
     auto shader = Shader{"shader/vertex.glsl", "shader/fragment.glsl"};
