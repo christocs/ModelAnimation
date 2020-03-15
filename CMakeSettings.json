@@ -15,7 +15,7 @@
     {
       "name": "(msvc) Release",
       "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "Release",
       "buildRoot": "${workspaceRoot}\\build\\${name}",
       "installRoot": "${workspaceRoot}\\build\\${name}",
       "cmakeCommandArgs": "--no-warn-unused-cli",
@@ -39,7 +39,7 @@
     {
       "name": "(clang) Release",
       "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "Release",
       "buildRoot": "${workspaceRoot}\\build\\${name}",
       "installRoot": "${workspaceRoot}\\build\\${name}",
       "cmakeCommandArgs": "",
