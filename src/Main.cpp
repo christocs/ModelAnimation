@@ -63,7 +63,7 @@ auto handleKeys(Camera &camera, float deltaTime) -> void {
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
     // Setup window and OpenGL context.
     auto window =
-        sf::Window{sf::VideoMode{1920, 1080}, "ICT397", sf::Style::Default,
+        sf::Window{sf::VideoMode{1920, 1080}, "ICT397", sf::Style::Fullscreen,
                    sf::ContextSettings{32, 8, 4, 4, 1, sf::ContextSettings::Core}};
 
     window.setMouseCursorVisible(false);
@@ -73,12 +73,20 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
         throw runtime_error{"Failed to initialize GLAD"};
     }
 
+    // Set OpenGL options.
     glEnable(GL_DEPTH_TEST);
 
-    auto camera = Camera{glm::vec3{0.0f, 0.0f, 3.0f}};
+    // Load assets.
     auto shader = Shader{"shader/vertex.glsl", "shader/fragment.glsl"};
+    auto models = vector<Model>{Model{"res/city/city.fbx"}};
 
-    auto models = vector<Model>{Model{"res/nanosuit/nanosuit.obj"}};
+    // Setup camera.
+    auto camera = Camera{vec3{0.0f, 50.0f, 0.0f}};
+
+    // Scale and rotate the world.
+    models[0].setScale(vec3{0.5f, 0.5f, 0.5f});
+    models[0].setRotation(
+        glm::angleAxis(glm::radians(-90.0f), vec3{1.0f, 0.0f, 0.0f}));
 
     auto clock    = sf::Clock{};
     auto lastTime = clock.getElapsedTime().asSeconds();
@@ -86,6 +94,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
     while (window.isOpen()) {
         auto event = sf::Event{};
 
+        // Poll events.
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 window.close();
@@ -101,30 +110,28 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
         handleKeys(camera, deltaTime);
         handleMouse(camera, window);
 
-        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        shader.use();
-
+        // Calculate the new projection and view matrix.
         const auto [width, height] = window.getSize();
         const auto projection      = glm::perspective(
             glm::radians(camera.getFov()),
-            static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
+            static_cast<float>(width) / static_cast<float>(height), 0.1f, 10000.0f);
         const auto view = camera.getViewMatrix();
 
+        // Clear the screen.
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Enable the shader.
+        shader.use();
         shader.setUniform("projection", projection);
         shader.setUniform("view", view);
 
-        auto model = mat4(1.0f);
-        model      = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
-        model      = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
-
-        shader.setUniform("model", model);
-
+        // Draw all models.
         for (auto &i : models) {
             i.draw(shader);
         }
 
+        // Swap the front and back buffer.
         window.display();
     }
 

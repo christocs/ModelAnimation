@@ -10,7 +10,7 @@ class Camera {
   public:
     static constexpr auto DEFAULT_YAW         = -90.0f;
     static constexpr auto DEFAULT_PITCH       = 0.0f;
-    static constexpr auto DEFAULT_SPEED       = 2.5f;
+    static constexpr auto DEFAULT_SPEED       = 1000.0f;
     static constexpr auto DEFAULT_SENSITIVITY = 0.1f;
     static constexpr auto DEFAULT_FOV         = 45.0f;
 

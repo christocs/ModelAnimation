@@ -1,61 +1,92 @@
 #include "Mesh.hpp"
 
 #include <iostream>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+
+#include "Shader.hpp"
 
 using namespace std::string_literals;
+using glm::mat4;
+using glm::vec3;
 using std::size_t;
+using std::string;
+using std::unordered_map;
 using std::vector;
 
-Mesh::Mesh(vector<Vertex> &&_vertices, vector<Index> &&_indices,
-           vector<Texture> &&_textures)
+Transform::Transform(mat4 transform) {
+    auto _scale       = glm::vec3{};
+    auto _rotation    = glm::quat{};
+    auto _translation = glm::vec3{};
+    auto _skew        = glm::vec3{};
+    auto _perspective = glm::vec4{};
+
+    glm::decompose(transform, _scale, _rotation, _translation, _skew, _perspective);
+
+    this->translation = _translation;
+    this->scale       = _scale;
+    this->rotation    = _rotation;
+}
+
+Mesh::Mesh(Vertices &&_vertices, Indices &&_indices, Textures &&_textures,
+           mat4 &&_transform)
     : vertices(std::move(_vertices)), indices(std::move(_indices)),
-      textures(std::move(_textures)) {
+      textures(std::move(_textures)), transform(std::move(_transform)) {
     this->setupMesh();
 }
 
-Mesh::Mesh(const vector<Vertex> &_vertices, const vector<Index> &_indices,
-           const vector<Texture> &_textures)
-    : vertices(_vertices), indices(_indices), textures(_textures) {
+Mesh::Mesh(const Vertices &_vertices, const Indices &_indices,
+           const Textures &_textures, const mat4 &_transform)
+    : vertices(_vertices), indices(_indices), textures(_textures),
+      transform(_transform) {
     this->setupMesh();
 }
 
-auto Mesh::draw(const Shader &shader) const -> void {
-    auto diffuseNum  = 1u;
-    auto specularNum = 1u;
-    auto normalNum   = 1u;
-    auto heightNum   = 1u;
+auto Mesh::draw(const Shader &shader, Transform parentTransform) const -> void {
+    auto map = unordered_map<string, unsigned>{
+        {"texture_diffuse", 1u},  //
+        {"texture_specular", 1u}, //
+        {"texture_normal", 1u},   //
+        {"texture_height", 1u},   //
+    };
 
+    // Bind all of the textures to shader uniforms.
     for (auto i = size_t{0}; i < textures.size(); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
 
-        auto number = ""s;
         auto name   = textures[i].type;
-
-        if (name == "texture_diffuse") {
-            number = std::to_string(diffuseNum);
-            ++diffuseNum;
-        } else if (name == "texture_specular") {
-            number = std::to_string(specularNum);
-            ++specularNum;
-        } else if (name == "texture_normal") {
-            number = std::to_string(normalNum);
-            ++normalNum;
-        } else if (name == "texture_height") {
-            number = std::to_string(heightNum);
-            ++heightNum;
-        }
+        auto number = std::to_string(map[name]);
+        map[name] += 1;
 
         shader.setUniform(name + number, static_cast<unsigned>(i));
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
 
+    // Apply parent tranformation.
+    auto model = mat4{1.0f};
+
+    model = glm::translate(model, parentTransform.translation);
+    model *= glm::mat4_cast(parentTransform.rotation);
+    model = glm::scale(model, parentTransform.scale);
+
+    // Apply local transformation.
+    model = glm::translate(model, this->transform.translation);
+    model *= glm::mat4_cast(this->transform.rotation);
+    model = glm::scale(model, this->transform.scale);
+
+    shader.setUniform("model", model);
+
+    // Draw the mesh.
     glBindVertexArray(this->vao);
     glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
-
     glActiveTexture(GL_TEXTURE0);
 }
 
@@ -64,15 +95,18 @@ auto Mesh::setupMesh() -> void {
     glGenBuffers(1, &this->vbo);
     glGenBuffers(1, &this->ibo);
 
+    // Load data into the vertex buffer.
     glBindVertexArray(this->vao);
     glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
     glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex),
                  this->vertices.data(), GL_STATIC_DRAW);
 
+    // Load index data into the index buffer.
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(Index),
                  this->indices.data(), GL_STATIC_DRAW);
 
+    // Set the vertex attribute pointers.
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
 
@@ -90,7 +124,7 @@ auto Mesh::setupMesh() -> void {
     glEnableVertexAttribArray(3);
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                           reinterpret_cast<void *>(offsetof(Vertex, tangent)));
-    // vertex bitangent
+    // Vertex bitangent
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                           reinterpret_cast<void *>(offsetof(Vertex, bitangent)));

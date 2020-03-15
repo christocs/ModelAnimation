@@ -10,6 +10,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Mesh.hpp"
+
 using namespace std::string_literals;
 using glm::mat4;
 using std::ifstream;
