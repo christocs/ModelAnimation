@@ -10,24 +10,23 @@
 class Shader;
 
 struct Vertex {
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec2 uvs;
-    glm::vec3 tangent;
-    glm::vec3 bitangent;
+    glm::vec3 position  = {};
+    glm::vec3 normal    = {};
+    glm::vec2 uvs       = {};
+    glm::vec3 tangent   = {};
+    glm::vec3 bitangent = {};
 };
 
 struct Texture {
-    GLuint id;
-    std::string type;
-    std::string path;
+    GLuint id        = {};
+    std::string type = {};
+    std::string path = {};
 };
 
 struct Transform {
     glm::vec3 translation = glm::vec3{1.0f};
     glm::vec3 scale       = glm::vec3{1.0f};
-    glm::quat rotation =
-        glm::angleAxis(glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::quat rotation    = glm::quat{1.0f, 0.0f, 0.0f, 0.0f};
 
     Transform() = default;
     Transform(glm::mat4 transform);
