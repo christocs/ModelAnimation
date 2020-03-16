@@ -1,4 +1,4 @@
-#include "Shader.hpp"
+#include "afk/render/Shader.hpp"
 
 #include <fstream>
 #include <stdexcept>
@@ -10,7 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Mesh.hpp"
+#include "afk/render/Mesh.hpp"
 
 using namespace std::string_literals;
 using glm::mat4;
@@ -19,6 +19,8 @@ using std::istreambuf_iterator;
 using std::runtime_error;
 using std::string;
 using std::vector;
+
+using Afk::Render::Shader;
 
 auto Shader::compileShader(const string &path, GLuint type) -> GLuint {
     const auto absPath = cpplocate::getModulePath() + '/' + path;

@@ -1,4 +1,4 @@
-#include "Mesh.hpp"
+#include "afk/render/Mesh.hpp"
 
 #include <iostream>
 #include <string>
@@ -11,7 +11,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
-#include "Shader.hpp"
+#include "afk/render/Shader.hpp"
 
 using namespace std::string_literals;
 using glm::mat4;
@@ -20,6 +20,12 @@ using std::size_t;
 using std::string;
 using std::unordered_map;
 using std::vector;
+
+using Afk::Render::Mesh;
+using Afk::Render::Transform;
+
+// FIXME: Decouple from OpenGL.
+// FIXME: Needs logic for properly handling copying verses moving.
 
 Transform::Transform(mat4 transform) {
     auto _scale       = glm::vec3{};
@@ -39,13 +45,6 @@ Mesh::Mesh(Vertices &&_vertices, Indices &&_indices, Textures &&_textures,
            mat4 &&_transform)
     : vertices(std::move(_vertices)), indices(std::move(_indices)),
       textures(std::move(_textures)), transform(std::move(_transform)) {
-    this->setupMesh();
-}
-
-Mesh::Mesh(const Vertices &_vertices, const Indices &_indices,
-           const Textures &_textures, const mat4 &_transform)
-    : vertices(_vertices), indices(_indices), textures(_textures),
-      transform(_transform) {
     this->setupMesh();
 }
 

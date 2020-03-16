@@ -1,17 +1,21 @@
-#include "Model.hpp"
+#include "afk/render/Model.hpp"
 
 #include <string>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-#include "ModelLoader.hpp"
-#include "Shader.hpp"
+#include "afk/io/ModelLoader.hpp"
+#include "afk/render/Shader.hpp"
 
 using glm::mat4;
 using glm::quat;
 using glm::vec3;
 using std::string;
+
+using Afk::Io::ModelLoader;
+using Afk::Render::Model;
+using Afk::Render::Shader;
 
 Model::Model(const string &_path) {
     auto model = ModelLoader{}.load(_path);
@@ -22,7 +26,7 @@ Model::Model(const string &_path) {
     this->textures = std::move(model.textures);
 }
 
-auto Model::draw(Shader shader) const -> void {
+auto Model::draw(Shader &shader) const -> void {
     for (const auto &mesh : this->meshes) {
         mesh.draw(shader, this->transform);
     }

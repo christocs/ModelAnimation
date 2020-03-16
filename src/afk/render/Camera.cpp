@@ -1,4 +1,4 @@
-#include "Camera.hpp"
+#include "afk/render/Camera.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -8,6 +8,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 using glm::vec3;
+
+using Afk::Render::Camera;
 
 Camera::Camera(vec3 _position, float _yaw, float _pitch)
     : position(_position), yaw(_yaw), pitch(_pitch) {
@@ -27,10 +29,19 @@ auto Camera::processKeys(Movement direction, float deltaTime) -> void {
     const auto velocity = this->speed * deltaTime;
 
     switch (direction) {
-        case FORWARD: this->position += this->front * velocity; break;
-        case BACKWARD: this->position -= this->front * velocity; break;
-        case LEFT: this->position -= this->right * velocity; break;
-        case RIGHT: this->position += this->right * velocity; break;
+        case Movement::FORWARD: {
+            this->position += this->front * velocity;
+
+        } break;
+        case Movement::BACKWARD: {
+            this->position -= this->front * velocity;
+        } break;
+        case Movement::LEFT: {
+            this->position -= this->right * velocity;
+        } break;
+        case Movement::RIGHT: {
+            this->position += this->right * velocity;
+        } break;
     }
 }
 

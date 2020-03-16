@@ -1,4 +1,4 @@
-#include "ModelLoader.hpp"
+#include "afk/io/ModelLoader.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -15,13 +15,19 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Mesh.hpp"
-#include "Shader.hpp"
+#include "afk/render/Mesh.hpp"
+#include "afk/render/Shader.hpp"
 
 using namespace std::string_literals;
 using std::runtime_error;
 using std::string;
 using std::vector;
+
+using Afk::Io::ModelLoader;
+using Afk::Render::Mesh;
+using Afk::Render::Model;
+using Afk::Render::Texture;
+using Afk::Render::Vertex;
 
 auto ModelLoader::load(string const &path) -> Model {
     const auto modelPath = this->getModelPath(path);
@@ -33,8 +39,6 @@ auto ModelLoader::load(string const &path) -> Model {
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         throw runtime_error{"ASSIMP import error: "s + importer.GetErrorString()};
     }
-
-    // Get the model directory.
     this->model.path = modelPath;
     this->model.dir  = this->getModelDir(modelPath);
     // Recursively process the Assimp nodes.

@@ -114,4 +114,4 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/src/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)
+    ${CMAKE_SOURCE_DIR}/src/afk/render/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)
