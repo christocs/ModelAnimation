@@ -16,6 +16,9 @@ option(WarningsAsErrors "WarningsAsErrors" OFF)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 
+# Disable debug library postfix.
+set(CMAKE_DEBUG_POSTFIX "")
+
 # Set build type to debug by default.
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)

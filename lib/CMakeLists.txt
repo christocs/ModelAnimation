@@ -1,8 +1,6 @@
-# Assimp build options.
+# Library build options.
 option(ASSIMP_BUILD_TESTS OFF)
 option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
-option(INJECT_DEBUG_POSTFIX OFF)
-
 option(OPTION_BUILD_TESTS OFF)
 
 # Build libraries.
@@ -29,8 +27,6 @@ add_subdirectory(lua-bridge)
 add_subdirectory(glm)
 
 if (WIN32 OR LINUX)
-    message(STATUS "HI")
-    set(DISABLE_FORCE_DEBUG_POSTFIX ON)
     add_subdirectory(freetype)
 endif()
 
