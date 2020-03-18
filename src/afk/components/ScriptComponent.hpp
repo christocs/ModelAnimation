@@ -1,7 +1,6 @@
+#include <LuaBridge.h>
 #include <cstdint>
 #include <string>
-
-#include <LuaBridge/LuaBridge.h>
 
 using luabridge::LuaRef;
 
@@ -22,7 +21,11 @@ class ScriptComponent {
     LuaRef onMousePress;
     LuaRef onMouseRelease;
 
+    std::string scriptFilename;
+
   public:
+    ScriptComponent(std::string filename);
+
     // Assuming DT is float for now, will change if needed.
     auto Update(float dt) -> void;
     auto Draw() -> void;
@@ -36,4 +39,4 @@ class ScriptComponent {
     // TODO: Façade sf::Mouse::Button
     auto MousePress(int btn, int mousex, int mousey) -> void;
     auto MouseRelease(int btn, int mousex, int mousey) -> void;
-}
+};
