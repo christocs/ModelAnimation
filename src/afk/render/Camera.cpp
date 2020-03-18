@@ -1,69 +1,77 @@
 #include "afk/render/Camera.hpp"
 
 #include <algorithm>
-#include <cmath>
 
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
+using glm::mat4;
+using glm::quat;
 using glm::vec3;
 
-using Afk::Render::Camera;
+using Afk::Camera;
 
-Camera::Camera(vec3 _position, float _yaw, float _pitch)
-    : position(_position), yaw(_yaw), pitch(_pitch) {
+auto Camera::handleMouse(float deltaX, float deltaY) -> void {
+  constexpr auto maxYaw = 89.0f;
 
-    this->updateCameraVectors();
+  this->angles.x += deltaX * this->sensitivity;
+  this->angles.y += deltaY * this->sensitivity;
+  this->angles.y = std::clamp(this->angles.y, -maxYaw, maxYaw);
 }
 
-auto Camera::getFov() const -> float {
-    return this->fov;
+auto Camera::handleKey(Movement movement, float deltaTime) -> void {
+  const auto velocity = this->speed * deltaTime;
+
+  switch (movement) {
+    case Movement::Forward: {
+      this->position += this->getFront() * velocity;
+    } break;
+    case Movement::Backward: {
+      this->position -= this->getFront() * velocity;
+    } break;
+    case Movement::Left: {
+      this->position -= this->getRight() * velocity;
+    } break;
+    case Movement::Right: {
+      this->position += this->getRight() * velocity;
+    } break;
+  }
 }
 
-auto Camera::getViewMatrix() const -> glm::mat4 {
-    return glm::lookAt(this->position, this->position + this->front, this->up);
+auto Camera::getViewMatrix() -> mat4 {
+  return glm::lookAt(this->position, this->position + this->getFront(), this->getUp());
 }
 
-auto Camera::processKeys(Movement direction, float deltaTime) -> void {
-    const auto velocity = this->speed * deltaTime;
+auto Camera::getProjectionMatrix(unsigned width, unsigned height) const -> mat4 {
+  const auto w = static_cast<float>(width);
+  const auto h = static_cast<float>(height);
 
-    switch (direction) {
-        case Movement::FORWARD: {
-            this->position += this->front * velocity;
+  const auto projectionMatrix =
+      glm::perspective(glm::radians(this->fov), w / h, this->near, this->far);
 
-        } break;
-        case Movement::BACKWARD: {
-            this->position -= this->front * velocity;
-        } break;
-        case Movement::LEFT: {
-            this->position -= this->right * velocity;
-        } break;
-        case Movement::RIGHT: {
-            this->position += this->right * velocity;
-        } break;
-    }
+  return projectionMatrix;
 }
 
-auto Camera::processMouse(float xoffset, float yoffset) -> void {
-    xoffset *= this->sensitivity;
-    yoffset *= this->sensitivity;
+auto Camera::getFront() const -> vec3 {
+  auto front = vec3{};
 
-    this->yaw += xoffset;
-    this->pitch += yoffset;
-    this->pitch = std::clamp(this->pitch, -89.0f, 89.0f);
+  front.x = std::cos(glm::radians(this->angles.x)) *
+            std::cos(glm::radians(this->angles.y));
+  front.y = std::sin(glm::radians(this->angles.y));
+  front.z = std::sin(glm::radians(this->angles.x)) *
+            std::cos(glm::radians(this->angles.y));
 
-    this->updateCameraVectors();
+  front = glm::normalize(front);
+
+  return front;
 }
 
-auto Camera::updateCameraVectors() -> void {
-    this->front.x =
-        std::cos(glm::radians(this->yaw)) * std::cos(glm::radians(this->pitch));
-    this->front.y = std::sin(glm::radians(this->pitch));
-    this->front.z =
-        std::sin(glm::radians(this->yaw)) * std::cos(glm::radians(this->pitch));
+auto Camera::getRight() const -> vec3 {
+  return glm::normalize(glm::cross(this->getFront(), this->WORLD_UP));
+}
 
-    this->front = glm::normalize(this->front);
-    this->right = glm::normalize(glm::cross(this->front, this->worldUp));
-    this->up    = glm::normalize(glm::cross(this->right, this->front));
+auto Camera::getUp() const -> vec3 {
+  return glm::normalize(glm::cross(this->getRight(), this->getFront()));
 }

@@ -2,12 +2,12 @@ BasedOnStyle: LLVM
 Language: Cpp
 Standard: Cpp11
 ColumnLimit: 80
-IndentWidth: 4
-TabWidth: 4
+IndentWidth: 2
+TabWidth: 2
 BreakInheritanceList: AfterColon
 AlignAfterOpenBracket: true
-ConstructorInitializerIndentWidth: 4
-PenaltyExcessCharacter: 4
+ConstructorInitializerIndentWidth: 2
+PenaltyExcessCharacter: 1
 BreakBeforeBraces: Attach
 IndentPPDirectives: BeforeHash
 AllowShortFunctionsOnASingleLine: Empty
