@@ -9,9 +9,8 @@ extern "C" {
 
 #include <LuaBridge/LuaBridge.h>
 
-class luabridge::LuaRef;
-struct lua_State;
 using luabridge::LuaRef;
+struct lua_State;
 
 class ScriptComponent {
   private:
