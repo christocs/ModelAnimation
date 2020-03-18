@@ -3,7 +3,9 @@
 #include <stdexcept>
 
 ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
-    : scriptFilename(filename) {
+    : scriptFilename(filename), onUpdate(lua), onDraw(lua), onKeyPress(lua),
+      onKeyRelease(lua), onTextEnter(lua), onMouseMove(lua), onMouseScroll(lua),
+      onMousePress(lua), onMouseRelease(lua) {
     if (luaL_dofile(lua, scriptFilename.c_str()) != 0) {
         throw std::runtime_error{"Error loading " + filename + ": " +
                                  lua_tostring(lua, -1)};
