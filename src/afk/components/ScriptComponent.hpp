@@ -1,10 +1,17 @@
-#include <LuaBridge.h>
 #include <cstdint>
 #include <string>
 
-using luabridge::LuaRef;
+extern "C" {
+#include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+}
 
-class LuaRef;
+#include <LuaBridge/LuaBridge.h>
+
+class luabridge::LuaRef;
+struct lua_State;
+using luabridge::LuaRef;
 
 class ScriptComponent {
   private:
@@ -24,7 +31,7 @@ class ScriptComponent {
     std::string scriptFilename;
 
   public:
-    ScriptComponent(std::string filename);
+    ScriptComponent(lua_State *lua, std::string filename);
 
     // Assuming DT is float for now, will change if needed.
     auto Update(float dt) -> void;
