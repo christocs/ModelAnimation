@@ -16,7 +16,6 @@ class ScriptComponent {
   private:
     // Engine
     LuaRef onUpdate;
-    LuaRef onDraw;
     // Keyboard
     LuaRef onKeyPress;
     LuaRef onKeyRelease;
@@ -34,7 +33,6 @@ class ScriptComponent {
 
     // Assuming DT is float for now, will change if needed.
     auto Update(float dt) -> void;
-    auto Draw() -> void;
     // TODO: Façade sf::Keyboard::Key
     auto KeyPress(int key, bool alt, bool ctrl, bool shift) -> void;
     auto KeyRelease(int key, bool alt, bool ctrl, bool shift) -> void;

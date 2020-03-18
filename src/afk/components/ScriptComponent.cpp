@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
-    : scriptFilename(filename), onUpdate(lua), onDraw(lua), onKeyPress(lua),
+    : scriptFilename(filename), onUpdate(lua), onKeyPress(lua),
       onKeyRelease(lua), onTextEnter(lua), onMouseMove(lua), onMouseScroll(lua),
       onMousePress(lua), onMouseRelease(lua) {
     if (luaL_dofile(lua, scriptFilename.c_str()) != 0) {
@@ -11,7 +11,6 @@ ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
                                  lua_tostring(lua, -1)};
     }
     this->onUpdate       = luabridge::getGlobal(lua, "update");
-    this->onDraw         = luabridge::getGlobal(lua, "draw");
     this->onKeyPress     = luabridge::getGlobal(lua, "keyDown");
     this->onKeyRelease   = luabridge::getGlobal(lua, "keyUp");
     this->onMouseMove    = luabridge::getGlobal(lua, "mouseMove");
@@ -19,4 +18,9 @@ ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
     this->onMouseRelease = luabridge::getGlobal(lua, "mouseUp");
     this->onMouseScroll  = luabridge::getGlobal(lua, "mouseScroll");
     this->onTextEnter    = luabridge::getGlobal(lua, "textEnter");
+}
+
+auto ScriptComponent::Update(float dt) -> void {
+    if (this->onUpdate.isFunction())
+        this->onUpdate(dt);
 }
