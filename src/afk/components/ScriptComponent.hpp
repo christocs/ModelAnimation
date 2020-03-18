@@ -31,7 +31,7 @@ class ScriptComponent {
     std::string scriptFilename;
 
   public:
-    ScriptComponent(lua_State *lua, std::string filename);
+    ScriptComponent(lua_State *lua, const std::string &filename);
 
     // Assuming DT is float for now, will change if needed.
     auto Update(float dt) -> void;

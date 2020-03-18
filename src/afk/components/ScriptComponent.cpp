@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-ScriptComponent::ScriptComponent(lua_State *lua, std::string filename)
+ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
     : scriptFilename(filename) {
     if (luaL_dofile(lua, scriptFilename.c_str()) != 0) {
         throw std::runtime_error{"Error loading " + filename + ": " +
