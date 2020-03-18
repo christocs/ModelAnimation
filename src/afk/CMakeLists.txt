@@ -5,3 +5,4 @@ target_sources(${PROJECT_NAME} PRIVATE
 
 add_subdirectory(render)
 add_subdirectory(io)
+add_subdirectory(components)
