@@ -23,12 +23,17 @@ auto ScriptComponent::SetupLuaState(lua_State *lua) -> void {
 }
 
 ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
-    : scriptFilename(filename), onUpdate(lua), onKeyPress(lua),
-      onKeyRelease(lua), onTextEnter(lua), onMouseMove(lua), onMouseScroll(lua),
-      onMousePress(lua), onMouseRelease(lua) {
-    if (luaL_dofile(lua, scriptFilename.c_str()) != 0) {
-        throw std::runtime_error{"Error loading " + filename + ": " +
-                                 lua_tostring(lua, -1)};
+    : scriptPath(filename), onUpdate(lua), onKeyPress(lua), onKeyRelease(lua),
+      onTextEnter(lua), onMouseMove(lua), onMouseScroll(lua), onMousePress(lua),
+      onMouseRelease(lua) {
+    this->Reload(lua);
+}
+
+auto ScriptComponent::Reload(lua_State *lua) -> void {
+    this->lastFileUpdate = std::filesystem::last_write_time(this->scriptPath);
+    if (luaL_dofile(lua, scriptPath.c_str()) != 0) {
+        throw std::runtime_error{"Error loading " + this->scriptPath.string() +
+                                 ": " + lua_tostring(lua, -1)};
     }
     this->onUpdate       = luabridge::getGlobal(lua, "update");
     this->onKeyPress     = luabridge::getGlobal(lua, "keyDown");
@@ -38,6 +43,12 @@ ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
     this->onMouseRelease = luabridge::getGlobal(lua, "mouseUp");
     this->onMouseScroll  = luabridge::getGlobal(lua, "mouseScroll");
     this->onTextEnter    = luabridge::getGlobal(lua, "textEnter");
+}
+
+auto ScriptComponent::ReloadIfOld(lua_State *lua) -> void {
+    if (std::filesystem::last_write_time(this->scriptPath) > this->lastFileUpdate) {
+        this->Reload(lua);
+    }
 }
 
 auto ScriptComponent::Update(float dt) -> void {

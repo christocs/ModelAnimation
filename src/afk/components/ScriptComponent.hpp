@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <filesystem>
 #include <string>
 
 extern "C" {
@@ -26,12 +27,17 @@ class ScriptComponent {
     LuaRef onMousePress;
     LuaRef onMouseRelease;
 
-    std::string scriptFilename;
+    std::filesystem::path scriptPath;
+    std::filesystem::file_time_type lastFileUpdate;
 
   public:
     static auto SetupLuaState(lua_State *lua) -> void;
 
     ScriptComponent(lua_State *lua, const std::string &filename);
+
+    // Reload file
+    auto Reload(lua_State *lua) -> void;
+    auto ReloadIfOld(lua_State *lua) -> void;
 
     // Assuming DT is float for now, will change if needed.
     auto Update(float dt) -> void;
