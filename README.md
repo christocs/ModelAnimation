@@ -30,12 +30,17 @@ git submodule update --init --recursive --depth 1
 
 Generate build files:
 ```
-cmake -S . -B build -G Ninja -D CMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -D CMAKE_EXPORT_COMPILE_COMMANDS=1
+# Debug
+cmake -S . -B build/debug -G Ninja -D CMAKE_BUILD_TYPE=Debug -D CMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++
+# Release
+cmake -S . -B build/release -G Ninja -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++
 ```
 
 Compile:
 ```
-cd build && ninja && ./ict397
+cd build/debug && ninja && ./ict397
+# Or
+cd build/release && ninja && ./ict397
 ```
 
 ### Linux
@@ -58,12 +63,17 @@ git submodule update --init --recursive --depth 1
 
 Generate build files:
 ```
-cmake -S . -B build -G Ninja -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_EXPORT_COMPILE_COMMANDS=1
+# Debug
+cmake -S . -B build/debug -G Ninja -D CMAKE_BUILD_TYPE=Debug -D CMAKE_CXX_COMPILER=clang++
+# Release
+cmake -S . -B build/release -G Ninja -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_CXX_COMPILER=clang++
 ```
 
 Compile:
 ```
-cd build && ninja && ./ict397
+cd build/debug && ninja && ./ict397
+# Or
+cd build/release && ninja && ./ict397
 ```
 
 ### Windows

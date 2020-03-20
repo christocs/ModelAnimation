@@ -16,9 +16,17 @@ option(WarningsAsErrors "WarningsAsErrors" OFF)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 
+# Disable debug library postfix.
+set(CMAKE_DEBUG_POSTFIX "")
+
 # Set build type to debug by default.
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+# Add Linux flag.
+if(UNIX AND NOT APPLE)
+    set(LINUX TRUE)
 endif()
 
 # Set build output directories.
@@ -69,7 +77,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
         # Disable specific warnings.
         -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded
         -Wno-deprecated-declarations -Wno-exit-time-destructors
-        -Wno-switch-enum -Wno-weak-vtables>
+        -Wno-switch-enum -Wno-weak-vtables -Wno-global-constructors>
     # GCC
     $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -fdiagnostics-color=always>
     # Visual Studio
@@ -87,9 +95,20 @@ target_link_options(${PROJECT_NAME} PRIVATE
 find_package(OpenGL COMPONENTS OpenGL REQUIRED)
 
 # Include and link against dependencies.
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL EnTT::EnTT
-    sfml-network sfml-network sfml-graphics sfml-window sfml-system
-    assimp reactphysics3d glad cpplocate lua LuaBridge)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    OpenGL::GL
+    EnTT::EnTT
+    assimp
+    reactphysics3d
+    glad
+    cpplocate
+    lua
+    LuaBridge
+    glm
+    sfml-audio sfml-graphics sfml-network sfml-system sfml-window
+    $<$<OR:$<PLATFORM_ID:Windows>,$<PLATFORM_ID:Linux>>:freetype>
+    $<$<PLATFORM_ID:Windows>:sfml-main>
+)
 
 # Symlink resources to the binary location.
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -98,4 +117,4 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
-    ${CMAKE_SOURCE_DIR}/src/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)
+    ${CMAKE_SOURCE_DIR}/src/afk/render/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)

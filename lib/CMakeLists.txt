@@ -1,8 +1,6 @@
-# Assimp build options.
+# Library build options.
 option(ASSIMP_BUILD_TESTS OFF)
 option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
-option(INJECT_DEBUG_POSTFIX OFF)
-
 option(OPTION_BUILD_TESTS OFF)
 
 # Build libraries.
@@ -26,6 +24,11 @@ add_subdirectory(cpplocate)
 add_subdirectory(reactphysics3d)
 add_subdirectory(lua)
 add_subdirectory(lua-bridge)
+add_subdirectory(glm)
+
+if (WIN32 OR LINUX)
+    add_subdirectory(freetype)
+endif()
 
 # DLL's were a mistake.
 set_target_properties(reactphysics3d PROPERTIES ENABLE_EXPORTS ON)
@@ -40,4 +43,5 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
     glad/include
     lua/src
     lib/lua-bridge/Source
+    lib/freetype/include
 )
