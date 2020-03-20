@@ -2,6 +2,26 @@
 
 #include <stdexcept>
 
+#include "ScriptKeyboard.hpp"
+#include "ScriptMouse.hpp"
+
+/**
+ * This should probably be moved somewhere better
+ */
+auto ScriptComponent::SetupLuaState(lua_State *lua) -> void {
+    auto keyns = luabridge::getGlobalNamespace(lua).beginNamespace("key");
+    for (auto &key : LuaKeyboard::getKeys()) {
+        // key.code can't be changed from lua's side
+        keyns.addVariable<int>(key.name.c_str(), &key.code, false);
+    }
+    keyns.endNamespace();
+    auto mousens = luabridge::getGlobalNamespace(lua).beginNamespace("button");
+    for (auto &btn : LuaMouse::getButtons()) {
+        mousens.addVariable<int>(btn.name.c_str(), &btn.button, false);
+    }
+    mousens.endNamespace();
+}
+
 ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
     : scriptFilename(filename), onUpdate(lua), onKeyPress(lua),
       onKeyRelease(lua), onTextEnter(lua), onMouseMove(lua), onMouseScroll(lua),

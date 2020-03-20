@@ -29,18 +29,20 @@ class ScriptComponent {
     std::string scriptFilename;
 
   public:
+    static auto SetupLuaState(lua_State *lua) -> void;
+
     ScriptComponent(lua_State *lua, const std::string &filename);
 
     // Assuming DT is float for now, will change if needed.
     auto Update(float dt) -> void;
-    // TODO: Façade sf::Keyboard::Key
+    // Key is sf::Keyboard::Key cast to int
     auto KeyPress(int key, bool alt, bool ctrl, bool shift) -> void;
     auto KeyRelease(int key, bool alt, bool ctrl, bool shift) -> void;
     auto TextEnter(uint32_t text) -> void;
     auto MouseMove(int mousex, int mousey) -> void;
     // No point in supporting multiple mouse wheels (although SFML does)
     auto MouseScroll(float delta, int mousex, int mousey) -> void;
-    // TODO: Façade sf::Mouse::Button
-    auto MousePress(int btn, int mousex, int mousey) -> void;
-    auto MouseRelease(int btn, int mousex, int mousey) -> void;
+    // Button is sf::Mouse::Button cast to int.
+    auto MousePress(int button, int mousex, int mousey) -> void;
+    auto MouseRelease(int button, int mousex, int mousey) -> void;
 };
