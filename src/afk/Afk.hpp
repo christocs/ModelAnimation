@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include <SFML/System/Clock.hpp>
 #include <glm/glm.hpp>
 
@@ -11,6 +9,8 @@
 namespace Afk {
   class Engine {
   public:
+    static constexpr const char *GAME_NAME = "ICT397";
+
     Renderer renderer = {};
     Camera camera     = {};
 

@@ -1,5 +1,6 @@
 #include "afk/render/opengl/Renderer.hpp"
 
+#include <cassert>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -12,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
+#include "afk/Afk.hpp"
 #include "afk/io/Log.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/render/MeshData.hpp"
@@ -45,12 +47,6 @@ using Afk::OpenGl::ShaderHandle;
 using Afk::OpenGl::ShaderProgramHandle;
 using Afk::OpenGl::TextureHandle;
 
-#ifdef _WIN32
-constexpr auto DEPTH_BUFFER_SIZE = 24;
-#else
-constexpr auto DEPTH_BUFFER_SIZE = 32;
-#endif
-
 static auto getMaterialName(TextureData::Type type) -> string {
   static const auto types = unordered_map<TextureData::Type, string>{
       {TextureData::Type::Diffuse, "texture_diffuse"},   //
@@ -72,9 +68,12 @@ static auto getShaderType(ShaderData::Type type) -> GLenum {
 }
 
 Renderer::Renderer()
-  : window(sf::Window{sf::VideoMode{1920, 1080}, "ICT397", sf::Style::Fullscreen,
-                      sf::ContextSettings{DEPTH_BUFFER_SIZE, 8, 4, 4, 1,
-                                          sf::ContextSettings::Core}}) {
+  : window(sf::Window{
+        sf::VideoMode{1920, 1080}, Afk::Engine::GAME_NAME, sf::Style::Fullscreen,
+        sf::ContextSettings{this->DEPTH_BITS, this->STENCIL_BITS, this->MSAA_LEVEL,
+                            this->OPENGL_MAJOR_VERSION, this->OPENGL_MINOR_VERSION,
+                            sf::ContextSettings::Core}}) {
+
   this->window.setMouseCursorVisible(false);
   this->window.setVerticalSyncEnabled(true);
 
@@ -140,17 +139,30 @@ auto Renderer::getShaderProgram(const string &name) -> ShaderProgramHandle {
 }
 
 auto Renderer::setTextureUnit(size_t unit) const -> void {
+  assert(unit > 0);
   glActiveTexture(unit);
 }
 
 auto Renderer::bindTexture(const TextureHandle &texture) const -> void {
+  assert(texture.id > 0);
   glBindTexture(GL_TEXTURE_2D, texture.id);
 }
 
 auto Renderer::drawModel(const ModelHandle &model, const ShaderProgramHandle &shader,
                          Transform transform) const -> void {
+  assert(model.meshes.size() > 0);
+
   for (const auto &mesh : model.meshes) {
-    auto materialCount = vector<unsigned>{1u, 1u, 1u, 1u};
+    assert(mesh.vao > 0);
+    assert(mesh.numIndices > 0);
+
+    auto materialCount = vector<unsigned>{};
+
+    const auto numMaterialTypes = static_cast<size_t>(TextureData::Type::Count);
+    materialCount.resize(numMaterialTypes);
+    for (auto i = size_t{0}; i < numMaterialTypes; ++i) {
+      materialCount[i] = 1u;
+    }
 
     // Bind all of the textures to shader uniforms.
     for (auto i = size_t{0}; i < mesh.textures.size(); i++) {
@@ -188,20 +200,24 @@ auto Renderer::drawModel(const ModelHandle &model, const ShaderProgramHandle &sh
 }
 
 auto Renderer::useShader(const ShaderProgramHandle &shader) const -> void {
+  assert(shader.id > 0);
   glUseProgram(shader.id);
 }
 
 auto Renderer::loadMesh(const MeshData &meshData) -> MeshHandle {
-  auto meshHandle = MeshHandle{};
+  assert(meshData.vertices.size() > 0);
+  assert(meshData.indices.size() > 0);
 
-  // Load data into the vertex buffer.
+  auto meshHandle       = MeshHandle{};
   meshHandle.numIndices = meshData.indices.size();
   meshHandle.transform  = std::move(meshData.transform);
 
+  // Create new buffers.
   glGenVertexArrays(1, &meshHandle.vao);
   glGenBuffers(1, &meshHandle.vbo);
   glGenBuffers(1, &meshHandle.ibo);
 
+  // Load data into the vertex buffer.
   glBindVertexArray(meshHandle.vao);
   glBindBuffer(GL_ARRAY_BUFFER, meshHandle.vbo);
   glBufferData(GL_ARRAY_BUFFER, meshData.vertices.size() * sizeof(VertexData),
@@ -298,8 +314,8 @@ auto Renderer::loadTexture(const TextureData &textureData) -> TextureHandle {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  Log::status("Texture '"s + textureData.path + "' loaded! Texture ID "s +
-              std::to_string(textureHandle.id));
+  Log::status("Texture '"s + textureData.path + "' loaded with ID "s +
+              std::to_string(textureHandle.id) + "."s);
   this->textures[textureData.path] = std::move(textureHandle);
 
   return this->textures[textureData.path];
@@ -336,7 +352,7 @@ auto Renderer::compileShader(const ShaderData &shaderData) -> ShaderHandle {
                         ": "s + errorMsg.data()};
   }
 
-  Log::status("Shader '"s + shaderData.path + "' compiled! Shader ID "s +
+  Log::status("Shader '"s + shaderData.path + "' compiled with ID "s +
               std::to_string(shaderHandle.id) + "."s);
   this->shaders[shaderData.path] = std::move(shaderHandle);
 
@@ -376,7 +392,7 @@ auto Renderer::linkShaders(const string &name, const ShaderHandles &shaderHandle
                         errorMsg.data()};
   }
 
-  Log::status("Shader program '"s + name + "' linked! Shader program ID "s +
+  Log::status("Shader program '"s + name + "' linked with ID "s +
               std::to_string(shaderProgram.id) + "."s);
   this->shaderPrograms[name] = std::move(shaderProgram);
 
@@ -385,24 +401,29 @@ auto Renderer::linkShaders(const string &name, const ShaderHandles &shaderHandle
 
 auto Renderer::setUniform(const ShaderProgramHandle &shader, const string &name,
                           bool value) const -> void {
+  assert(shader.id > 0);
   glUniform1i(glGetUniformLocation(shader.id, name.c_str()), static_cast<GLboolean>(value));
 }
 
 auto Renderer::setUniform(const ShaderProgramHandle &shader, const string &name,
                           int value) const -> void {
+  assert(shader.id > 0);
   glUniform1i(glGetUniformLocation(shader.id, name.c_str()), static_cast<GLint>(value));
 }
 
 auto Renderer::setUniform(const ShaderProgramHandle &shader, const string &name,
                           float value) const -> void {
+  assert(shader.id > 0);
   glUniform1f(glGetUniformLocation(shader.id, name.c_str()), static_cast<GLfloat>(value));
 }
 auto Renderer::setUniform(const ShaderProgramHandle &shader, const string &name,
                           vec3 value) const -> void {
+  assert(shader.id > 0);
   glUniform3fv(glGetUniformLocation(shader.id, name.c_str()), 1, glm::value_ptr(value));
 }
 auto Renderer::setUniform(const ShaderProgramHandle &shader, const string &name,
                           mat4 value) const -> void {
+  assert(shader.id > 0);
   glUniformMatrix4fv(glGetUniformLocation(shader.id, name.c_str()), 1, GL_FALSE,
                      glm::value_ptr(value));
 }

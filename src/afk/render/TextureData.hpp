@@ -13,6 +13,7 @@ namespace Afk {
       Specular,
       Normal,
       Height,
+      Count
     };
 
     Type type        = Type::Diffuse;
