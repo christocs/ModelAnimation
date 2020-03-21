@@ -10,8 +10,7 @@ namespace Afk {
     struct ModelHandle {
       using Meshes = std::vector<MeshHandle>;
 
-      Meshes meshes       = {};
-      Transform transform = {};
+      Meshes meshes = {};
     };
   }
 };

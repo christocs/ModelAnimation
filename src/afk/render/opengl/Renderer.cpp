@@ -99,7 +99,7 @@ auto Renderer::swapBuffers() -> void {
   this->window.display();
 }
 
-auto Renderer::getModel(const string &path) -> ModelHandle & {
+auto Renderer::getModel(const string &path) -> ModelHandle {
   const auto isLoaded = this->models.count(path) == 1;
 
   if (!isLoaded) {
@@ -109,7 +109,7 @@ auto Renderer::getModel(const string &path) -> ModelHandle & {
   return this->models.at(path);
 }
 
-auto Renderer::getTexture(const string &path) -> TextureHandle & {
+auto Renderer::getTexture(const string &path) -> TextureHandle {
   const auto isLoaded = this->textures.count(path) == 1;
 
   if (!isLoaded) {
@@ -119,7 +119,7 @@ auto Renderer::getTexture(const string &path) -> TextureHandle & {
   return this->textures.at(path);
 }
 
-auto Renderer::getShader(const string &path) -> ShaderHandle & {
+auto Renderer::getShader(const string &path) -> ShaderHandle {
   const auto isLoaded = this->shaders.count(path) == 1;
 
   if (!isLoaded) {
@@ -129,7 +129,7 @@ auto Renderer::getShader(const string &path) -> ShaderHandle & {
   return this->shaders.at(path);
 }
 
-auto Renderer::getShaderProgram(const string &name) -> ShaderProgramHandle & {
+auto Renderer::getShaderProgram(const string &name) -> ShaderProgramHandle {
   const auto isLoaded = this->shaderPrograms.count(name) == 1;
 
   if (!isLoaded) {
@@ -147,8 +147,8 @@ auto Renderer::bindTexture(const TextureHandle &texture) const -> void {
   glBindTexture(GL_TEXTURE_2D, texture.id);
 }
 
-auto Renderer::drawModel(const ModelHandle &model,
-                         const ShaderProgramHandle &shader) const -> void {
+auto Renderer::drawModel(const ModelHandle &model, const ShaderProgramHandle &shader,
+                         Transform transform) const -> void {
   for (const auto &mesh : model.meshes) {
     auto materialCount = vector<unsigned>{1u, 1u, 1u, 1u};
 
@@ -167,9 +167,9 @@ auto Renderer::drawModel(const ModelHandle &model,
     auto modelMatrix = mat4{1.0f};
 
     // Apply parent tranformation.
-    modelMatrix = glm::translate(modelMatrix, model.transform.translation);
-    modelMatrix *= glm::mat4_cast(model.transform.rotation);
-    modelMatrix = glm::scale(modelMatrix, model.transform.scale);
+    modelMatrix = glm::translate(modelMatrix, transform.translation);
+    modelMatrix *= glm::mat4_cast(transform.rotation);
+    modelMatrix = glm::scale(modelMatrix, transform.scale);
 
     // Apply local transformation.
     modelMatrix = glm::translate(modelMatrix, mesh.transform.translation);
@@ -256,7 +256,12 @@ auto Renderer::loadModel(const ModelData &modelData) -> ModelHandle {
 
     for (const auto &texture : mesh.textures) {
       auto textureHandle = this->getTexture(texture.path);
-      textureHandle.type = texture.type;
+
+      if (textureHandle.type != texture.type) {
+        this->textures[texture.path].type = texture.type;
+        textureHandle.type                = texture.type;
+      }
+
       meshHandle.textures.push_back(std::move(textureHandle));
     }
 
@@ -294,8 +299,7 @@ auto Renderer::loadTexture(const TextureData &textureData) -> TextureHandle {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   Log::status("Texture '"s + textureData.path + "' loaded! Texture ID "s +
-              std::to_string(textureHandle.id) + ", type '" +
-              getMaterialName(textureHandle.type) + "'.");
+              std::to_string(textureHandle.id));
   this->textures[textureData.path] = std::move(textureHandle);
 
   return this->textures[textureData.path];

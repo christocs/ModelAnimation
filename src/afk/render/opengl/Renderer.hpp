@@ -29,10 +29,10 @@ namespace Afk {
       using ShaderProgramHandle = OpenGl::ShaderProgramHandle;
       using TextureHandle       = OpenGl::TextureHandle;
 
-      using ShaderHandlesMap = std::unordered_map<std::string, ShaderHandle>;
-      using ShaderProgramHandlesMap = std::unordered_map<std::string, ShaderProgramHandle>;
-      using ModelHandlesMap   = std::unordered_map<std::string, ModelHandle>;
-      using TextureHandlesMap = std::unordered_map<std::string, TextureHandle>;
+      using ShaderMap        = std::unordered_map<std::string, ShaderHandle>;
+      using ShaderProgramMap = std::unordered_map<std::string, ShaderProgramHandle>;
+      using ModelMap         = std::unordered_map<std::string, ModelHandle>;
+      using TextureMap       = std::unordered_map<std::string, TextureHandle>;
 
       using ShaderHandles = std::vector<ShaderHandle>;
 
@@ -43,16 +43,16 @@ namespace Afk {
       auto clearScreen(glm::vec4 clearColor = {1.0f, 1.0f, 1.0f, 1.0f}) const -> void;
       auto swapBuffers() -> void;
       auto setViewport(int x, int y, unsigned width, unsigned height) const -> void;
-      auto drawModel(const ModelHandle &model, const ShaderProgramHandle &shader) const
-          -> void;
+      auto drawModel(const ModelHandle &model, const ShaderProgramHandle &shader,
+                     Transform transform) const -> void;
       auto useShader(const ShaderProgramHandle &shader) const -> void;
       auto setTextureUnit(std::size_t unit) const -> void;
       auto bindTexture(const TextureHandle &texture) const -> void;
 
-      auto getModel(const std::string &path) -> ModelHandle &;
-      auto getTexture(const std::string &path) -> TextureHandle &;
-      auto getShader(const std::string &path) -> ShaderHandle &;
-      auto getShaderProgram(const std::string &name) -> ShaderProgramHandle &;
+      auto getModel(const std::string &path) -> ModelHandle;
+      auto getTexture(const std::string &path) -> TextureHandle;
+      auto getShader(const std::string &path) -> ShaderHandle;
+      auto getShaderProgram(const std::string &name) -> ShaderProgramHandle;
 
       auto loadModel(const ModelData &modelData) -> ModelHandle;
       auto loadTexture(const TextureData &textureData) -> TextureHandle;
@@ -73,10 +73,10 @@ namespace Afk {
                       const std::string &name, glm::mat4 value) const -> void;
 
     private:
-      ModelHandlesMap models                 = {};
-      TextureHandlesMap textures             = {};
-      ShaderHandlesMap shaders               = {};
-      ShaderProgramHandlesMap shaderPrograms = {};
+      ModelMap models                 = {};
+      TextureMap textures             = {};
+      ShaderMap shaders               = {};
+      ShaderProgramMap shaderPrograms = {};
     };
   }
 }
