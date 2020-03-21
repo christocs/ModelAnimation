@@ -42,7 +42,6 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
     react/src
     glad/include
     lua/src
-    lib/lua-bridge/Source
-    lib/lua-bridge/Source/detail
-    lib/freetype/include
+    lua-bridge/LuaBridge/Source/LuaBridge/
+    freetype/include
 )
