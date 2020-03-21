@@ -68,11 +68,12 @@ auto Engine::render() -> void {
                             this->camera.getProjectionMatrix(width, height));
   this->renderer.setUniform(shader, "view", this->camera.getViewMatrix());
 
-  model.transform.scale       = vec3{0.25f};
-  model.transform.translation = vec3{0.0f, -50.0f, 0.0f};
-  model.transform.rotation = glm::angleAxis(glm::radians(-90.0f), vec3{1.0f, 0.0f, 0.0f});
+  auto transform        = Transform{};
+  transform.scale       = vec3{0.25f};
+  transform.translation = vec3{0.0f, -50.0f, 0.0f};
+  transform.rotation = glm::angleAxis(glm::radians(-90.0f), vec3{1.0f, 0.0f, 0.0f});
 
-  this->renderer.drawModel(model, shader);
+  this->renderer.drawModel(model, shader, transform);
   this->renderer.swapBuffers();
 }
 
