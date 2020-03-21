@@ -12,9 +12,11 @@ jobs:
     compiler: clang
     addons:
       apt:
+        sources:
+          - ubuntu-toolchain-r-test
         packages: [clang-9, ninja-build, libgl1-mesa-dev, libx11-dev,
                    libxrandr-dev, libudev-dev, libfreetype6-dev, libopenal-dev,
-                   libflac++-dev, libvorbis-dev]
+                   libflac++-dev, libvorbis-dev, g++-9]
     env:
       - CC=clang-9 CXX=clang++-9
 
