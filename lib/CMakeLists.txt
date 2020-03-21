@@ -43,5 +43,6 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
     glad/include
     lua/src
     lib/lua-bridge/Source
+    lib/lua-bridge/Source/detail
     lib/freetype/include
 )
