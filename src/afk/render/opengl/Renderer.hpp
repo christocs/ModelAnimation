@@ -36,6 +36,16 @@ namespace Afk {
 
       using ShaderHandles = std::vector<ShaderHandle>;
 
+      static constexpr unsigned OPENGL_MAJOR_VERSION = 4;
+      static constexpr unsigned OPENGL_MINOR_VERSION = 1;
+      static constexpr unsigned STENCIL_BITS         = 8;
+      static constexpr unsigned MSAA_LEVEL           = 4;
+#ifdef _WIN32
+      static constexpr unsigned DEPTH_BITS = 24;
+#else
+      static constexpr unsigned DEPTH_BITS = 32;
+#endif
+
       sf::Window window = {};
 
       Renderer();

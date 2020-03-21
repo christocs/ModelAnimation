@@ -8,7 +8,6 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 using glm::mat4;
-using glm::quat;
 using glm::vec3;
 
 using Afk::Camera;
