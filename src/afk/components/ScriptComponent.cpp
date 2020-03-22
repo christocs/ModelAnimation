@@ -9,28 +9,28 @@
 /**
  * This should probably be moved somewhere better
  */
-auto ScriptComponent::setupLuaState(lua_State *lua) -> void {
+auto Afk::ScriptComponent::setupLuaState(lua_State *lua) -> void {
   auto keyns = luabridge::getGlobalNamespace(lua).beginNamespace("key");
   for (auto &key : LuaKeyboard::getKeys()) {
     // key.code can't be changed from lua's side
     keyns.addVariable<int>(key.name.c_str(), &key.code, false);
   }
   keyns.endNamespace();
-  auto mousens = luabridge::getGlobalNamespace(lua).beginNamespace("button");
+  auto mousens = luabridge::getGlobalNamespace(lua).beginNamespace("mouse");
   for (auto &btn : LuaMouse::getButtons()) {
     mousens.addVariable<int>(btn.name.c_str(), &btn.button, false);
   }
   mousens.endNamespace();
 }
 
-ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
+Afk::ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
   : scriptPath(Afk::Path::getAbsolutePath("script/" + filename)), onUpdate(lua),
     onKeyPress(lua), onKeyRelease(lua), onTextEnter(lua), onMouseMove(lua),
     onMouseScroll(lua), onMousePress(lua), onMouseRelease(lua) {
   this->reload(lua);
 }
 
-auto ScriptComponent::reload(lua_State *lua) -> void {
+auto Afk::ScriptComponent::reload(lua_State *lua) -> void {
   this->lastFileUpdate = std::filesystem::last_write_time(this->scriptPath);
   if (luaL_dofile(lua, scriptPath.c_str()) != 0) {
     throw std::runtime_error{"Error loading " + this->scriptPath.string() +
@@ -46,49 +46,51 @@ auto ScriptComponent::reload(lua_State *lua) -> void {
   this->onTextEnter    = luabridge::getGlobal(lua, "textEnter");
 }
 
-auto ScriptComponent::reloadIfOld(lua_State *lua) -> void {
+auto Afk::ScriptComponent::reloadIfOld(lua_State *lua) -> void {
   if (std::filesystem::last_write_time(this->scriptPath) > this->lastFileUpdate) {
     this->reload(lua);
   }
 }
 
-auto ScriptComponent::update(float dt) -> void {
+auto Afk::ScriptComponent::update(float dt) -> void {
   if (this->onUpdate.isFunction())
     this->onUpdate(dt);
 }
-auto ScriptComponent::keyPress(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift)
-    -> void {
+auto Afk::ScriptComponent::keyPress(sf::Keyboard::Key key, bool alt, bool ctrl,
+                                    bool shift) -> void {
   if (this->onKeyPress.isFunction()) {
     this->onKeyPress(static_cast<int>(key), alt, ctrl, shift);
   }
 }
-auto ScriptComponent::keyRelease(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift)
-    -> void {
+auto Afk::ScriptComponent::keyRelease(sf::Keyboard::Key key, bool alt,
+                                      bool ctrl, bool shift) -> void {
   if (this->onKeyRelease.isFunction()) {
     this->onKeyRelease(static_cast<int>(key), alt, ctrl, shift);
   }
 }
-auto ScriptComponent::textEnter(uint32_t text) -> void {
+auto Afk::ScriptComponent::textEnter(const std::string &text) -> void {
   if (this->onTextEnter.isFunction()) {
     this->onTextEnter(text);
   }
 }
-auto ScriptComponent::mouseMove(int mousex, int mousey) -> void {
+auto Afk::ScriptComponent::mouseMove(int mousex, int mousey) -> void {
   if (this->onMouseMove.isFunction()) {
     this->onMouseMove(mousex, mousey);
   }
 }
-auto ScriptComponent::mouseScroll(float delta, int mousex, int mousey) -> void {
+auto Afk::ScriptComponent::mouseScroll(float delta, int mousex, int mousey) -> void {
   if (this->onMouseScroll.isFunction()) {
     this->onMouseScroll(delta, mousex, mousey);
   }
 }
-auto ScriptComponent::mousePress(sf::Mouse::Button button, int mousex, int mousey) -> void {
+auto Afk::ScriptComponent::mousePress(sf::Mouse::Button button, int mousex, int mousey)
+    -> void {
   if (this->onMousePress.isFunction()) {
     this->onMousePress(static_cast<int>(button), mousex, mousey);
   }
 }
-auto ScriptComponent::mouseRelease(sf::Mouse::Button button, int mousex, int mousey) -> void {
+auto Afk::ScriptComponent::mouseRelease(sf::Mouse::Button button, int mousex, int mousey)
+    -> void {
   if (this->onMouseRelease.isFunction()) {
     this->onMouseRelease(static_cast<int>(button), mousex, mousey);
   }
