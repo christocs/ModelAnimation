@@ -56,3 +56,40 @@ auto ScriptComponent::Update(float dt) -> void {
   if (this->onUpdate.isFunction())
     this->onUpdate(dt);
 }
+auto ScriptComponent::KeyPress(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift)
+    -> void {
+  if (this->onKeyPress.isFunction()) {
+    this->onKeyPress(static_cast<int>(key), alt, ctrl, shift);
+  }
+}
+auto ScriptComponent::KeyRelease(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift)
+    -> void {
+  if (this->onKeyRelease.isFunction()) {
+    this->onKeyRelease(static_cast<int>(key), alt, ctrl, shift);
+  }
+}
+auto ScriptComponent::TextEnter(uint32_t text) -> void {
+  if (this->onTextEnter.isFunction()) {
+    this->onTextEnter(text);
+  }
+}
+auto ScriptComponent::MouseMove(int mousex, int mousey) -> void {
+  if (this->onMouseMove.isFunction()) {
+    this->onMouseMove(mousex, mousey);
+  }
+}
+auto ScriptComponent::MouseScroll(float delta, int mousex, int mousey) -> void {
+  if (this->onMouseScroll.isFunction()) {
+    this->onMouseScroll(delta, mousex, mousey);
+  }
+}
+auto ScriptComponent::MousePress(sf::Mouse::Button button, int mousex, int mousey) -> void {
+  if (this->onMousePress.isFunction()) {
+    this->onMousePress(static_cast<int>(button), mousex, mousey);
+  }
+}
+auto ScriptComponent::MouseRelease(sf::Mouse::Button button, int mousex, int mousey) -> void {
+  if (this->onMouseRelease.isFunction()) {
+    this->onMouseRelease(static_cast<int>(button), mousex, mousey);
+  }
+}
