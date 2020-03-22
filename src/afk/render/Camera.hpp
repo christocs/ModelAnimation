@@ -1,48 +1,32 @@
 #pragma once
 
-#include <vector>
-
 #include <glm/glm.hpp>
 
 namespace Afk {
-    namespace Render {
-        class Camera {
-          public:
-            enum class Movement { FORWARD, BACKWARD, LEFT, RIGHT };
+  class Camera {
+  public:
+    static constexpr glm::vec3 WORLD_UP = {0.0f, 1.0f, 0.0f};
 
-            static constexpr auto DEFAULT_YAW         = -90.0f;
-            static constexpr auto DEFAULT_PITCH       = 0.0f;
-            static constexpr auto DEFAULT_SPEED       = 1000.0f;
-            static constexpr auto DEFAULT_SENSITIVITY = 0.1f;
-            static constexpr auto DEFAULT_FOV         = 45.0f;
+    enum class Movement { Forward, Backward, Left, Right };
 
-            glm::vec3 position;
-            glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f);
-            glm::vec3 up    = glm::vec3(0.0f, 1.0f, 0.0f);
-            glm::vec3 right;
-            glm::vec3 worldUp = up;
+    auto handleMouse(float deltaX, float deltaY) -> void;
+    auto handleKey(Movement movement, float deltaTime) -> void;
 
-            float yaw         = DEFAULT_YAW;
-            float pitch       = DEFAULT_PITCH;
-            float speed       = DEFAULT_SPEED;
-            float sensitivity = DEFAULT_SENSITIVITY;
-            float fov         = DEFAULT_FOV;
+    auto getViewMatrix() -> glm::mat4;
+    auto getProjectionMatrix(unsigned width, unsigned height) const -> glm::mat4;
 
-          public:
-            Camera(glm::vec3 _position = glm::vec3(0.0f, 0.0f, 0.0f),
-                   float _yaw = DEFAULT_YAW, float _pitch = DEFAULT_PITCH);
-            Camera(const Camera &) = delete;
-            Camera(Camera &&)      = default;
-            auto operator=(const Camera &) -> Camera & = delete;
-            auto operator=(Camera &&) -> Camera & = default;
+  private:
+    float fov         = 75.0f;
+    float near        = 25.0;
+    float far         = 10000.0f;
+    float speed       = 500.0f;
+    float sensitivity = 0.1f;
 
-            auto getFov() const -> float;
-            auto getViewMatrix() const -> glm::mat4;
-            auto processKeys(Movement direction, float deltaTime) -> void;
-            auto processMouse(float xoffset, float yoffset) -> void;
+    auto getFront() const -> glm::vec3;
+    auto getRight() const -> glm::vec3;
+    auto getUp() const -> glm::vec3;
 
-          private:
-            auto updateCameraVectors() -> void;
-        };
-    };
-};
+    glm::vec2 angles   = {};
+    glm::vec3 position = {};
+  };
+}

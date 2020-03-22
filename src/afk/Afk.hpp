@@ -1,44 +1,35 @@
 #pragma once
 
-#include <vector>
-
-#include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>
+#include <SFML/System/Clock.hpp>
+#include <glm/glm.hpp>
 
 #include "afk/render/Camera.hpp"
-#include "afk/render/Model.hpp"
-#include "afk/render/Shader.hpp"
+#include "afk/render/Renderer.hpp"
 
 namespace Afk {
-    class Engine {
-      public:
-        using Window = sf::Window;
-        using Clock  = sf::Clock;
-        using Time   = sf::Time;
-        using Models = std::vector<Render::Model>;
+  class Engine {
+  public:
+    static constexpr const char *GAME_NAME = "ICT397";
 
-        // FIXME: Decouple and split into subsystems.
-        Render::Camera camera = {};
-        Window window         = {};
-        Render::Shader shader = {};
-        Models models         = {};
+    Renderer renderer = {};
+    Camera camera     = {};
 
-        auto handleEvents() -> void;
-        auto update() -> void;
-        auto render() -> void;
+    auto render() -> void;
+    auto update() -> void;
 
-        auto getIsRunning() const -> bool;
+    auto getTime() -> float;
+    auto getDeltaTime() -> float;
+    auto getIsRunning() const -> bool;
 
-        Engine();
+    auto handleKeys() -> void;
+    auto handleMouse() -> void;
 
-      private:
-        Clock clock      = {};
-        float lastUpdate = {};
-        bool isRunning   = true;
-
-        auto getDeltaTime() const -> float;
-        auto getTime() const -> float;
-        auto handleKeys() -> void;
-        auto handleMouse() -> void;
-    };
-};
+  private:
+    sf::Clock clock     = {};
+    bool isRunning      = true;
+    bool hasFocus       = true;
+    unsigned fpsCount   = {};
+    float lastUpdate    = {};
+    float lastFpsUpdate = {};
+  };
+}

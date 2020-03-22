@@ -2,6 +2,12 @@
 
 set -x
 
+build_args='-G Ninja'
+
+if [[ "${TRAVIS_EVENT_TYPE}" == "pull_request" ]]; then
+    build_args+=' WarningsAsErrors:BOOL=ON '
+fi
+
 mkdir build && cd build
-/usr/local/bin/cmake -G Ninja -D WarningsAsErrors:BOOL=ON ..
+/usr/local/bin/cmake ${build_args} ..
 ninja

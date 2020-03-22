@@ -2,11 +2,12 @@
 
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include <SFML/Graphics.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -15,197 +16,166 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "afk/render/Mesh.hpp"
-#include "afk/render/Shader.hpp"
+#include "afk/io/Path.hpp"
+#include "afk/render/MeshData.hpp"
+#include "afk/render/ModelData.hpp"
+#include "afk/render/TextureData.hpp"
 
 using namespace std::string_literals;
+using glm::mat4;
+using glm::vec2;
+using glm::vec3;
 using std::runtime_error;
 using std::string;
+using std::unordered_map;
 using std::vector;
 
-using Afk::Io::ModelLoader;
-using Afk::Render::Mesh;
-using Afk::Render::Model;
-using Afk::Render::Texture;
-using Afk::Render::Vertex;
+using Afk::ModelLoader;
+using Afk::Path;
+using Afk::TextureData;
 
-auto ModelLoader::load(string const &path) -> Model {
-    const auto modelPath = this->getModelPath(path);
-    auto importer        = Assimp::Importer{};
+static auto getAssimpTextureType(TextureData::Type type) -> aiTextureType {
+  static const auto types = unordered_map<TextureData::Type, aiTextureType>{
+      {TextureData::Type::Diffuse, aiTextureType_DIFFUSE},
+      {TextureData::Type::Specular, aiTextureType_SPECULAR},
+      {TextureData::Type::Normal, aiTextureType_NORMALS},
+      {TextureData::Type::Height, aiTextureType_HEIGHT},
+  };
 
-    // Load the model via Assimp.
-    const auto *scene = importer.ReadFile(modelPath, this->ASSIMP_PROCESSING_FLAGS);
+  return types.at(type);
+}
 
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-        throw runtime_error{"ASSIMP import error: "s + importer.GetErrorString()};
-    }
-    this->model.path = modelPath;
-    this->model.dir  = this->getModelDir(modelPath);
-    // Recursively process the Assimp nodes.
-    this->processNode(scene, scene->mRootNode,
-                      this->assimpToGlmMat4(scene->mRootNode->mTransformation));
+static auto toGlm(aiMatrix4x4t<float> m) -> mat4 {
+  return mat4{m.a1, m.b1, m.c1, m.d1,  //
+              m.a2, m.b2, m.c2, m.d2,  //
+              m.a3, m.b3, m.c3, m.d3,  //
+              m.a4, m.b4, m.c4, m.d4}; //
+}
 
-    return std::move(this->model);
+static auto toGlm(aiVector3t<float> m) -> vec3 {
+  return vec3{m.x, m.y, m.z};
+}
+
+auto ModelLoader::load(const string &path) -> ModelData {
+  const auto absPath = Path::getAbsolutePath(path);
+  auto importer      = Assimp::Importer{};
+
+  this->model.path = path;
+  this->model.dir  = Path::getDirectory(path);
+
+  const auto *scene = importer.ReadFile(absPath, this->assimpOptions);
+
+  if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+    throw runtime_error{"Model load error: "s + importer.GetErrorString()};
+  }
+
+  this->processNode(scene, scene->mRootNode, toGlm(scene->mRootNode->mTransformation));
+
+  return std::move(this->model);
 }
 
 auto ModelLoader::processNode(const aiScene *scene, const aiNode *node,
                               glm::mat4 transform) -> void {
-    // Process all meshes at this node.
-    for (auto i = size_t{0}; i < node->mNumMeshes; ++i) {
-        const auto *mesh = scene->mMeshes[node->mMeshes[i]];
-        this->model.meshes.push_back(this->processMesh(
-            scene, mesh, transform * this->assimpToGlmMat4(node->mTransformation)));
-    }
+  // Process all meshes at this node.
+  for (auto i = size_t{0}; i < node->mNumMeshes; ++i) {
+    const auto *mesh = scene->mMeshes[node->mMeshes[i]];
 
-    // Process all child nodes.
-    for (auto i = size_t{0}; i < node->mNumChildren; ++i) {
-        this->processNode(scene, node->mChildren[i],
-                          transform * this->assimpToGlmMat4(node->mTransformation));
-    }
+    this->model.meshes.push_back(
+        this->processMesh(scene, mesh, transform * toGlm(node->mTransformation)));
+  }
+
+  // Process all child nodes.
+  for (auto i = size_t{0}; i < node->mNumChildren; ++i) {
+    this->processNode(scene, node->mChildren[i], transform * toGlm(node->mTransformation));
+  }
 }
 
-auto ModelLoader::processMesh(const aiScene *scene, const aiMesh *mesh,
-                              glm::mat4 transform) -> Mesh {
-    auto meshVertices = vector<Vertex>{};
-    auto meshIndices  = vector<unsigned>{};
-    auto meshTextures = vector<Texture>{};
+auto ModelLoader::processMesh(const aiScene *scene, const aiMesh *mesh, mat4 transform)
+    -> MeshData {
+  auto newMesh = MeshData{};
 
-    // Retrieve this meshes vertices.
-    for (auto i = size_t{0}; i < mesh->mNumVertices; ++i) {
-        auto vertex = Vertex{};
+  newMesh.vertices = this->getVertices(mesh);
+  newMesh.indices  = this->getIndices(mesh);
+  newMesh.textures = this->getTextures(scene->mMaterials[mesh->mMaterialIndex]);
+  newMesh.transform = transform;
 
-        vertex.position = glm::vec3{mesh->mVertices[i].x, mesh->mVertices[i].y,
-                                    mesh->mVertices[i].z};
+  return newMesh;
+}
 
-        vertex.normal = glm::vec3{mesh->mNormals[i].x, mesh->mNormals[i].y,
-                                  mesh->mNormals[i].z};
+auto ModelLoader::getVertices(const aiMesh *mesh) -> MeshData::Vertices {
+  auto vertices     = MeshData::Vertices{};
+  const auto hasUvs = mesh->HasTextureCoords(0);
 
-        // Retrieve texture coordinates, tangents, and bitangents, if available.
-        if (mesh->HasTextureCoords(0)) {
-            vertex.uvs = glm::vec2{mesh->mTextureCoords[0][i].x,
-                                   mesh->mTextureCoords[0][i].y};
+  for (auto i = size_t{0}; i < mesh->mNumVertices; ++i) {
+    auto vertex = VertexData{};
 
-            vertex.tangent = glm::vec3{mesh->mTangents[i].x, mesh->mTangents[i].y,
-                                       mesh->mTangents[i].z};
+    vertex.position = toGlm(mesh->mVertices[i]);
+    vertex.normal   = toGlm(mesh->mNormals[i]);
 
-            vertex.bitangent =
-                glm::vec3{mesh->mBitangents[i].x, mesh->mBitangents[i].y,
-                          mesh->mBitangents[i].z};
-        }
-
-        meshVertices.push_back(vertex);
+    if (hasUvs) {
+      vertex.uvs       = toGlm(mesh->mTextureCoords[0][i]);
+      vertex.tangent   = toGlm(mesh->mTangents[i]);
+      vertex.bitangent = toGlm(mesh->mBitangents[i]);
     }
 
-    // Retrieve indices from the meshes faces.
-    for (auto i = size_t{0}; i < mesh->mNumFaces; ++i) {
-        const auto face = mesh->mFaces[i];
+    vertices.push_back(std::move(vertex));
+  }
 
-        for (auto j = size_t{0}; j < face.mNumIndices; ++j) {
-            meshIndices.push_back(face.mIndices[j]);
-        }
+  return vertices;
+}
+
+auto ModelLoader::getIndices(const aiMesh *mesh) -> MeshData::Indices {
+  auto indices = MeshData::Indices{};
+
+  for (auto i = size_t{0}; i < mesh->mNumFaces; ++i) {
+    const auto face = mesh->mFaces[i];
+
+    for (auto j = size_t{0}; j < face.mNumIndices; ++j) {
+      indices.push_back(face.mIndices[j]);
     }
+  }
 
-    // Load material textures.
-    const auto *material = scene->mMaterials[mesh->mMaterialIndex];
-    const auto diffuseMaps =
-        loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-    const auto specularMaps =
-        loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-    const auto normalMaps =
-        loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-    const auto heightMaps =
-        loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-
-    meshTextures.insert(meshTextures.end(), diffuseMaps.begin(), diffuseMaps.end());
-    meshTextures.insert(meshTextures.end(), specularMaps.begin(),
-                        specularMaps.end());
-    meshTextures.insert(meshTextures.end(), normalMaps.begin(), normalMaps.end());
-    meshTextures.insert(meshTextures.end(), heightMaps.begin(), heightMaps.end());
-
-    return Mesh{std::move(meshVertices), std::move(meshIndices),
-                std::move(meshTextures), std::move(transform)};
+  return indices;
 }
 
-auto ModelLoader::loadMaterialTextures(const aiMaterial *mat,
-                                       const aiTextureType type,
-                                       const string &typeName) -> vector<Texture> {
-    auto materialTextures = vector<Texture>{};
+auto ModelLoader::getMaterialTextures(const aiMaterial *material, TextureData::Type type)
+    -> MeshData::Textures {
+  auto textures = MeshData::Textures{};
 
-    // Load all textures associated with the model.
-    for (auto i = 0u; i < mat->GetTextureCount(type); ++i) {
-        auto assimpPath = aiString{};
-        mat->GetTexture(type, i, &assimpPath);
-        const auto path      = string{assimpPath.C_Str()};
-        const auto &textures = this->model.textures;
+  for (auto i = 0u; i < material->GetTextureCount(getAssimpTextureType(type)); ++i) {
+    auto assimpPath = aiString{};
+    material->GetTexture(getAssimpTextureType(type), i, &assimpPath);
+    const auto path = getTexturePath(string{assimpPath.C_Str()});
 
-        // Check if we've already loaded the texture.
-        const auto item = std::find_if(
-            textures.begin(), textures.end(),
-            [&path](const auto &texture) { return texture.path == path; });
+    auto texture = TextureData{};
+    texture.type = type;
+    texture.path = path;
+    textures.push_back(texture);
+  }
 
-        // Load the texture, or use the previously loaded one, if applicable.
-        if (item != textures.end()) {
-            materialTextures.push_back(*item);
-        } else {
-            auto texture = Texture{};
-
-            texture.id   = this->loadTexture(path);
-            texture.type = typeName;
-            texture.path = path;
-
-            materialTextures.push_back(texture);
-            this->model.textures.push_back(texture);
-        }
-    }
-
-    return materialTextures;
+  return textures;
 }
 
-auto ModelLoader::loadTexture(const string &path) -> GLuint {
-    const auto texturePath = this->getTexturePath(path);
+auto ModelLoader::getTextures(const aiMaterial *material) -> MeshData::Textures {
+  auto textures = MeshData::Textures{};
 
-    // Load image.
-    auto image = sf::Image{};
+  const auto diffuse = this->getMaterialTextures(material, TextureData::Type::Diffuse);
+  const auto specular = this->getMaterialTextures(material, TextureData::Type::Specular);
+  const auto normal = this->getMaterialTextures(material, TextureData::Type::Normal);
+  const auto height = this->getMaterialTextures(material, TextureData::Type::Height);
 
-    if (!image.loadFromFile(texturePath)) {
-        throw runtime_error{"Unable to load image: "s + texturePath};
-    }
+  textures.insert(textures.end(), std::make_move_iterator(diffuse.begin()),
+                  std::make_move_iterator(diffuse.end()));
+  textures.insert(textures.end(), std::make_move_iterator(specular.begin()),
+                  std::make_move_iterator(specular.end()));
+  textures.insert(textures.end(), std::make_move_iterator(normal.begin()),
+                  std::make_move_iterator(normal.end()));
+  textures.insert(textures.end(), std::make_move_iterator(height.begin()),
+                  std::make_move_iterator(height.end()));
 
-    const auto [width, height] = image.getSize();
-
-    // Send the image to the GPU.
-    auto textureId = GLuint{};
-    glGenTextures(1, &textureId);
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, image.getPixelsPtr());
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    // Set texture parameters.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    return textureId;
-}
-
-auto ModelLoader::assimpToGlmMat4(aiMatrix4x4t<float> m) const -> glm::mat4 {
-    return glm::mat4{m.a1, m.b1, m.c1, m.d1,  //
-                     m.a2, m.b2, m.c2, m.d2,  //
-                     m.a3, m.b3, m.c3, m.d3,  //
-                     m.a4, m.b4, m.c4, m.d4}; //
-}
-
-auto ModelLoader::getModelPath(const string &path) const -> string {
-    return cpplocate::getModulePath() + "/" + path;
-}
-
-auto ModelLoader::getModelDir(const string &path) const -> string {
-    return path.substr(0, path.find_last_of("/\\"));
+  return textures;
 }
 
 auto ModelLoader::getTexturePath(const string &path) const -> string {
-    return this->model.dir + "/textures/" +
-           path.substr(path.find_last_of("/\\") + 1);
+  return this->model.dir + "/textures/" + Path::getFilename(path);
 }

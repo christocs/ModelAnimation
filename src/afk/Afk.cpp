@@ -1,155 +1,120 @@
 #include "afk/Afk.hpp"
 
-#include <stdexcept>
-#include <utility>
-#include <vector>
-
 #include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
-#include "afk/render/Camera.hpp"
-#include "afk/render/Model.hpp"
-#include "afk/render/Shader.hpp"
+#include "afk/io/Log.hpp"
 
-#ifdef __APPLE__
-constexpr auto depthBufferSize = 32;
-#else
-constexpr auto depthBufferSize = 24;
-#endif
-
-using std::runtime_error;
-using std::vector;
-
-using Movement = Afk::Render::Camera::Movement;
 using Afk::Engine;
-using Afk::Render::Camera;
-using Afk::Render::Model;
-using Afk::Render::Shader;
+using Afk::Log;
 using glm::vec3;
 
-// FIXME: Too tightly coupled, split off into subsystems.
+// FIXME: Tidy
+auto Engine::handleMouse() -> void {
+  static auto firstFrame = true;
 
-Engine::Engine()
-    : window(sf::Window{sf::VideoMode{1920, 1080}, "ICT397", sf::Style::Fullscreen,
-                        sf::ContextSettings{depthBufferSize, 8, 4, 4, 1,
-                                            sf::ContextSettings::Core}}) {
+  const auto [windowW, windowH] =
+      static_cast<sf::Vector2i>(this->renderer.window.getSize());
+  const auto centerX = windowW / 2;
+  const auto centerY = windowH / 2;
 
-    window.setMouseCursorVisible(false);
-    window.setVerticalSyncEnabled(true);
+  const auto [x, y] =
+      static_cast<sf::Vector2i>(sf::Mouse::getPosition(this->renderer.window));
+  const auto offsetX = x - centerX;
+  const auto offsetY = centerY - y;
 
-    if (!gladLoadGL()) {
-        throw runtime_error{"Failed to initialize GLAD"};
-    }
+  if (!firstFrame) {
+    this->camera.handleMouse(offsetX, offsetY);
+  } else {
+    firstFrame = false;
+  }
 
-    // Set OpenGL options.
-    glEnable(GL_DEPTH_TEST);
-
-    // Load assets.
-    this->shader = Shader{"shader/vertex.glsl", "shader/fragment.glsl"};
-    this->models = vector<Model>{Model{"res/model/city/city.fbx"}};
-    this->camera = Camera{vec3{0.0f, 50.0f, 0.0f}};
-
-    // Scale and rotate the world.
-    models[0].setScale(vec3{0.25f});
-    models[0].setRotation(
-        glm::angleAxis(glm::radians(-90.0f), vec3{1.0f, 0.0f, 0.0f}));
+  sf::Mouse::setPosition(sf::Vector2i{centerX, centerY}, this->renderer.window);
 }
 
-auto Engine::handleEvents() -> void {
-    auto event = sf::Event{};
+// FIXME: Tidy
+auto Engine::handleKeys() -> void {
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+    this->camera.handleKey(Camera::Movement::Forward, this->getDeltaTime());
+  }
 
-    while (this->window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed) {
-            this->isRunning = false;
-        } else if (event.type == sf::Event::Resized) {
-            glViewport(0, 0, static_cast<GLsizei>(event.size.width),
-                       static_cast<GLsizei>(event.size.height));
-        }
-    }
-}
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+    this->camera.handleKey(Camera::Movement::Left, this->getDeltaTime());
+  }
 
-auto Engine::update() -> void {
-    this->handleKeys();
-    this->handleMouse();
-    this->lastUpdate = this->getTime();
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+    this->camera.handleKey(Camera::Movement::Backward, this->getDeltaTime());
+  }
+
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+    this->camera.handleKey(Camera::Movement::Right, this->getDeltaTime());
+  }
+
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+    this->isRunning = false;
+  }
 }
 
 auto Engine::render() -> void {
-    // Calculate the new projection and view matrix.
-    const auto [width, height] = this->window.getSize();
-    const auto projection      = glm::perspective(
-        glm::radians(this->camera.getFov()),
-        static_cast<float>(width) / static_cast<float>(height), 50.0f, 10000.0f);
-    const auto view = this->camera.getViewMatrix();
+  auto shader = this->renderer.getShaderProgram("default");
+  auto model  = this->renderer.getModel("res/model/city/city.fbx");
+  const auto [width, height] = this->renderer.window.getSize();
 
-    // Clear the screen.
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  this->renderer.clearScreen();
 
-    // Enable the shader.
-    shader.use();
-    shader.setUniform("projection", projection);
-    shader.setUniform("view", view);
+  this->renderer.useShader(shader);
+  this->renderer.setUniform(shader, "projection",
+                            this->camera.getProjectionMatrix(width, height));
+  this->renderer.setUniform(shader, "view", this->camera.getViewMatrix());
 
-    // Draw all models.
-    for (const auto &model : models) {
-        model.draw(this->shader);
+  auto transform        = Transform{};
+  transform.scale       = vec3{0.25f};
+  transform.translation = vec3{0.0f, -50.0f, 0.0f};
+  transform.rotation = glm::angleAxis(glm::radians(-90.0f), vec3{1.0f, 0.0f, 0.0f});
+
+  this->renderer.drawModel(model, shader, transform);
+  this->renderer.swapBuffers();
+}
+
+auto Engine::update() -> void {
+  auto event = sf::Event{};
+  while (this->renderer.window.pollEvent(event)) {
+    if (event.type == sf::Event::Closed) {
+      this->isRunning = false;
+    } else if (event.type == sf::Event::Resized) {
+      this->renderer.setViewport(0, 0, event.size.width, event.size.height);
+    } else if (event.type == sf::Event::GainedFocus) {
+      this->renderer.window.setMouseCursorVisible(false);
+      this->hasFocus = true;
+    } else if (event.type == sf::Event::LostFocus) {
+      this->hasFocus = false;
     }
+  }
 
-    // Swap the front and back buffer.
-    this->window.display();
+  if (hasFocus) {
+    this->handleMouse();
+    this->handleKeys();
+  }
+
+  if ((this->getTime() - this->lastFpsUpdate) >= 1.0f) {
+    Log::status("FPS: " + std::to_string(this->fpsCount));
+    this->lastFpsUpdate = this->getTime();
+    this->fpsCount      = 0;
+  }
+
+  ++this->fpsCount;
+  this->lastUpdate = this->getTime();
 }
 
-auto Engine::getDeltaTime() const -> float {
-    return this->getTime() - this->lastUpdate;
+auto Engine::getTime() -> float {
+  return this->clock.getElapsedTime().asSeconds();
 }
 
-auto Engine::getTime() const -> float {
-    return this->clock.getElapsedTime().asSeconds();
+auto Engine::getDeltaTime() -> float {
+  return this->getTime() - this->lastUpdate;
 }
 
 auto Engine::getIsRunning() const -> bool {
-    return this->isRunning;
-}
-
-auto Engine::handleMouse() -> void {
-    static auto firstFrame = true;
-
-    const auto [windowW, windowH] = static_cast<sf::Vector2i>(window.getSize());
-    const auto centerX            = windowW / 2;
-    const auto centerY            = windowH / 2;
-
-    const auto [x, y] = static_cast<sf::Vector2i>(sf::Mouse::getPosition(window));
-    const auto offsetX = x - centerX;
-    const auto offsetY = centerY - y;
-
-    if (!firstFrame) {
-        this->camera.processMouse(offsetX, offsetY);
-    } else {
-        firstFrame = false;
-    }
-
-    sf::Mouse::setPosition(sf::Vector2i{centerX, centerY}, window);
-}
-
-auto Engine::handleKeys() -> void {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-        this->camera.processKeys(Movement::FORWARD, this->getDeltaTime());
-    }
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        this->camera.processKeys(Movement::LEFT, this->getDeltaTime());
-    }
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-        this->camera.processKeys(Movement::BACKWARD, this->getDeltaTime());
-    }
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        this->camera.processKeys(Movement::RIGHT, this->getDeltaTime());
-    }
+  return this->isRunning;
 }
