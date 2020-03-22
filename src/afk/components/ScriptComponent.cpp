@@ -9,7 +9,7 @@
 /**
  * This should probably be moved somewhere better
  */
-auto ScriptComponent::SetupLuaState(lua_State *lua) -> void {
+auto ScriptComponent::setupLuaState(lua_State *lua) -> void {
   auto keyns = luabridge::getGlobalNamespace(lua).beginNamespace("key");
   for (auto &key : LuaKeyboard::getKeys()) {
     // key.code can't be changed from lua's side
@@ -27,10 +27,10 @@ ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
   : scriptPath(Afk::Path::getAbsolutePath("script/" + filename)), onUpdate(lua),
     onKeyPress(lua), onKeyRelease(lua), onTextEnter(lua), onMouseMove(lua),
     onMouseScroll(lua), onMousePress(lua), onMouseRelease(lua) {
-  this->Reload(lua);
+  this->reload(lua);
 }
 
-auto ScriptComponent::Reload(lua_State *lua) -> void {
+auto ScriptComponent::reload(lua_State *lua) -> void {
   this->lastFileUpdate = std::filesystem::last_write_time(this->scriptPath);
   if (luaL_dofile(lua, scriptPath.c_str()) != 0) {
     throw std::runtime_error{"Error loading " + this->scriptPath.string() +
@@ -46,49 +46,49 @@ auto ScriptComponent::Reload(lua_State *lua) -> void {
   this->onTextEnter    = luabridge::getGlobal(lua, "textEnter");
 }
 
-auto ScriptComponent::ReloadIfOld(lua_State *lua) -> void {
+auto ScriptComponent::reloadIfOld(lua_State *lua) -> void {
   if (std::filesystem::last_write_time(this->scriptPath) > this->lastFileUpdate) {
-    this->Reload(lua);
+    this->reload(lua);
   }
 }
 
-auto ScriptComponent::Update(float dt) -> void {
+auto ScriptComponent::update(float dt) -> void {
   if (this->onUpdate.isFunction())
     this->onUpdate(dt);
 }
-auto ScriptComponent::KeyPress(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift)
+auto ScriptComponent::keyPress(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift)
     -> void {
   if (this->onKeyPress.isFunction()) {
     this->onKeyPress(static_cast<int>(key), alt, ctrl, shift);
   }
 }
-auto ScriptComponent::KeyRelease(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift)
+auto ScriptComponent::keyRelease(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift)
     -> void {
   if (this->onKeyRelease.isFunction()) {
     this->onKeyRelease(static_cast<int>(key), alt, ctrl, shift);
   }
 }
-auto ScriptComponent::TextEnter(uint32_t text) -> void {
+auto ScriptComponent::textEnter(uint32_t text) -> void {
   if (this->onTextEnter.isFunction()) {
     this->onTextEnter(text);
   }
 }
-auto ScriptComponent::MouseMove(int mousex, int mousey) -> void {
+auto ScriptComponent::mouseMove(int mousex, int mousey) -> void {
   if (this->onMouseMove.isFunction()) {
     this->onMouseMove(mousex, mousey);
   }
 }
-auto ScriptComponent::MouseScroll(float delta, int mousex, int mousey) -> void {
+auto ScriptComponent::mouseScroll(float delta, int mousex, int mousey) -> void {
   if (this->onMouseScroll.isFunction()) {
     this->onMouseScroll(delta, mousex, mousey);
   }
 }
-auto ScriptComponent::MousePress(sf::Mouse::Button button, int mousex, int mousey) -> void {
+auto ScriptComponent::mousePress(sf::Mouse::Button button, int mousex, int mousey) -> void {
   if (this->onMousePress.isFunction()) {
     this->onMousePress(static_cast<int>(button), mousex, mousey);
   }
 }
-auto ScriptComponent::MouseRelease(sf::Mouse::Button button, int mousex, int mousey) -> void {
+auto ScriptComponent::mouseRelease(sf::Mouse::Button button, int mousex, int mousey) -> void {
   if (this->onMouseRelease.isFunction()) {
     this->onMouseRelease(static_cast<int>(button), mousex, mousey);
   }
