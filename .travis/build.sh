@@ -9,5 +9,5 @@ if [[ "${TRAVIS_EVENT_TYPE}" == "pull_request" ]]; then
 fi
 
 mkdir build && cd build
-/usr/local/bin/cmake "${build_args}" ..
+/usr/local/bin/cmake ${build_args} ..
 ninja
