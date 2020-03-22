@@ -11,7 +11,11 @@ target_sources(${PROJECT_NAME} PRIVATE
     afk/render/TextureData.cpp
     afk/render/ModelData.cpp
     afk/render/opengl/Renderer.cpp
+    afk/components/ScriptComponent.cpp
+    afk/components/ScriptKeyboard.cpp
+    afk/components/ScriptMouse.cpp
 )
+
 
 # Include project header files.
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

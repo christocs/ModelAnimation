@@ -56,6 +56,12 @@ add_subdirectory(src)
 # Add third party libraries.
 add_subdirectory(lib)
 
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
+    lib/lua-bridge/Source/LuaBridge
+    lib/lua-bridge/Source/LuaBridge/detail
+)
+
+
 # Remove the default warning level from MSVC.
 if (MSVC)
     string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

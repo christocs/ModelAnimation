@@ -1,3 +1,8 @@
+function(target_ignore_warnings target scope)
+    get_target_property(lib_include_dirs ${target} INTERFACE_INCLUDE_DIRECTORIES)
+    target_include_directories(${target} SYSTEM ${scope} ${lib_include_dirs})
+endfunction()
+
 # Library build options.
 option(ASSIMP_BUILD_TESTS OFF)
 option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
@@ -25,23 +30,24 @@ add_subdirectory(reactphysics3d)
 add_subdirectory(lua)
 add_subdirectory(lua-bridge)
 add_subdirectory(glm)
+add_subdirectory(freetype)
 
-if (WIN32 OR LINUX)
-    add_subdirectory(freetype)
-endif()
-
-# DLL's were a mistake.
+# DLLs were a mistake.
 set_target_properties(reactphysics3d PROPERTIES ENABLE_EXPORTS ON)
 set_target_properties(reactphysics3d PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-# Ignore warnings from library headers.
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
-    entt/src
-    sfml/include
-    assimp/include
-    react/src
-    glad/include
-    lua/src
-    lib/lua-bridge/Source
-    lib/freetype/include
-)
+# Ignore header warnings in our libraries.
+target_ignore_warnings(EnTT INTERFACE)
+target_ignore_warnings(assimp INTERFACE)
+target_ignore_warnings(reactphysics3d INTERFACE)
+target_ignore_warnings(glad INTERFACE)
+target_ignore_warnings(cpplocate INTERFACE)
+target_ignore_warnings(lua INTERFACE)
+target_ignore_warnings(LuaBridge INTERFACE)
+target_ignore_warnings(glm INTERFACE)
+target_ignore_warnings(sfml-audio INTERFACE)
+target_ignore_warnings(sfml-graphics INTERFACE)
+target_ignore_warnings(sfml-network INTERFACE)
+target_ignore_warnings(sfml-system INTERFACE)
+target_ignore_warnings(sfml-window INTERFACE)
+target_ignore_warnings(freetype INTERFACE)
