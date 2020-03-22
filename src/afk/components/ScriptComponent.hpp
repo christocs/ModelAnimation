@@ -15,6 +15,7 @@ struct lua_State;
 
 class ScriptComponent {
   private:
+    std::filesystem::path scriptPath;
     // Engine
     LuaRef onUpdate;
     // Keyboard
@@ -27,7 +28,6 @@ class ScriptComponent {
     LuaRef onMousePress;
     LuaRef onMouseRelease;
 
-    std::filesystem::path scriptPath;
     std::filesystem::file_time_type lastFileUpdate;
 
   public:
