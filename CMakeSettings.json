@@ -1,52 +1,80 @@
-﻿{
-  "configurations": [
-    {
-      "name": "(msvc) Debug",
-      "generator": "Ninja",
-      "configurationType": "Debug",
-      "buildRoot": "${workspaceRoot}\\build\\${name}",
-      "installRoot": "${workspaceRoot}\\build\\${name}",
-      "cmakeCommandArgs": "--no-warn-unused-cli",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": []
-    },
-    {
-      "name": "(msvc) Release",
-      "generator": "Ninja",
-      "configurationType": "Release",
-      "buildRoot": "${workspaceRoot}\\build\\${name}",
-      "installRoot": "${workspaceRoot}\\build\\${name}",
-      "cmakeCommandArgs": "--no-warn-unused-cli",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": []
-    },
-    {
-      "name": "(clang) Debug",
-      "generator": "Ninja",
-      "configurationType": "Debug",
-      "buildRoot": "${workspaceRoot}\\build\\${name}",
-      "installRoot": "${workspaceRoot}\\build\\${name}",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": "",
-      "inheritEnvironments": [ "clang_cl_x64" ],
-      "variables": []
-    },
-    {
-      "name": "(clang) Release",
-      "generator": "Ninja",
-      "configurationType": "Release",
-      "buildRoot": "${workspaceRoot}\\build\\${name}",
-      "installRoot": "${workspaceRoot}\\build\\${name}",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": "",
-      "inheritEnvironments": [ "clang_cl_x64" ],
-      "variables": []
-    }
-  ]
+{
+    "environments": [
+        {
+            "buildPath": "${workspaceRoot}\\build\\${name}",
+            "clangPath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\Llvm\\bin\\clang-cl.exe"
+        }
+    ],
+    "configurations": [
+        {
+            "name": "(msvc) Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "buildRoot": "${env.buildPath}",
+            "installRoot": "${env.buildPath}",
+            "cmakeCommandArgs": "--no-warn-unused-cli",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": []
+        },
+        {
+            "name": "(msvc) Release",
+            "generator": "Ninja",
+            "configurationType": "Release",
+            "buildRoot": "${env.buildPath}",
+            "installRoot": "${env.buildPath}",
+            "cmakeCommandArgs": "--no-warn-unused-cli",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": []
+        },
+        {
+            "name": "(clang) Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "buildRoot": "${env.buildPath}",
+            "installRoot": "${env.buildPath}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "clang_cl_x64" ],
+            "variables": [
+                {
+                    "name": "CMAKE_CXX_COMPILER",
+                    "value": "${env.clangPath}",
+                    "type": "FILEPATH"
+                },
+                {
+                    "name": "CMAKE_C_COMPILER",
+                    "value": "${env.clangPath}",
+                    "type": "FILEPATH"
+                }
+            ]
+        },
+        {
+            "name": "(clang) Release",
+            "generator": "Ninja",
+            "configurationType": "Release",
+            "buildRoot": "${workspaceRoot}\\build\\${name}",
+            "installRoot": "${workspaceRoot}\\build\\${name}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "clang_cl_x64" ],
+            "variables": [
+                {
+                    "name": "CMAKE_CXX_COMPILER",
+                    "value": "${env.clangPath}",
+                    "type": "FILEPATH"
+                },
+                {
+                    "name": "CMAKE_C_COMPILER",
+                    "value": "${env.clangPath}",
+                    "type": "FILEPATH"
+                }
+            ]
+        }
+    ]
 }
