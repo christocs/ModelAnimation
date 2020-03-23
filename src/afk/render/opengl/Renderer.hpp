@@ -71,6 +71,8 @@ namespace Afk {
           -> ShaderProgramHandle;
       auto loadMesh(const MeshData &meshData) -> MeshHandle;
 
+      auto toggleWireframe() -> void;
+
       auto setUniform(const ShaderProgramHandle &shader,
                       const std::string &name, bool value) const -> void;
       auto setUniform(const ShaderProgramHandle &shader,
@@ -87,6 +89,7 @@ namespace Afk {
       TextureMap textures             = {};
       ShaderMap shaders               = {};
       ShaderProgramMap shaderPrograms = {};
+      bool wireframeEnabled           = false;
     };
   }
 }

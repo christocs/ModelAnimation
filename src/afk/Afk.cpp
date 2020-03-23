@@ -10,7 +10,7 @@ using Afk::Engine;
 using Afk::Log;
 using glm::vec3;
 
-// FIXME: Tidy
+// FIXME: Move to event manager
 auto Engine::handleMouse() -> void {
   static auto firstFrame = true;
 
@@ -33,7 +33,7 @@ auto Engine::handleMouse() -> void {
   sf::Mouse::setPosition(sf::Vector2i{centerX, centerY}, this->renderer.window);
 }
 
-// FIXME: Tidy
+// FIXME: Move to event manager
 auto Engine::handleKeys() -> void {
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
     this->camera.handleKey(Camera::Movement::Forward, this->getDeltaTime());
@@ -79,6 +79,8 @@ auto Engine::render() -> void {
 
 auto Engine::update() -> void {
   auto event = sf::Event{};
+
+  // FIXME: Move to event manager.
   while (this->renderer.window.pollEvent(event)) {
     if (event.type == sf::Event::Closed) {
       this->isRunning = false;
@@ -89,6 +91,12 @@ auto Engine::update() -> void {
       this->hasFocus = true;
     } else if (event.type == sf::Event::LostFocus) {
       this->hasFocus = false;
+    } else if (event.type == sf::Event::KeyPressed) {
+      switch (event.key.code) {
+        case sf::Keyboard::M: {
+          this->renderer.toggleWireframe();
+        } break;
+      }
     }
   }
 

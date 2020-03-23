@@ -399,6 +399,12 @@ auto Renderer::linkShaders(const string &name, const ShaderHandles &shaderHandle
   return this->shaderPrograms[name];
 }
 
+auto Renderer::toggleWireframe() -> void {
+  auto mode = this->wireframeEnabled ? GL_FILL : GL_LINE;
+  glPolygonMode(GL_FRONT_AND_BACK, mode);
+  this->wireframeEnabled = !this->wireframeEnabled;
+}
+
 auto Renderer::setUniform(const ShaderProgramHandle &shader, const string &name,
                           bool value) const -> void {
   assert(shader.id > 0);
