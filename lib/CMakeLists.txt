@@ -37,6 +37,18 @@ add_subdirectory(freetype)
 set_target_properties(reactphysics3d PROPERTIES ENABLE_EXPORTS ON)
 set_target_properties(reactphysics3d PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
+# Stop the *helpful* practise of postfixing 'd' onto debug libraries.
+set_target_properties(assimp PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(cpplocate PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(reactphysics3d PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(lua PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(sfml-audio PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(sfml-network PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(sfml-graphics PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(sfml-system PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(sfml-window PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(freetype PROPERTIES DEBUG_POSTFIX "")
+
 # Ignore header warnings in our libraries.
 target_ignore_header_warnings(EnTT INTERFACE)
 target_ignore_header_warnings(assimp INTERFACE)
@@ -48,14 +60,3 @@ target_ignore_header_warnings(LuaBridge INTERFACE)
 target_ignore_header_warnings(glm INTERFACE)
 # We only need to ignore one of the SFML libraries; they have the same include directory.
 target_ignore_header_warnings(sfml-graphics INTERFACE)
-
-# Stop the *helpful* practise of postfixing 'd' onto debug libraries.
-set_target_properties(assimp PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(reactphysics3d PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(lua PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(sfml-audio PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(sfml-network PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(sfml-graphics PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(sfml-system PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(sfml-window PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(freetype PROPERTIES DEBUG_POSTFIX "")
