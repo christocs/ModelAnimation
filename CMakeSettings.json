@@ -1,4 +1,4 @@
-{
+﻿{
     "environments": [
         {
             "buildPath": "${workspaceRoot}\\build\\${name}",
@@ -57,8 +57,8 @@
             "name": "(clang) Release",
             "generator": "Ninja",
             "configurationType": "Release",
-            "buildRoot": "${workspaceRoot}\\build\\${name}",
-            "installRoot": "${workspaceRoot}\\build\\${name}",
+            "buildRoot": "${env.buildPath}",
+            "installRoot": "${env.buildPath}",
             "cmakeCommandArgs": "",
             "buildCommandArgs": "-v",
             "ctestCommandArgs": "",
