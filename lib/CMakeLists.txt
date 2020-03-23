@@ -21,6 +21,7 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/W0>
 )
 
+# Include our dependencies.
 add_subdirectory(entt)
 add_subdirectory(sfml)
 add_subdirectory(assimp)
@@ -45,4 +46,16 @@ target_ignore_header_warnings(cpplocate INTERFACE)
 target_ignore_header_warnings(lua INTERFACE)
 target_ignore_header_warnings(LuaBridge INTERFACE)
 target_ignore_header_warnings(glm INTERFACE)
-target_ignore_header_warnings(sfml-system INTERFACE)
+# We only need to ignore one of the SFML libraries; they have the same include directory.
+target_ignore_header_warnings(sfml-graphics INTERFACE)
+
+# Stop the *helpful* practise of postfixing 'd' onto debug libraries.
+set_target_properties(assimp PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(reactphysics3d PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(lua PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(sfml-audio PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(sfml-network PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(sfml-graphics PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(sfml-system PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(sfml-window PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(freetype PROPERTIES DEBUG_POSTFIX "")
