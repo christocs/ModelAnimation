@@ -69,6 +69,7 @@ auto ModelLoader::load(const string &path) -> ModelData {
     throw runtime_error{"Model load error: "s + importer.GetErrorString()};
   }
 
+  this->model.meshes.reserve(scene->mNumMeshes);
   this->processNode(scene, scene->mRootNode, toGlm(scene->mRootNode->mTransformation));
 
   return std::move(this->model);
@@ -106,6 +107,8 @@ auto ModelLoader::getVertices(const aiMesh *mesh) -> MeshData::Vertices {
   auto vertices     = MeshData::Vertices{};
   const auto hasUvs = mesh->HasTextureCoords(0);
 
+  vertices.reserve(mesh->mNumVertices);
+
   for (auto i = size_t{0}; i < mesh->mNumVertices; ++i) {
     auto vertex = VertexData{};
 
@@ -127,6 +130,8 @@ auto ModelLoader::getVertices(const aiMesh *mesh) -> MeshData::Vertices {
 auto ModelLoader::getIndices(const aiMesh *mesh) -> MeshData::Indices {
   auto indices = MeshData::Indices{};
 
+  indices.reserve(mesh->mNumFaces);
+
   for (auto i = size_t{0}; i < mesh->mNumFaces; ++i) {
     const auto face = mesh->mFaces[i];
 
@@ -142,7 +147,11 @@ auto ModelLoader::getMaterialTextures(const aiMaterial *material, TextureData::T
     -> MeshData::Textures {
   auto textures = MeshData::Textures{};
 
-  for (auto i = 0u; i < material->GetTextureCount(getAssimpTextureType(type)); ++i) {
+  const auto textureCount = material->GetTextureCount(getAssimpTextureType(type));
+
+  textures.reserve(textureCount);
+
+  for (auto i = 0u; i < textureCount; ++i) {
     auto assimpPath = aiString{};
     material->GetTexture(getAssimpTextureType(type), i, &assimpPath);
     const auto path = getTexturePath(string{assimpPath.C_Str()});
