@@ -5,7 +5,7 @@ set -x
 build_args='-G Ninja'
 
 if [[ "${TRAVIS_EVENT_TYPE}" == "pull_request" ]]; then
-    build_args+=' WarningsAsErrors:BOOL=ON '
+    build_args+='-D WarningsAsErrors:BOOL=ON '
 fi
 
 mkdir build && cd build
