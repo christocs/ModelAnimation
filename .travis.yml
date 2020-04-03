@@ -10,16 +10,17 @@ jobs:
     os: linux
     dist: bionic
     compiler: clang
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-        packages: [clang-9, ninja-build, libgl1-mesa-dev, libx11-dev,
-                   libxrandr-dev, libudev-dev, libfreetype6-dev, libopenal-dev,
-                   libflac++-dev, libvorbis-dev, libxinerama-dev, libxcursor-dev,
-                   libxrandr-dev, libx11-dev, libxi-dev, gcc-9, g++-9]
     env:
       - CC=clang-9 CXX=clang++-9
 
-before_install: ./.travis/install-cmake.sh
+before_install:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  - sudo apt-get -q update
+  - sudo apt-get -y clang-9 ninja-build libgl1-mesa-dev libx11-dev \
+                   libxrandr-dev libudev-dev libfreetype6-dev libopenal-dev \
+                   libflac++-dev libvorbis-dev libxinerama-dev libxcursor-dev \
+                   libxrandr-dev libx11-dev libxi-dev gcc-9 g++-9
+
+  - ./.travis/install-cmake.sh
+
 script: ./.travis/build.sh
