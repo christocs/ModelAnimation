@@ -4,26 +4,21 @@ git:
   depth: 1
   quiet: true
 
-addons:
-  apt:
-    sources:
-      - sourceline: "ppa:ubuntu-toolchain-r/test"
-
 jobs:
   include:
   - name: "Linux: Clang 9"
     os: linux
     dist: bionic
     compiler: clang
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages: [clang-9, ninja-build, libgl1-mesa-dev, libx11-dev,
+                   libxrandr-dev, libudev-dev, libfreetype6-dev, libopenal-dev,
+                   libflac++-dev, libvorbis-dev, libc++-dev]
     env:
       - CC=clang-9 CXX=clang++-9
 
-before_install:
-  - sudo apt-get -q update
-  - sudo apt-get -y clang-9 ninja-build libgl1-mesa-dev libx11-dev \
-                   libxrandr-dev libudev-dev libfreetype6-dev libopenal-dev \
-                   libflac++-dev libvorbis-dev libxinerama-dev libxcursor-dev \
-                   libxrandr-dev libx11-dev libxi-dev gcc-9 g++-9
-  - ./.travis/install-cmake.sh
-
+before_install: ./.travis/install-cmake.sh
 script: ./.travis/build.sh
