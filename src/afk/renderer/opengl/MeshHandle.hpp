@@ -14,11 +14,11 @@ namespace Afk {
     struct MeshHandle {
       using Textures = std::vector<TextureHandle>;
 
-      GLuint vao             = {};
-      GLuint vbo             = {};
-      GLuint ibo             = {};
-      Textures textures      = {};
-      std::size_t numIndices = {};
+      GLuint vao              = {};
+      GLuint vbo              = {};
+      GLuint ibo              = {};
+      Textures textures       = {};
+      std::size_t num_indices = {};
 
       Transform transform = {};
     };

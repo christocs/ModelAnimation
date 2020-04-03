@@ -13,48 +13,45 @@ using glm::vec3;
 
 using Afk::Camera;
 
-auto Camera::handleMouse(float deltaX, float deltaY) -> void {
-  constexpr auto maxYaw = 89.0f;
+auto Camera::handle_mouse(float dx, float dy) -> void {
+  constexpr auto max_yaw = 89.0f;
 
-  this->angles.x += deltaX * this->sensitivity;
-  this->angles.y += -deltaY * this->sensitivity;
-  this->angles.y = std::clamp(this->angles.y, -maxYaw, maxYaw);
+  this->angles.x += dx * this->sensitivity;
+  this->angles.y += -dy * this->sensitivity;
+  this->angles.y = std::clamp(this->angles.y, -max_yaw, max_yaw);
 }
 
-auto Camera::handleKey(Movement movement, float deltaTime) -> void {
-  const auto velocity = this->speed * deltaTime;
+auto Camera::handle_key(Movement movement, float dt) -> void {
+  const auto velocity = this->speed * dt;
 
   switch (movement) {
     case Movement::Forward: {
-      this->position += this->getFront() * velocity;
+      this->position += this->get_front() * velocity;
     } break;
     case Movement::Backward: {
-      this->position -= this->getFront() * velocity;
+      this->position -= this->get_front() * velocity;
     } break;
     case Movement::Left: {
-      this->position -= this->getRight() * velocity;
+      this->position -= this->get_right() * velocity;
     } break;
     case Movement::Right: {
-      this->position += this->getRight() * velocity;
+      this->position += this->get_right() * velocity;
     } break;
   }
 }
 
-auto Camera::getViewMatrix() -> mat4 {
-  return glm::lookAt(this->position, this->position + this->getFront(), this->getUp());
+auto Camera::get_view_matrix() -> mat4 {
+  return glm::lookAt(this->position, this->position + this->get_front(), this->get_up());
 }
 
-auto Camera::getProjectionMatrix(unsigned width, unsigned height) const -> mat4 {
+auto Camera::get_projection_matrix(unsigned width, unsigned height) const -> mat4 {
   const auto w = static_cast<float>(width);
   const auto h = static_cast<float>(height);
 
-  const auto projectionMatrix =
-      glm::perspective(glm::radians(this->fov), w / h, this->near, this->far);
-
-  return projectionMatrix;
+  return glm::perspective(glm::radians(this->fov), w / h, this->near, this->far);
 }
 
-auto Camera::getFront() const -> vec3 {
+auto Camera::get_front() const -> vec3 {
   auto front = vec3{};
 
   front.x = std::cos(glm::radians(this->angles.x)) *
@@ -68,10 +65,10 @@ auto Camera::getFront() const -> vec3 {
   return front;
 }
 
-auto Camera::getRight() const -> vec3 {
-  return glm::normalize(glm::cross(this->getFront(), this->WORLD_UP));
+auto Camera::get_right() const -> vec3 {
+  return glm::normalize(glm::cross(this->get_front(), this->WORLD_UP));
 }
 
-auto Camera::getUp() const -> vec3 {
-  return glm::normalize(glm::cross(this->getRight(), this->getFront()));
+auto Camera::get_up() const -> vec3 {
+  return glm::normalize(glm::cross(this->get_right(), this->get_front()));
 }

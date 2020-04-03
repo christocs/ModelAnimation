@@ -1,5 +1,5 @@
 #include "ScriptKeyboard.hpp"
-auto LuaKeyboard::getKeys() -> std::vector<Key> & {
+auto LuaKeyboard::get_keys() -> std::vector<Key> & {
   // static std::vector<Key> s{
   //     {"A", sf::Keyboard::Key::A},
   //     {"B", sf::Keyboard::Key::B},

@@ -24,17 +24,17 @@ namespace Afk {
     auto render() -> void;
     auto update() -> void;
 
-    auto getTime() -> float;
-    auto getDeltaTime() -> float;
-    auto getIsRunning() const -> bool;
+    auto get_time() -> float;
+    auto get_delta_time() -> float;
+    auto get_is_running() const -> bool;
 
-    auto handleKeys() -> void;
-    auto handleMouse() -> void;
+    auto handle_keys() -> void;
+    auto handle_mouse() -> void;
 
   private:
-    bool isRunning      = true;
-    unsigned fpsCount   = {};
-    float lastUpdate    = {};
-    float lastFpsUpdate = {};
+    bool is_running       = true;
+    unsigned fps_count    = {};
+    float last_update     = {};
+    float last_fps_update = {};
   };
 }

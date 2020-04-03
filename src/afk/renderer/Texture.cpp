@@ -13,7 +13,7 @@ using Afk::Path;
 using Afk::Texture;
 
 Texture::Texture(const string &_path) {
-  const auto absPath = Path::getAbsolutePath(_path);
+  const auto abs_path = Path::get_absolute_path(_path);
 
   this->path = _path;
 }

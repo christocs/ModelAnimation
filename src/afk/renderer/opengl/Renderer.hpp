@@ -45,52 +45,58 @@ namespace Afk {
 
       Renderer();
 
-      auto getWindowSize() -> std::pair<unsigned, unsigned>;
+      auto toggle_wireframe() -> void;
+      auto get_window_size() -> std::pair<unsigned, unsigned>;
 
-      auto clearScreen(glm::vec4 clearColor = {1.0f, 1.0f, 1.0f, 1.0f}) const -> void;
-      auto swapBuffers() -> void;
-      auto setViewport(int x, int y, unsigned width, unsigned height) const -> void;
-      auto drawModel(const ModelHandle &model, const ShaderProgramHandle &shader,
-                     Transform transform) const -> void;
-      auto useShader(const ShaderProgramHandle &shader) const -> void;
-      auto setTextureUnit(std::size_t unit) const -> void;
-      auto bindTexture(const TextureHandle &texture) const -> void;
+      // Draw commands
+      auto clear_screen(glm::vec4 clear_color = {1.0f, 1.0f, 1.0f, 1.0f}) const -> void;
+      auto swap_buffers() -> void;
+      auto set_viewport(int x, int y, unsigned width, unsigned height) const -> void;
+      auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader,
+                      Transform transform) const -> void;
 
-      auto getModel(const std::string &path) -> ModelHandle;
-      auto getTexture(const std::string &path) -> TextureHandle;
-      auto getShader(const std::string &path) -> ShaderHandle;
-      auto getShaderProgram(const std::string &name) -> ShaderProgramHandle;
+      // State management
+      auto use_shader(const ShaderProgramHandle &shader) const -> void;
+      auto set_texture_unit(std::size_t unit) const -> void;
+      auto bind_texture(const TextureHandle &texture) const -> void;
 
-      auto loadModel(const Model &modelData) -> ModelHandle;
-      auto loadTexture(const Texture &textureData) -> TextureHandle;
-      auto compileShader(const Shader &shaderData) -> ShaderHandle;
-      auto linkShaders(const std::string &name, const ShaderHandles &shaderHandles)
+      // Resource management
+      auto get_model(const std::string &path) -> ModelHandle;
+      auto get_texture(const std::string &path) -> TextureHandle;
+      auto get_shader(const std::string &path) -> ShaderHandle;
+      auto get_shader_program(const std::string &name) -> ShaderProgramHandle;
+
+      // Resource loading
+      auto load_model(const Model &model) -> ModelHandle;
+      auto load_texture(const Texture &texture) -> TextureHandle;
+      auto load_mesh(const Mesh &meshData) -> MeshHandle;
+      auto compile_shader(const Shader &shader) -> ShaderHandle;
+      auto link_shaders(const std::string &name, const ShaderHandles &shader_handles)
           -> ShaderProgramHandle;
-      auto loadMesh(const Mesh &meshData) -> MeshHandle;
 
-      auto toggleWireframe() -> void;
-
-      auto setUniform(const ShaderProgramHandle &shader,
-                      const std::string &name, bool value) const -> void;
-      auto setUniform(const ShaderProgramHandle &shader,
-                      const std::string &name, int value) const -> void;
-      auto setUniform(const ShaderProgramHandle &shader,
-                      const std::string &name, float value) const -> void;
-      auto setUniform(const ShaderProgramHandle &shader,
-                      const std::string &name, glm::vec3 value) const -> void;
-      auto setUniform(const ShaderProgramHandle &shader,
-                      const std::string &name, glm::mat4 value) const -> void;
+      // Uniform management
+      auto set_uniform(const ShaderProgramHandle &program,
+                       const std::string &name, bool value) const -> void;
+      auto set_uniform(const ShaderProgramHandle &program,
+                       const std::string &name, int value) const -> void;
+      auto set_uniform(const ShaderProgramHandle &program,
+                       const std::string &name, float value) const -> void;
+      auto set_uniform(const ShaderProgramHandle &program,
+                       const std::string &name, glm::vec3 value) const -> void;
+      auto set_uniform(const ShaderProgramHandle &program,
+                       const std::string &name, glm::mat4 value) const -> void;
 
     private:
-      ModelMap models                 = {};
-      TextureMap textures             = {};
-      ShaderMap shaders               = {};
-      ShaderProgramMap shaderPrograms = {};
-      bool wireframeEnabled           = false;
+      const int opengl_major_version = 4;
+      const int opengl_minor_version = 1;
 
-      const int openglMajorVersion = 4;
-      const int openglMinorVersion = 1;
-      bool enableVsync             = true;
+      ModelMap models                  = {};
+      TextureMap textures              = {};
+      ShaderMap shaders                = {};
+      ShaderProgramMap shader_programs = {};
+
+      bool enable_vsync      = true;
+      bool wireframe_enabled = false;
     };
   }
 }

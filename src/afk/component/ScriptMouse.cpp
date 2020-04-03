@@ -1,5 +1,5 @@
 #include "ScriptMouse.hpp"
-// auto LuaMouse::getButtons() -> std::vector<Mouse> & {
+// auto LuaMouse::get_buttons() -> std::vector<Mouse> & {
 //     static std::vector<Mouse> s{
 //         {"Left", sf::Mouse::Button::Left},
 //         {"Right", sf::Mouse::Button::Right},

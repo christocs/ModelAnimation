@@ -17,27 +17,28 @@ using std::istreambuf_iterator;
 using std::runtime_error;
 using std::string;
 using std::unordered_map;
+using Type = Shader::Type;
 
-static auto getShaderType(const string &extension) -> Shader::Type {
-  static const auto types = unordered_map<string, Shader::Type>{
-      {"vert", Shader::Type::Vertex},
-      {"frag", Shader::Type::Fragment},
+static auto shader_type_from_extension(const string &extension) -> Shader::Type {
+  static const auto types = unordered_map<string, Type>{
+      {"vert", Type::Vertex},
+      {"frag", Type::Fragment},
   };
 
   return types.at(extension);
 }
 
 Shader::Shader(const string &_path) {
-  const auto absPath = Path::getAbsolutePath(_path);
+  const auto abs_path = Path::get_absolute_path(_path);
 
-  auto file = ifstream{absPath};
+  auto file = ifstream{abs_path};
 
   if (!file) {
-    throw runtime_error{"Unable to open shader '"s + absPath + "'"s};
+    throw runtime_error{"Unable to open shader '"s + abs_path + "'"s};
   }
 
   this->code =
       string{(istreambuf_iterator<char>(file)), istreambuf_iterator<char>()} + '\0';
-  this->type = getShaderType(Path::getExtension(_path));
+  this->type = shader_type_from_extension(Path::get_extension(_path));
   this->path = _path;
 }
