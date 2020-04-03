@@ -9,7 +9,6 @@ project(${PROJECT_NAME} LANGUAGES CXX)
 option(WarningsAsErrors "WarningsAsErrors" OFF)
 # Clang sanitizer settings.
 set(SANITIZER_OS "Darwin,Linux")
-set(LIBCPP_OS "Linux")
 set(SANITIZER_FLAGS "-fsanitize=address,undefined,leak")
 # Disable in-source builds.
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -77,9 +76,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     # Set default visibility to hidden.
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
         -fvisibility=hidden -fvisibility-inlines-hidden>
-    # Use libc++.
-    $<$<PLATFORM_ID:${LIBCPP_OS}>:-stdlib=libc++>
 )
+
+target_link_options(${PROJECT_NAME} PRIVATE -lc++abi)
 
 # Link against the clang sanitizer.
 target_link_options(${PROJECT_NAME} PRIVATE

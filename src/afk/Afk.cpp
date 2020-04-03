@@ -36,6 +36,12 @@ static auto mouseCallback([[maybe_unused]] GLFWwindow *window, double x, double 
   lastY = static_cast<float>(y);
 }
 
+static auto resizeWindowCallback([[maybe_unused]] GLFWwindow *window, int width,
+                                 int height) -> void {
+  Engine::get().renderer.setViewport(0, 0, static_cast<unsigned>(width),
+                                     static_cast<unsigned>(height));
+}
+
 auto Engine::get() -> Engine & {
   static auto instance = Engine{};
 
@@ -44,6 +50,7 @@ auto Engine::get() -> Engine & {
 
 Engine::Engine() {
   glfwSetCursorPosCallback(this->renderer.window.get(), mouseCallback);
+  glfwSetFramebufferSizeCallback(this->renderer.window.get(), resizeWindowCallback);
   glfwSetInputMode(this->renderer.window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 

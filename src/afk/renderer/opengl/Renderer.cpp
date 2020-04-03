@@ -20,7 +20,6 @@
 #include "afk/Afk.hpp"
 #include "afk/io/Log.hpp"
 #include "afk/io/Path.hpp"
-#include "afk/renderer/GlfwDeleter.hpp"
 #include "afk/renderer/Mesh.hpp"
 #include "afk/renderer/Model.hpp"
 #include "afk/renderer/Shader.hpp"
@@ -74,10 +73,6 @@ static auto getShaderType(Shader::Type type) -> GLenum {
   return types.at(type);
 }
 
-static auto resizeWindowCallback(GLFWwindow *window, int width, int height) -> void {
-  Engine::get().renderer.setViewport(0, 0, width, height);
-}
-
 Renderer::Renderer() {
   if (!glfwInit()) {
     throw runtime_error{"Failed to initialize GLFW"s};
@@ -87,21 +82,20 @@ Renderer::Renderer() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, this->openglMinorVersion);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-  glfwWindowHint(GLFW_SAMPLES, 4);
   glfwWindowHint(GLFW_DOUBLEBUFFER, this->enableVsync ? GLFW_TRUE : GLFW_FALSE);
   glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
   auto *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
   this->window = Window{glfwCreateWindow(mode->width, mode->height, Engine::GAME_NAME,
-                                         glfwGetPrimaryMonitor(), nullptr)};
+                                         glfwGetPrimaryMonitor(), nullptr),
+                        glfwDestroyWindow};
 
   if (!this->window.get()) {
     throw runtime_error{"Failed to create window"};
   }
 
   glfwMakeContextCurrent(this->window.get());
-  glfwSetFramebufferSizeCallback(this->window.get(), resizeWindowCallback);
 
   if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
     throw runtime_error{"Failed to initialize GLAD"s};

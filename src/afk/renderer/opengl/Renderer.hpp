@@ -11,7 +11,6 @@
 // Must be included after GLAD.
 #include <GLFW/glfw3.h>
 
-#include "afk/renderer/GlfwDeleter.hpp"
 #include "afk/renderer/Shader.hpp"
 #include "afk/renderer/opengl/MeshHandle.hpp"
 #include "afk/renderer/opengl/ModelHandle.hpp"
