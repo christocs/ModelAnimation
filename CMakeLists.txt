@@ -78,8 +78,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE
         -fvisibility=hidden -fvisibility-inlines-hidden>
 )
 
-target_link_options(${PROJECT_NAME} PRIVATE -lc++abi)
-
 # Link against the clang sanitizer.
 target_link_options(${PROJECT_NAME} PRIVATE
     $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:${SANITIZER_FLAGS}>
