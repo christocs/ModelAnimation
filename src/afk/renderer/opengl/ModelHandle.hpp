@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "afk/physics/Transform.hpp"
-#include "afk/render/Renderer.hpp"
+#include "afk/renderer/Renderer.hpp"
 
 namespace Afk {
   namespace OpenGl {

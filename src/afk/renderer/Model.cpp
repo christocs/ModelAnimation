@@ -1,4 +1,4 @@
-#include "afk/render/ModelData.hpp"
+#include "afk/renderer/Model.hpp"
 
 #include <string>
 
@@ -6,10 +6,10 @@
 
 using std::string;
 
-using Afk::ModelData;
+using Afk::Model;
 using Afk::ModelLoader;
 
-ModelData::ModelData(const string &_path) {
+Model::Model(const string &_path) {
   auto tmp = ModelLoader{}.load(_path);
 
   this->meshes = std::move(tmp.meshes);

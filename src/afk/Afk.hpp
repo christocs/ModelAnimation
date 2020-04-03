@@ -1,10 +1,9 @@
 #pragma once
 
-#include <SFML/System/Clock.hpp>
 #include <glm/glm.hpp>
 
-#include "afk/render/Camera.hpp"
-#include "afk/render/Renderer.hpp"
+#include "afk/renderer/Camera.hpp"
+#include "afk/renderer/Renderer.hpp"
 
 namespace Afk {
   class Engine {
@@ -14,22 +13,28 @@ namespace Afk {
     Renderer renderer = {};
     Camera camera     = {};
 
+    Engine();
+    Engine(Engine &&)      = delete;
+    Engine(const Engine &) = delete;
+    auto operator=(const Engine &) -> Engine & = delete;
+    auto operator=(Engine &&) -> Engine & = delete;
+
+    static auto get() -> Engine &;
+
     auto render() -> void;
     auto update() -> void;
 
-    auto getTime() -> float;
-    auto getDeltaTime() -> float;
-    auto getIsRunning() const -> bool;
+    auto get_time() -> float;
+    auto get_delta_time() -> float;
+    auto get_is_running() const -> bool;
 
-    auto handleKeys() -> void;
-    auto handleMouse() -> void;
+    auto handle_keys() -> void;
+    auto handle_mouse() -> void;
 
   private:
-    sf::Clock clock     = {};
-    bool isRunning      = true;
-    bool hasFocus       = true;
-    unsigned fpsCount   = {};
-    float lastUpdate    = {};
-    float lastFpsUpdate = {};
+    bool is_running       = true;
+    unsigned fps_count    = {};
+    float last_update     = {};
+    float last_fps_update = {};
   };
 }

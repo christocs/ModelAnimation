@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 
-#include <SFML/Window/Keyboard.hpp>
 /**
  * Basically acts as a façade between sf::Keyboard and Lua
  */
@@ -16,5 +15,5 @@ namespace LuaKeyboard {
    * Despite being "readonly" from lua's side, they can't be const.
    * (Even readonly variables can be changed in lua, with things like rawset.)
    */
-  auto getKeys() -> std::vector<Key> &;
+  auto get_keys() -> std::vector<Key> &;
 }

@@ -5,9 +5,9 @@
 namespace Afk {
   class Path {
   public:
-    static auto getAbsolutePath(const std::string &path) -> std::string;
-    static auto getDirectory(const std::string &path) -> std::string;
-    static auto getFilename(const std::string &path) -> std::string;
-    static auto getExtension(const std::string &path) -> std::string;
+    static auto get_absolute_path(const std::string &path) -> std::string;
+    static auto get_directory(const std::string &path) -> std::string;
+    static auto get_filename(const std::string &path) -> std::string;
+    static auto get_extension(const std::string &path) -> std::string;
   };
 }
