@@ -36,7 +36,7 @@ using Afk::Texture;
 
 constexpr unsigned ASSIMP_OPTIONS =
     aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs |
-    aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace;
+    aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace | aiProcess_GlobalScale;
 
 static auto get_assimp_texture_type(Texture::Type type) -> aiTextureType {
   static const auto types = unordered_map<Texture::Type, aiTextureType>{

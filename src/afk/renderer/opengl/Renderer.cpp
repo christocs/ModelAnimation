@@ -108,7 +108,7 @@ Renderer::Renderer() {
 auto Renderer::get_window_size() -> pair<unsigned, unsigned> {
   auto width  = 0;
   auto height = 0;
-  glfwGetWindowSize(this->window.get(), &width, &height);
+  glfwGetFramebufferSize(this->window.get(), &width, &height);
 
   return std::make_pair(static_cast<unsigned>(width), static_cast<unsigned>(height));
 }

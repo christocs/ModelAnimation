@@ -8,6 +8,10 @@ option(ASSIMP_BUILD_TESTS OFF)
 option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 # Disable cpplocate building tests.
 option(OPTION_BUILD_TESTS OFF)
+# Disable glfw tests and example programs.
+option(GLFW_BUILD_EXAMPLES OFF)
+option(GLFW_BUILD_TESTS OFF)
+option(GLFW_BUILD_DOCS OFF)
 
 # Fixes an entt warning on UNIX systems.
 if (UNIX)

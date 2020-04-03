@@ -94,9 +94,7 @@ auto Engine::render() -> void {
   this->renderer.set_uniform(shader, "view", this->camera.get_view_matrix());
 
   auto transform        = Transform{};
-  transform.scale       = vec3{0.25f};
-  transform.translation = vec3{0.0f, -50.0f, 0.0f};
-  transform.rotation = glm::angleAxis(glm::radians(-90.0f), vec3{1.0f, 0.0f, 0.0f});
+  transform.translation = vec3{0.0f, -1.0f, 0.0f};
 
   this->renderer.draw_model(model, shader, transform);
   this->renderer.swap_buffers();

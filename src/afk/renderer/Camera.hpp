@@ -17,9 +17,9 @@ namespace Afk {
 
   private:
     float fov         = 75.0f;
-    float near        = 25.0;
-    float far         = 10000.0f;
-    float speed       = 500.0f;
+    float near        = 0.1f;
+    float far         = 1000.0f;
+    float speed       = 10.0f;
     float sensitivity = 0.1f;
 
     auto get_front() const -> glm::vec3;
