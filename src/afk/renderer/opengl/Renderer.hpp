@@ -1,24 +1,29 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
-#include <SFML/Window/Window.hpp>
+#include <glad/glad.h>
 #include <glm/fwd.hpp>
+// Must be included after GLAD.
+#include <GLFW/glfw3.h>
 
-#include "afk/render/ShaderData.hpp"
-#include "afk/render/opengl/MeshHandle.hpp"
-#include "afk/render/opengl/ModelHandle.hpp"
-#include "afk/render/opengl/ShaderHandle.hpp"
-#include "afk/render/opengl/ShaderProgramHandle.hpp"
-#include "afk/render/opengl/TextureHandle.hpp"
+#include "afk/renderer/GlfwDeleter.hpp"
+#include "afk/renderer/Shader.hpp"
+#include "afk/renderer/opengl/MeshHandle.hpp"
+#include "afk/renderer/opengl/ModelHandle.hpp"
+#include "afk/renderer/opengl/ShaderHandle.hpp"
+#include "afk/renderer/opengl/ShaderProgramHandle.hpp"
+#include "afk/renderer/opengl/TextureHandle.hpp"
 
 namespace Afk {
   struct Model;
-  struct MeshData;
-  struct ModelData;
-  struct TextureData;
+  struct Mesh;
+  struct Model;
+  struct Texture;
 
   namespace OpenGl {
     class Renderer {
@@ -35,20 +40,13 @@ namespace Afk {
       using TextureMap       = std::unordered_map<std::string, TextureHandle>;
 
       using ShaderHandles = std::vector<ShaderHandle>;
+      using Window        = std::shared_ptr<GLFWwindow>;
 
-      static constexpr unsigned OPENGL_MAJOR_VERSION = 4;
-      static constexpr unsigned OPENGL_MINOR_VERSION = 1;
-      static constexpr unsigned STENCIL_BITS         = 8;
-      static constexpr unsigned MSAA_LEVEL           = 4;
-#ifdef _WIN32
-      static constexpr unsigned DEPTH_BITS = 24;
-#else
-      static constexpr unsigned DEPTH_BITS = 32;
-#endif
-
-      sf::Window window = {};
+      Window window = nullptr;
 
       Renderer();
+
+      auto getWindowSize() -> std::pair<unsigned, unsigned>;
 
       auto clearScreen(glm::vec4 clearColor = {1.0f, 1.0f, 1.0f, 1.0f}) const -> void;
       auto swapBuffers() -> void;
@@ -64,12 +62,12 @@ namespace Afk {
       auto getShader(const std::string &path) -> ShaderHandle;
       auto getShaderProgram(const std::string &name) -> ShaderProgramHandle;
 
-      auto loadModel(const ModelData &modelData) -> ModelHandle;
-      auto loadTexture(const TextureData &textureData) -> TextureHandle;
-      auto compileShader(const ShaderData &shaderData) -> ShaderHandle;
+      auto loadModel(const Model &modelData) -> ModelHandle;
+      auto loadTexture(const Texture &textureData) -> TextureHandle;
+      auto compileShader(const Shader &shaderData) -> ShaderHandle;
       auto linkShaders(const std::string &name, const ShaderHandles &shaderHandles)
           -> ShaderProgramHandle;
-      auto loadMesh(const MeshData &meshData) -> MeshHandle;
+      auto loadMesh(const Mesh &meshData) -> MeshHandle;
 
       auto toggleWireframe() -> void;
 
@@ -90,6 +88,12 @@ namespace Afk {
       ShaderMap shaders               = {};
       ShaderProgramMap shaderPrograms = {};
       bool wireframeEnabled           = false;
+
+      bool enableVsync       = true;
+      int openglMajorVersion = 4;
+      int openglMinorVersion = 1;
+      unsigned windowWidth   = 1024;
+      unsigned windowHeight  = 768;
     };
   }
 }

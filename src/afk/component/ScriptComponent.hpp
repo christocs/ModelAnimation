@@ -10,8 +10,6 @@ extern "C" {
 }
 
 #include <LuaBridge/LuaBridge.h>
-#include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/Mouse.hpp>
 
 using luabridge::LuaRef;
 struct lua_State;
@@ -45,13 +43,13 @@ namespace Afk {
 
     // Assuming DT is float for now, will change if needed.
     auto update(float dt) -> void;
-    auto keyPress(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift) -> void;
-    auto keyRelease(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift) -> void;
+    // auto keyPress(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift) -> void;
+    // auto keyRelease(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift) -> void;
     auto textEnter(const std::string &text) -> void;
     auto mouseMove(int mousex, int mousey) -> void;
     // No point in supporting multiple mouse wheels (although SFML does)
     auto mouseScroll(float delta, int mousex, int mousey) -> void;
-    auto mousePress(sf::Mouse::Button button, int mousex, int mousey) -> void;
-    auto mouseRelease(sf::Mouse::Button button, int mousex, int mousey) -> void;
+    // auto mousePress(sf::Mouse::Button button, int mousex, int mousey) -> void;
+    // auto mouseRelease(sf::Mouse::Button button, int mousex, int mousey) -> void;
   };
 }

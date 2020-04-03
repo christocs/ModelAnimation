@@ -1,6 +1,7 @@
-#include "afk/render/Camera.hpp"
+#include "afk/renderer/Camera.hpp"
 
 #include <algorithm>
+#include <iostream>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,7 +17,7 @@ auto Camera::handleMouse(float deltaX, float deltaY) -> void {
   constexpr auto maxYaw = 89.0f;
 
   this->angles.x += deltaX * this->sensitivity;
-  this->angles.y += deltaY * this->sensitivity;
+  this->angles.y += -deltaY * this->sensitivity;
   this->angles.y = std::clamp(this->angles.y, -maxYaw, maxYaw);
 }
 

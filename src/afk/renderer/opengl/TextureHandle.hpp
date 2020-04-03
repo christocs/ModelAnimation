@@ -2,12 +2,12 @@
 
 #include <glad/glad.h>
 
-#include "afk/render/TextureData.hpp"
+#include "afk/renderer/Texture.hpp"
 
 namespace Afk {
   namespace OpenGl {
     struct TextureHandle {
-      using Type = TextureData::Type;
+      using Type = Texture::Type;
 
       Type type = {};
       GLuint id = {};

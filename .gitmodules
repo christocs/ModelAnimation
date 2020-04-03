@@ -13,9 +13,6 @@
 [submodule "lib/cpplocate"]
 	path = lib/cpplocate
 	url = https://github.com/cginternals/cpplocate
-[submodule "lib/lua"]
-	path = lib/lua
-	url = https://github.com/opeik/lua-cmake
 [submodule "lib/lua-bridge"]
 	path = lib/lua-bridge
 	url = https://github.com/vinniefalco/LuaBridge
@@ -25,3 +22,11 @@
 [submodule "lib/freetype"]
 	path = lib/freetype
 	url = https://github.com/aseprite/freetype2
+[submodule "lib/lua/src"]
+	path = lib/lua/src
+	url = https://github.com/lua/lua
+	branch = v5.3
+[submodule "lib/glfw"]
+	path = lib/glfw
+	url = https://github.com/glfw/glfw
+    branch = 3.3-stable

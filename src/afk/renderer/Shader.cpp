@@ -1,4 +1,4 @@
-#include "afk/render/ShaderData.hpp"
+#include "afk/renderer/Shader.hpp"
 
 #include <fstream>
 #include <stdexcept>
@@ -9,7 +9,7 @@
 #include "afk/io/Path.hpp"
 
 using Afk::Path;
-using Afk::ShaderData;
+using Afk::Shader;
 
 using namespace std::string_literals;
 using std::ifstream;
@@ -18,16 +18,16 @@ using std::runtime_error;
 using std::string;
 using std::unordered_map;
 
-static auto getShaderType(const string &extension) -> ShaderData::Type {
-  static const auto types = unordered_map<string, ShaderData::Type>{
-      {"vert", ShaderData::Type::Vertex},
-      {"frag", ShaderData::Type::Fragment},
+static auto getShaderType(const string &extension) -> Shader::Type {
+  static const auto types = unordered_map<string, Shader::Type>{
+      {"vert", Shader::Type::Vertex},
+      {"frag", Shader::Type::Fragment},
   };
 
   return types.at(extension);
 }
 
-ShaderData::ShaderData(const string &_path) {
+Shader::Shader(const string &_path) {
   const auto absPath = Path::getAbsolutePath(_path);
 
   auto file = ifstream{absPath};

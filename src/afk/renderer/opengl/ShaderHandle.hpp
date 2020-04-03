@@ -2,12 +2,12 @@
 
 #include <glad/glad.h>
 
-#include "afk/render/ShaderData.hpp"
+#include "afk/renderer/Shader.hpp"
 
 namespace Afk {
   namespace OpenGl {
     struct ShaderHandle {
-      using Type = ShaderData::Type;
+      using Type = Shader::Type;
 
       GLuint id = {};
       Type type = {};

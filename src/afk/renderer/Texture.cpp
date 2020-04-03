@@ -1,4 +1,4 @@
-#include "afk/render/TextureData.hpp"
+#include "afk/renderer/Texture.hpp"
 
 #include <stdexcept>
 #include <string>
@@ -10,14 +10,10 @@ using std::runtime_error;
 using std::string;
 
 using Afk::Path;
-using Afk::TextureData;
+using Afk::Texture;
 
-TextureData::TextureData(const string &_path) {
+Texture::Texture(const string &_path) {
   const auto absPath = Path::getAbsolutePath(_path);
-
-  if (!this->image.loadFromFile(absPath)) {
-    throw runtime_error{"Unable to load image: "s + absPath};
-  }
 
   this->path = _path;
 }

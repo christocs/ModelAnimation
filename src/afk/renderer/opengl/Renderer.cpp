@@ -1,31 +1,34 @@
-#include "afk/render/opengl/Renderer.hpp"
+#include "afk/renderer/opengl/Renderer.hpp"
 
 #include <cassert>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
-#include <SFML/Graphics/Image.hpp>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+// Must be loaded after GLAD.
+#include <GLFW/glfw3.h>
 
 #include "afk/Afk.hpp"
 #include "afk/io/Log.hpp"
 #include "afk/io/Path.hpp"
-#include "afk/render/MeshData.hpp"
-#include "afk/render/ModelData.hpp"
-#include "afk/render/ShaderData.hpp"
-#include "afk/render/TextureData.hpp"
-#include "afk/render/opengl/ModelHandle.hpp"
-#include "afk/render/opengl/ShaderHandle.hpp"
-#include "afk/render/opengl/ShaderProgramHandle.hpp"
-#include "afk/render/opengl/TextureHandle.hpp"
+#include "afk/renderer/Mesh.hpp"
+#include "afk/renderer/Model.hpp"
+#include "afk/renderer/Shader.hpp"
+#include "afk/renderer/Texture.hpp"
+#include "afk/renderer/opengl/ModelHandle.hpp"
+#include "afk/renderer/opengl/ShaderHandle.hpp"
+#include "afk/renderer/opengl/ShaderProgramHandle.hpp"
+#include "afk/renderer/opengl/TextureHandle.hpp"
 
 using namespace std::string_literals;
+using std::pair;
 using std::runtime_error;
 using std::size_t;
 using std::string;
@@ -35,54 +38,76 @@ using std::vector;
 using glm::mat4;
 using glm::vec3;
 using glm::vec4;
-using sf::Image;
 
+using Afk::Engine;
 using Afk::Log;
 using Afk::Path;
-using Afk::ShaderData;
-using Afk::TextureData;
+using Afk::Shader;
+using Afk::Texture;
 using Afk::OpenGl::ModelHandle;
 using Afk::OpenGl::Renderer;
 using Afk::OpenGl::ShaderHandle;
 using Afk::OpenGl::ShaderProgramHandle;
 using Afk::OpenGl::TextureHandle;
 
-static auto getMaterialName(TextureData::Type type) -> string {
-  static const auto types = unordered_map<TextureData::Type, string>{
-      {TextureData::Type::Diffuse, "texture_diffuse"},   //
-      {TextureData::Type::Specular, "texture_specular"}, //
-      {TextureData::Type::Normal, "texture_normal"},     //
-      {TextureData::Type::Height, "texture_height"},     //
+static auto getMaterialName(Texture::Type type) -> string {
+  static const auto types = unordered_map<Texture::Type, string>{
+      {Texture::Type::Diffuse, "texture_diffuse"},   //
+      {Texture::Type::Specular, "texture_specular"}, //
+      {Texture::Type::Normal, "texture_normal"},     //
+      {Texture::Type::Height, "texture_height"},     //
   };
 
   return types.at(type);
 }
 
-static auto getShaderType(ShaderData::Type type) -> GLenum {
-  static const auto types = unordered_map<ShaderData::Type, GLenum>{
-      {ShaderData::Type::Vertex, GL_VERTEX_SHADER},
-      {ShaderData::Type::Fragment, GL_FRAGMENT_SHADER},
+static auto getShaderType(Shader::Type type) -> GLenum {
+  static const auto types = unordered_map<Shader::Type, GLenum>{
+      {Shader::Type::Vertex, GL_VERTEX_SHADER},
+      {Shader::Type::Fragment, GL_FRAGMENT_SHADER},
   };
 
   return types.at(type);
 }
 
-Renderer::Renderer()
-  : window(sf::Window{
-        sf::VideoMode{1920, 1080}, Afk::Engine::GAME_NAME, sf::Style::Fullscreen,
-        sf::ContextSettings{this->DEPTH_BITS, this->STENCIL_BITS, this->MSAA_LEVEL,
-                            this->OPENGL_MAJOR_VERSION, this->OPENGL_MINOR_VERSION,
-                            sf::ContextSettings::Core}}) {
+static auto resizeWindowCallback(GLFWwindow *window, int width, int height) -> void {
+  Engine::get().renderer.setViewport(0, 0, width, height);
+}
 
-  this->window.setMouseCursorVisible(false);
-  this->window.setVerticalSyncEnabled(true);
+Renderer::Renderer() {
+  if (!glfwInit()) {
+    throw runtime_error{"Failed to initialize GLFW"s};
+  }
 
-  if (!gladLoadGL()) {
-    throw runtime_error{"Failed to initialize GLAD"};
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, this->openglMajorVersion);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, this->openglMinorVersion);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+  glfwWindowHint(GLFW_SAMPLES, 4);
+  glfwWindowHint(GLFW_DOUBLEBUFFER, this->enableVsync ? GLFW_TRUE : GLFW_FALSE);
+  glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+  this->window = Window{glfwCreateWindow(this->windowWidth, this->windowHeight,
+                                         Engine::GAME_NAME, nullptr, nullptr)};
+
+  if (!this->window.get()) {
+    throw runtime_error{"Failed to create window"};
+  }
+
+  glfwMakeContextCurrent(this->window.get());
+  glfwSetFramebufferSizeCallback(this->window.get(), resizeWindowCallback);
+
+  if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+    throw runtime_error{"Failed to initialize GLAD"s};
   }
 
   glEnable(GL_DEPTH_TEST);
   Log::status("OpenGL renderer initialized.");
+}
+
+auto Renderer::getWindowSize() -> pair<unsigned, unsigned> {
+  return std::make_pair(this->windowWidth, this->windowHeight);
 }
 
 auto Renderer::clearScreen(vec4 clearColor) const -> void {
@@ -95,14 +120,14 @@ auto Renderer::setViewport(int x, int y, unsigned width, unsigned height) const 
 }
 
 auto Renderer::swapBuffers() -> void {
-  this->window.display();
+  glfwSwapBuffers(this->window.get());
 }
 
 auto Renderer::getModel(const string &path) -> ModelHandle {
   const auto isLoaded = this->models.count(path) == 1;
 
   if (!isLoaded) {
-    this->models[path] = this->loadModel(ModelData{path});
+    this->models[path] = this->loadModel(Model{path});
   }
 
   return this->models.at(path);
@@ -112,7 +137,7 @@ auto Renderer::getTexture(const string &path) -> TextureHandle {
   const auto isLoaded = this->textures.count(path) == 1;
 
   if (!isLoaded) {
-    this->textures[path] = this->loadTexture(TextureData{path});
+    this->textures[path] = this->loadTexture(Texture{path});
   }
 
   return this->textures.at(path);
@@ -122,7 +147,7 @@ auto Renderer::getShader(const string &path) -> ShaderHandle {
   const auto isLoaded = this->shaders.count(path) == 1;
 
   if (!isLoaded) {
-    this->shaders[path] = this->compileShader(ShaderData{path});
+    this->shaders[path] = this->compileShader(Shader{path});
   }
 
   return this->shaders.at(path);
@@ -158,7 +183,7 @@ auto Renderer::drawModel(const ModelHandle &model, const ShaderProgramHandle &sh
 
     auto materialCount = vector<unsigned>{};
 
-    const auto numMaterialTypes = static_cast<size_t>(TextureData::Type::Count);
+    const auto numMaterialTypes = static_cast<size_t>(Texture::Type::Count);
     materialCount.resize(numMaterialTypes);
     for (auto i = size_t{0}; i < numMaterialTypes; ++i) {
       materialCount[i] = 1u;
@@ -204,7 +229,7 @@ auto Renderer::useShader(const ShaderProgramHandle &shader) const -> void {
   glUseProgram(shader.id);
 }
 
-auto Renderer::loadMesh(const MeshData &meshData) -> MeshHandle {
+auto Renderer::loadMesh(const Mesh &meshData) -> MeshHandle {
   assert(meshData.vertices.size() > 0);
   assert(meshData.indices.size() > 0);
 
@@ -220,44 +245,44 @@ auto Renderer::loadMesh(const MeshData &meshData) -> MeshHandle {
   // Load data into the vertex buffer.
   glBindVertexArray(meshHandle.vao);
   glBindBuffer(GL_ARRAY_BUFFER, meshHandle.vbo);
-  glBufferData(GL_ARRAY_BUFFER, meshData.vertices.size() * sizeof(VertexData),
+  glBufferData(GL_ARRAY_BUFFER, meshData.vertices.size() * sizeof(Vertex),
                meshData.vertices.data(), GL_STATIC_DRAW);
 
   // Load index data into the index buffer.
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshHandle.ibo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.indices.size() * sizeof(MeshData::Index),
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.indices.size() * sizeof(Mesh::Index),
                meshData.indices.data(), GL_STATIC_DRAW);
 
   // Set the vertex attribute pointers.
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), nullptr);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
 
   // Vertex normals
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData),
-                        reinterpret_cast<void *>(offsetof(VertexData, normal)));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        reinterpret_cast<void *>(offsetof(Vertex, normal)));
 
   // UVs
   glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData),
-                        reinterpret_cast<void *>(offsetof(VertexData, uvs)));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        reinterpret_cast<void *>(offsetof(Vertex, uvs)));
 
   // Vertex tangent
   glEnableVertexAttribArray(3);
-  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData),
-                        reinterpret_cast<void *>(offsetof(VertexData, tangent)));
+  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        reinterpret_cast<void *>(offsetof(Vertex, tangent)));
 
   // Vertex bitangent
   glEnableVertexAttribArray(4);
-  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData),
-                        reinterpret_cast<void *>(offsetof(VertexData, bitangent)));
+  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        reinterpret_cast<void *>(offsetof(Vertex, bitangent)));
 
   glBindVertexArray(0);
 
   return meshHandle;
 }
 
-auto Renderer::loadModel(const ModelData &modelData) -> ModelHandle {
+auto Renderer::loadModel(const Model &modelData) -> ModelHandle {
   const auto isLoaded = this->models.count(modelData.path) == 1;
 
   if (isLoaded) {
@@ -289,14 +314,16 @@ auto Renderer::loadModel(const ModelData &modelData) -> ModelHandle {
   return this->models[modelData.path];
 }
 
-auto Renderer::loadTexture(const TextureData &textureData) -> TextureHandle {
+auto Renderer::loadTexture(const Texture &textureData) -> TextureHandle {
   const auto isLoaded = this->textures.count(textureData.path) == 1;
 
   if (isLoaded) {
     throw runtime_error{"Texture with path '"s + textureData.path + "' already loaded"s};
   }
 
-  const auto [width, height] = textureData.image.getSize();
+  // FIXME
+  const auto width  = 1;
+  const auto height = 1;
 
   auto textureHandle = TextureHandle{};
   textureHandle.type = textureData.type;
@@ -304,8 +331,8 @@ auto Renderer::loadTexture(const TextureData &textureData) -> TextureHandle {
   // Send the texture to the GPU.
   glGenTextures(1, &textureHandle.id);
   glBindTexture(GL_TEXTURE_2D, textureHandle.id);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, textureData.image.getPixelsPtr());
+  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+  //              GL_UNSIGNED_BYTE, textureData.image.getPixelsPtr());
   glGenerateMipmap(GL_TEXTURE_2D);
 
   // Set texture parameters.
@@ -321,7 +348,7 @@ auto Renderer::loadTexture(const TextureData &textureData) -> TextureHandle {
   return this->textures[textureData.path];
 }
 
-auto Renderer::compileShader(const ShaderData &shaderData) -> ShaderHandle {
+auto Renderer::compileShader(const Shader &shaderData) -> ShaderHandle {
   const auto isLoaded = this->shaders.count(shaderData.path) == 1;
 
   if (isLoaded) {

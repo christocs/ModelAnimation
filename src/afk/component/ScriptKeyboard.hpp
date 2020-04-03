@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 
-#include <SFML/Window/Keyboard.hpp>
 /**
  * Basically acts as a façade between sf::Keyboard and Lua
  */

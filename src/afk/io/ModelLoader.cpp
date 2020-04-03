@@ -17,9 +17,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "afk/io/Path.hpp"
-#include "afk/render/MeshData.hpp"
-#include "afk/render/ModelData.hpp"
-#include "afk/render/TextureData.hpp"
+#include "afk/renderer/Mesh.hpp"
+#include "afk/renderer/Model.hpp"
+#include "afk/renderer/Texture.hpp"
 
 using namespace std::string_literals;
 using glm::mat4;
@@ -32,14 +32,14 @@ using std::vector;
 
 using Afk::ModelLoader;
 using Afk::Path;
-using Afk::TextureData;
+using Afk::Texture;
 
-static auto getAssimpTextureType(TextureData::Type type) -> aiTextureType {
-  static const auto types = unordered_map<TextureData::Type, aiTextureType>{
-      {TextureData::Type::Diffuse, aiTextureType_DIFFUSE},
-      {TextureData::Type::Specular, aiTextureType_SPECULAR},
-      {TextureData::Type::Normal, aiTextureType_NORMALS},
-      {TextureData::Type::Height, aiTextureType_HEIGHT},
+static auto getAssimpTextureType(Texture::Type type) -> aiTextureType {
+  static const auto types = unordered_map<Texture::Type, aiTextureType>{
+      {Texture::Type::Diffuse, aiTextureType_DIFFUSE},
+      {Texture::Type::Specular, aiTextureType_SPECULAR},
+      {Texture::Type::Normal, aiTextureType_NORMALS},
+      {Texture::Type::Height, aiTextureType_HEIGHT},
   };
 
   return types.at(type);
@@ -56,7 +56,7 @@ static auto toGlm(aiVector3t<float> m) -> vec3 {
   return vec3{m.x, m.y, m.z};
 }
 
-auto ModelLoader::load(const string &path) -> ModelData {
+auto ModelLoader::load(const string &path) -> Model {
   const auto absPath = Path::getAbsolutePath(path);
   auto importer      = Assimp::Importer{};
 
@@ -92,8 +92,8 @@ auto ModelLoader::processNode(const aiScene *scene, const aiNode *node,
 }
 
 auto ModelLoader::processMesh(const aiScene *scene, const aiMesh *mesh, mat4 transform)
-    -> MeshData {
-  auto newMesh = MeshData{};
+    -> Mesh {
+  auto newMesh = Mesh{};
 
   newMesh.vertices = this->getVertices(mesh);
   newMesh.indices  = this->getIndices(mesh);
@@ -103,14 +103,14 @@ auto ModelLoader::processMesh(const aiScene *scene, const aiMesh *mesh, mat4 tra
   return newMesh;
 }
 
-auto ModelLoader::getVertices(const aiMesh *mesh) -> MeshData::Vertices {
-  auto vertices     = MeshData::Vertices{};
+auto ModelLoader::getVertices(const aiMesh *mesh) -> Mesh::Vertices {
+  auto vertices     = Mesh::Vertices{};
   const auto hasUvs = mesh->HasTextureCoords(0);
 
   vertices.reserve(mesh->mNumVertices);
 
   for (auto i = size_t{0}; i < mesh->mNumVertices; ++i) {
-    auto vertex = VertexData{};
+    auto vertex = Vertex{};
 
     vertex.position = toGlm(mesh->mVertices[i]);
     vertex.normal   = toGlm(mesh->mNormals[i]);
@@ -127,8 +127,8 @@ auto ModelLoader::getVertices(const aiMesh *mesh) -> MeshData::Vertices {
   return vertices;
 }
 
-auto ModelLoader::getIndices(const aiMesh *mesh) -> MeshData::Indices {
-  auto indices = MeshData::Indices{};
+auto ModelLoader::getIndices(const aiMesh *mesh) -> Mesh::Indices {
+  auto indices = Mesh::Indices{};
 
   indices.reserve(mesh->mNumFaces);
 
@@ -143,9 +143,9 @@ auto ModelLoader::getIndices(const aiMesh *mesh) -> MeshData::Indices {
   return indices;
 }
 
-auto ModelLoader::getMaterialTextures(const aiMaterial *material, TextureData::Type type)
-    -> MeshData::Textures {
-  auto textures = MeshData::Textures{};
+auto ModelLoader::getMaterialTextures(const aiMaterial *material, Texture::Type type)
+    -> Mesh::Textures {
+  auto textures = Mesh::Textures{};
 
   const auto textureCount = material->GetTextureCount(getAssimpTextureType(type));
 
@@ -156,7 +156,7 @@ auto ModelLoader::getMaterialTextures(const aiMaterial *material, TextureData::T
     material->GetTexture(getAssimpTextureType(type), i, &assimpPath);
     const auto path = getTexturePath(string{assimpPath.C_Str()});
 
-    auto texture = TextureData{};
+    auto texture = Texture{};
     texture.type = type;
     texture.path = path;
     textures.push_back(texture);
@@ -165,13 +165,13 @@ auto ModelLoader::getMaterialTextures(const aiMaterial *material, TextureData::T
   return textures;
 }
 
-auto ModelLoader::getTextures(const aiMaterial *material) -> MeshData::Textures {
-  auto textures = MeshData::Textures{};
+auto ModelLoader::getTextures(const aiMaterial *material) -> Mesh::Textures {
+  auto textures = Mesh::Textures{};
 
-  const auto diffuse = this->getMaterialTextures(material, TextureData::Type::Diffuse);
-  const auto specular = this->getMaterialTextures(material, TextureData::Type::Specular);
-  const auto normal = this->getMaterialTextures(material, TextureData::Type::Normal);
-  const auto height = this->getMaterialTextures(material, TextureData::Type::Height);
+  const auto diffuse = this->getMaterialTextures(material, Texture::Type::Diffuse);
+  const auto specular = this->getMaterialTextures(material, Texture::Type::Specular);
+  const auto normal = this->getMaterialTextures(material, Texture::Type::Normal);
+  const auto height = this->getMaterialTextures(material, Texture::Type::Height);
 
   textures.insert(textures.end(), std::make_move_iterator(diffuse.begin()),
                   std::make_move_iterator(diffuse.end()));

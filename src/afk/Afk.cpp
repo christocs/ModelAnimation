@@ -1,6 +1,8 @@
 #include "afk/Afk.hpp"
 
-#include <SFML/Graphics.hpp>
+#include <iostream>
+
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -11,47 +13,57 @@ using Afk::Log;
 using glm::vec3;
 
 // FIXME: Move to event manager
-auto Engine::handleMouse() -> void {
+static auto mouseCallback(GLFWwindow *window, double x, double y) -> void {
+  static auto lastX      = 0.0f;
+  static auto lastY      = 0.0f;
   static auto firstFrame = true;
 
-  const auto [windowW, windowH] =
-      static_cast<sf::Vector2i>(this->renderer.window.getSize());
-  const auto centerX = windowW / 2;
-  const auto centerY = windowH / 2;
+  auto &afk = Engine::get();
 
-  const auto [x, y] =
-      static_cast<sf::Vector2i>(sf::Mouse::getPosition(this->renderer.window));
-  const auto offsetX = x - centerX;
-  const auto offsetY = centerY - y;
+  const auto dx = static_cast<float>(x) - lastX;
+  const auto dy = static_cast<float>(y) - lastY;
 
   if (!firstFrame) {
-    this->camera.handleMouse(offsetX, offsetY);
+    afk.camera.handleMouse(dx, dy);
   } else {
     firstFrame = false;
   }
 
-  sf::Mouse::setPosition(sf::Vector2i{centerX, centerY}, this->renderer.window);
+  lastX = static_cast<float>(x);
+  lastY = static_cast<float>(y);
+}
+
+auto Engine::get() -> Engine & {
+  static auto instance = Engine{};
+
+  return instance;
+}
+
+Engine::Engine() {
+  glfwSetCursorPosCallback(this->renderer.window.get(), mouseCallback);
+  glfwSetInputMode(this->renderer.window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 // FIXME: Move to event manager
 auto Engine::handleKeys() -> void {
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+
+  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_W)) {
     this->camera.handleKey(Camera::Movement::Forward, this->getDeltaTime());
   }
 
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_A)) {
     this->camera.handleKey(Camera::Movement::Left, this->getDeltaTime());
   }
 
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_S)) {
     this->camera.handleKey(Camera::Movement::Backward, this->getDeltaTime());
   }
 
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_D)) {
     this->camera.handleKey(Camera::Movement::Right, this->getDeltaTime());
   }
 
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_ESCAPE)) {
     this->isRunning = false;
   }
 }
@@ -59,13 +71,13 @@ auto Engine::handleKeys() -> void {
 auto Engine::render() -> void {
   auto shader = this->renderer.getShaderProgram("default");
   auto model  = this->renderer.getModel("res/model/city/city.fbx");
-  const auto [width, height] = this->renderer.window.getSize();
+  const auto [width, height] = this->renderer.getWindowSize();
 
   this->renderer.clearScreen();
 
+  // FIXME
   this->renderer.useShader(shader);
-  this->renderer.setUniform(shader, "projection",
-                            this->camera.getProjectionMatrix(width, height));
+  this->renderer.setUniform(shader, "projection", this->camera.getProjectionMatrix(6, 9));
   this->renderer.setUniform(shader, "view", this->camera.getViewMatrix());
 
   auto transform        = Transform{};
@@ -78,32 +90,13 @@ auto Engine::render() -> void {
 }
 
 auto Engine::update() -> void {
-  auto event = sf::Event{};
+  glfwPollEvents();
 
-  // FIXME: Move to event manager.
-  while (this->renderer.window.pollEvent(event)) {
-    if (event.type == sf::Event::Closed) {
-      this->isRunning = false;
-    } else if (event.type == sf::Event::Resized) {
-      this->renderer.setViewport(0, 0, event.size.width, event.size.height);
-    } else if (event.type == sf::Event::GainedFocus) {
-      this->renderer.window.setMouseCursorVisible(false);
-      this->hasFocus = true;
-    } else if (event.type == sf::Event::LostFocus) {
-      this->hasFocus = false;
-    } else if (event.type == sf::Event::KeyPressed) {
-      switch (event.key.code) {
-        case sf::Keyboard::M: {
-          this->renderer.toggleWireframe();
-        } break;
-      }
-    }
+  if (glfwWindowShouldClose(this->renderer.window.get())) {
+    this->isRunning = false;
   }
 
-  if (hasFocus) {
-    this->handleMouse();
-    this->handleKeys();
-  }
+  this->handleKeys();
 
   if ((this->getTime() - this->lastFpsUpdate) >= 1.0f) {
     Log::status("FPS: " + std::to_string(this->fpsCount));
@@ -116,7 +109,7 @@ auto Engine::update() -> void {
 }
 
 auto Engine::getTime() -> float {
-  return this->clock.getElapsedTime().asSeconds();
+  return glfwGetTime();
 }
 
 auto Engine::getDeltaTime() -> float {

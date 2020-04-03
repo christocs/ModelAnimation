@@ -6,8 +6,8 @@
 #include <glad/glad.h>
 
 #include "afk/physics/Transform.hpp"
-#include "afk/render/MeshData.hpp"
-#include "afk/render/opengl/TextureHandle.hpp"
+#include "afk/renderer/Mesh.hpp"
+#include "afk/renderer/opengl/TextureHandle.hpp"
 
 namespace Afk {
   namespace OpenGl {

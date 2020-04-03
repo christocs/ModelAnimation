@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 
-#include <SFML/Window/Mouse.hpp>
 /**
  * Basically acts as a façade between sf::Mouse and Lua
  */

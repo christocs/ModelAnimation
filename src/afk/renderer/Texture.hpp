@@ -4,10 +4,8 @@
 #include <string>
 #include <vector>
 
-#include <SFML/Graphics/Image.hpp>
-
 namespace Afk {
-  struct TextureData {
+  struct Texture {
     enum class Type : std::size_t {
       Diffuse = 0,
       Specular,
@@ -18,9 +16,8 @@ namespace Afk {
 
     Type type        = Type::Diffuse;
     std::string path = {};
-    sf::Image image  = {};
 
-    TextureData() = default;
-    TextureData(const std::string &_path);
+    Texture() = default;
+    Texture(const std::string &_path);
   };
 }

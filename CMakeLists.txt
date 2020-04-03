@@ -2,22 +2,17 @@
 cmake_minimum_required(VERSION 3.14)
 
 # Set the project details.
-set(PROJECT_NAME ict397)
+set(PROJECT_NAME afk)
 project(${PROJECT_NAME} LANGUAGES CXX)
-
-# Clang sanitizer settings.
-set(SANITIZER_OS "Darwin,Linux")
-set(SANITIZER_FLAGS "-fsanitize=address,undefined,leak")
 
 # Treat warnings as errors.
 option(WarningsAsErrors "WarningsAsErrors" OFF)
-
+# Clang sanitizer settings.
+set(SANITIZER_OS "Darwin,Linux")
+set(SANITIZER_FLAGS "-fsanitize=address,undefined,leak")
 # Disable in-source builds.
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-
-# Disable debug library postfix.
-set(CMAKE_DEBUG_POSTFIX "" CACHE STRING "" FORCE)
 
 # Set build type to debug by default.
 if(NOT CMAKE_BUILD_TYPE)
@@ -32,19 +27,15 @@ endif()
 # Set build output directories.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out/lib)
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG    ${PROJECT_BINARY_DIR}/out/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE  ${PROJECT_BINARY_DIR}/out/lib)
 
 # Define the executable.
 add_executable(${PROJECT_NAME})
 
-# Set C++ standard.
+# Set C++ standard and output directory.
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
@@ -55,12 +46,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 add_subdirectory(src)
 # Add third party libraries.
 add_subdirectory(lib)
-
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
-    lib/lua-bridge/Source/LuaBridge
-    lib/lua-bridge/Source/LuaBridge/detail
-)
-
 
 # Remove the default warning level from MSVC.
 if (MSVC)
@@ -80,16 +65,17 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     # Clang
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
         -Weverything -fcolor-diagnostics
-        # Disable specific warnings.
+        # Disable unhelpful warnings.
         -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded
-        -Wno-deprecated-declarations -Wno-exit-time-destructors
-        -Wno-switch-enum -Wno-weak-vtables -Wno-global-constructors>
-    # GCC
-    $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -fdiagnostics-color=always>
+        -Wno-deprecated-declarations -Wno-switch-enum -Wno-weak-vtables
+        -Wno-exit-time-destructors  -Wno-global-constructors>
     # Visual Studio
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
     # Enable the clang sanitizer.
     $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:${SANITIZER_FLAGS}>
+    # Set default visibility to hidden.
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+        -fvisibility=hidden -fvisibility-inlines-hidden>
 )
 
 # Link against the clang sanitizer.
@@ -111,9 +97,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     lua
     LuaBridge
     glm
-    sfml-audio sfml-graphics sfml-network sfml-system sfml-window
-    $<$<OR:$<PLATFORM_ID:Windows>,$<PLATFORM_ID:Linux>>:freetype>
-    $<$<PLATFORM_ID:Windows>:sfml-main>
+    glfw
 )
 
 # Symlink resources to the binary location.
@@ -123,4 +107,4 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
-    ${CMAKE_SOURCE_DIR}/src/afk/render/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)
+    ${CMAKE_SOURCE_DIR}/src/afk/renderer/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)

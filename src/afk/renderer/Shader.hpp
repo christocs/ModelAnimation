@@ -3,14 +3,14 @@
 #include <string>
 
 namespace Afk {
-  struct ShaderData {
+  struct Shader {
     enum class Type { Vertex, Fragment };
 
     std::string path = {};
     std::string code = {};
     Type type        = {};
 
-    ShaderData() = default;
-    ShaderData(const std::string &_path);
+    Shader() = default;
+    Shader(const std::string &_path);
   };
 }

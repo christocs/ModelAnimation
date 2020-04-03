@@ -7,10 +7,10 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "afk/physics/Transform.hpp"
-#include "afk/render/TextureData.hpp"
+#include "afk/renderer/Texture.hpp"
 
 namespace Afk {
-  struct VertexData {
+  struct Vertex {
     glm::vec3 position  = {};
     glm::vec3 normal    = {};
     glm::vec2 uvs       = {};
@@ -18,11 +18,11 @@ namespace Afk {
     glm::vec3 bitangent = {};
   };
 
-  struct MeshData {
-    using Vertices = std::vector<VertexData>;
+  struct Mesh {
+    using Vertices = std::vector<Vertex>;
     using Index    = unsigned;
     using Indices  = std::vector<Index>;
-    using Textures = std::vector<TextureData>;
+    using Textures = std::vector<Texture>;
 
     Vertices vertices   = {};
     Indices indices     = {};

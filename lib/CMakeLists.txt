@@ -3,10 +3,22 @@ function(target_ignore_header_warnings target scope)
     target_include_directories(${target} SYSTEM ${scope} ${lib_include_dirs})
 endfunction()
 
-# Library build options.
+# Disable ASSIMP building tests.
 option(ASSIMP_BUILD_TESTS OFF)
 option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
+# Disable cpplocate building tests.
 option(OPTION_BUILD_TESTS OFF)
+
+if (APPLE)
+    # Fixes an entt warning on macOS.
+    option(USE_LIBCPP OFF)
+endif()
+
+# Force using discrete GPUs.
+option(GLFW_USE_HYBRID_HPG ON)
+# Disable glfw building tests and documentation.
+option(GLFW_BUILD_TESTS OFF)
+option(GLFW_BUILD_DOCS OFF)
 
 # Build libraries.
 string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -23,7 +35,6 @@ add_compile_options(
 
 # Include our dependencies.
 add_subdirectory(entt)
-add_subdirectory(sfml)
 add_subdirectory(assimp)
 add_subdirectory(glad)
 add_subdirectory(cpplocate)
@@ -31,7 +42,7 @@ add_subdirectory(reactphysics3d)
 add_subdirectory(lua)
 add_subdirectory(lua-bridge)
 add_subdirectory(glm)
-add_subdirectory(freetype)
+add_subdirectory(glfw)
 
 # DLLs were a mistake.
 set_target_properties(reactphysics3d PROPERTIES ENABLE_EXPORTS ON)
@@ -42,12 +53,7 @@ set_target_properties(assimp PROPERTIES DEBUG_POSTFIX "")
 set_target_properties(cpplocate PROPERTIES DEBUG_POSTFIX "")
 set_target_properties(reactphysics3d PROPERTIES DEBUG_POSTFIX "")
 set_target_properties(lua PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(sfml-audio PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(sfml-network PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(sfml-graphics PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(sfml-system PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(sfml-window PROPERTIES DEBUG_POSTFIX "")
-set_target_properties(freetype PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(glfw PROPERTIES DEBUG_POSTFIX "")
 
 # Ignore header warnings in our libraries.
 target_ignore_header_warnings(EnTT INTERFACE)
@@ -58,5 +64,4 @@ target_ignore_header_warnings(cpplocate INTERFACE)
 target_ignore_header_warnings(lua INTERFACE)
 target_ignore_header_warnings(LuaBridge INTERFACE)
 target_ignore_header_warnings(glm INTERFACE)
-# We only need to ignore one of the SFML libraries; they have the same include directory.
-target_ignore_header_warnings(sfml-graphics INTERFACE)
+target_ignore_header_warnings(glfw INTERFACE)
