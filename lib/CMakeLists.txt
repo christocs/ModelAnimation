@@ -9,8 +9,8 @@ option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 # Disable cpplocate building tests.
 option(OPTION_BUILD_TESTS OFF)
 
-if (APPLE)
-    # Fixes an entt warning on macOS.
+# Fixes an entt warning on UNIX systems.
+if (UNIX)
     option(USE_LIBCPP OFF)
 endif()
 
