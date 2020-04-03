@@ -14,7 +14,7 @@ jobs:
       apt:
         sources:
           - sourceline: 'ppa:ubuntu-toolchain-r/test'
-        packages: [clang-9, gcc-9, ninja-build, libgl1-mesa-dev, libx11-dev,
+        packages: [clang-9, libstdc++-9-dev, ninja-build, libgl1-mesa-dev, libx11-dev,
                    libxrandr-dev, libudev-dev, libfreetype6-dev, libopenal-dev,
                    libflac++-dev, libvorbis-dev, libc++-dev, libxinerama-dev,
                    libxcursor-dev libxi-dev]
