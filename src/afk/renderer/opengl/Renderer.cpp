@@ -78,6 +78,7 @@ Renderer::Renderer() {
     throw runtime_error{"Failed to initialize GLFW"s};
   }
 
+  // FIXME: Give user an option to change graphics settings.
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, this->opengl_major_version);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, this->opengl_minor_version);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -85,6 +86,9 @@ Renderer::Renderer() {
   glfwWindowHint(GLFW_DOUBLEBUFFER, this->enable_vsync ? GLFW_TRUE : GLFW_FALSE);
   glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+#ifndef __APPLE__
+  glfwWindowHint(GLFW_SAMPLES, 4);
+#endif
 
   auto *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
   this->window = Window{glfwCreateWindow(mode->width, mode->height, Engine::GAME_NAME,
