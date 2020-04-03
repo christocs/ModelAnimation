@@ -7,9 +7,6 @@
 [submodule "lib/reactphysics3d"]
 	path = lib/reactphysics3d
 	url = https://github.com/DanielChappuis/reactphysics3d
-[submodule "lib/sfml"]
-	path = lib/sfml
-	url = https://github.com/SFML/SFML
 [submodule "lib/cpplocate"]
 	path = lib/cpplocate
 	url = https://github.com/cginternals/cpplocate
