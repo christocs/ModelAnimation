@@ -3,6 +3,6 @@ target_sources(${PROJECT_NAME} PRIVATE
     Model.cpp
     Shader.cpp
     Texture.cpp
-)
 
-add_subdirectory(opengl)
+    opengl/Renderer.cpp
+)

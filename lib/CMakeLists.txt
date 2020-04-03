@@ -43,6 +43,7 @@ add_subdirectory(lua)
 add_subdirectory(lua-bridge)
 add_subdirectory(glm)
 add_subdirectory(glfw)
+add_subdirectory(stb)
 
 # DLLs were a mistake.
 set_target_properties(reactphysics3d PROPERTIES ENABLE_EXPORTS ON)
@@ -65,3 +66,4 @@ target_ignore_header_warnings(lua INTERFACE)
 target_ignore_header_warnings(LuaBridge INTERFACE)
 target_ignore_header_warnings(glm INTERFACE)
 target_ignore_header_warnings(glfw INTERFACE)
+target_ignore_header_warnings(stb INTERFACE)

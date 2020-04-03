@@ -89,11 +89,9 @@ namespace Afk {
       ShaderProgramMap shaderPrograms = {};
       bool wireframeEnabled           = false;
 
-      bool enableVsync       = true;
-      int openglMajorVersion = 4;
-      int openglMinorVersion = 1;
-      unsigned windowWidth   = 1024;
-      unsigned windowHeight  = 768;
+      const int openglMajorVersion = 4;
+      const int openglMinorVersion = 1;
+      bool enableVsync             = true;
     };
   }
 }

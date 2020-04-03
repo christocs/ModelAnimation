@@ -1,6 +1,7 @@
 #include "afk/renderer/opengl/Renderer.hpp"
 
 #include <cassert>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -12,6 +13,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <stb/stb_image.h>
 // Must be loaded after GLAD.
 #include <GLFW/glfw3.h>
 
@@ -30,6 +32,7 @@
 using namespace std::string_literals;
 using std::pair;
 using std::runtime_error;
+using std::shared_ptr;
 using std::size_t;
 using std::string;
 using std::unordered_map;
@@ -88,8 +91,9 @@ Renderer::Renderer() {
   glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-  this->window = Window{glfwCreateWindow(this->windowWidth, this->windowHeight,
-                                         Engine::GAME_NAME, nullptr, nullptr)};
+  auto *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+  this->window = Window{glfwCreateWindow(mode->width, mode->height, Engine::GAME_NAME,
+                                         glfwGetPrimaryMonitor(), nullptr)};
 
   if (!this->window.get()) {
     throw runtime_error{"Failed to create window"};
@@ -107,7 +111,11 @@ Renderer::Renderer() {
 }
 
 auto Renderer::getWindowSize() -> pair<unsigned, unsigned> {
-  return std::make_pair(this->windowWidth, this->windowHeight);
+  auto width  = 0;
+  auto height = 0;
+  glfwGetWindowSize(this->window.get(), &width, &height);
+
+  return std::make_pair(static_cast<unsigned>(width), static_cast<unsigned>(height));
 }
 
 auto Renderer::clearScreen(vec4 clearColor) const -> void {
@@ -229,13 +237,13 @@ auto Renderer::useShader(const ShaderProgramHandle &shader) const -> void {
   glUseProgram(shader.id);
 }
 
-auto Renderer::loadMesh(const Mesh &meshData) -> MeshHandle {
-  assert(meshData.vertices.size() > 0);
-  assert(meshData.indices.size() > 0);
+auto Renderer::loadMesh(const Mesh &mesh) -> MeshHandle {
+  assert(mesh.vertices.size() > 0);
+  assert(mesh.indices.size() > 0);
 
   auto meshHandle       = MeshHandle{};
-  meshHandle.numIndices = meshData.indices.size();
-  meshHandle.transform  = std::move(meshData.transform);
+  meshHandle.numIndices = mesh.indices.size();
+  meshHandle.transform  = std::move(mesh.transform);
 
   // Create new buffers.
   glGenVertexArrays(1, &meshHandle.vao);
@@ -245,13 +253,13 @@ auto Renderer::loadMesh(const Mesh &meshData) -> MeshHandle {
   // Load data into the vertex buffer.
   glBindVertexArray(meshHandle.vao);
   glBindBuffer(GL_ARRAY_BUFFER, meshHandle.vbo);
-  glBufferData(GL_ARRAY_BUFFER, meshData.vertices.size() * sizeof(Vertex),
-               meshData.vertices.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, mesh.vertices.size() * sizeof(Vertex),
+               mesh.vertices.data(), GL_STATIC_DRAW);
 
   // Load index data into the index buffer.
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshHandle.ibo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshData.indices.size() * sizeof(Mesh::Index),
-               meshData.indices.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indices.size() * sizeof(Mesh::Index),
+               mesh.indices.data(), GL_STATIC_DRAW);
 
   // Set the vertex attribute pointers.
   glEnableVertexAttribArray(0);
@@ -282,17 +290,17 @@ auto Renderer::loadMesh(const Mesh &meshData) -> MeshHandle {
   return meshHandle;
 }
 
-auto Renderer::loadModel(const Model &modelData) -> ModelHandle {
-  const auto isLoaded = this->models.count(modelData.path) == 1;
+auto Renderer::loadModel(const Model &model) -> ModelHandle {
+  const auto isLoaded = this->models.count(model.path) == 1;
 
   if (isLoaded) {
-    throw runtime_error{"Model with path '"s + modelData.path + "' already loaded"s};
+    throw runtime_error{"Model with path '"s + model.path + "' already loaded"s};
   }
 
   auto modelHandle = ModelHandle{};
 
   // Load meshes and textures.
-  for (const auto &mesh : modelData.meshes) {
+  for (const auto &mesh : model.meshes) {
     auto meshHandle = this->loadMesh(mesh);
 
     for (const auto &texture : mesh.textures) {
@@ -309,30 +317,38 @@ auto Renderer::loadModel(const Model &modelData) -> ModelHandle {
     modelHandle.meshes.push_back(std::move(meshHandle));
   }
 
-  this->models[modelData.path] = std::move(modelHandle);
+  this->models[model.path] = std::move(modelHandle);
 
-  return this->models[modelData.path];
+  return this->models[model.path];
 }
 
-auto Renderer::loadTexture(const Texture &textureData) -> TextureHandle {
-  const auto isLoaded = this->textures.count(textureData.path) == 1;
+auto Renderer::loadTexture(const Texture &texture) -> TextureHandle {
+  const auto isLoaded = this->textures.count(texture.path) == 1;
 
   if (isLoaded) {
-    throw runtime_error{"Texture with path '"s + textureData.path + "' already loaded"s};
+    throw runtime_error{"Texture with path '"s + texture.path + "' already loaded"s};
   }
 
-  // FIXME
-  const auto width  = 1;
-  const auto height = 1;
+  auto width    = 0;
+  auto height   = 0;
+  auto channels = 0;
+  auto image =
+      shared_ptr<unsigned char>{stbi_load(Path::getAbsolutePath(texture.path).c_str(),
+                                          &width, &height, &channels, STBI_rgb_alpha),
+                                stbi_image_free};
+
+  if (image == nullptr) {
+    throw runtime_error{"Failed to load image: '"s + texture.path + "'"s};
+  }
 
   auto textureHandle = TextureHandle{};
-  textureHandle.type = textureData.type;
+  textureHandle.type = texture.type;
 
   // Send the texture to the GPU.
   glGenTextures(1, &textureHandle.id);
   glBindTexture(GL_TEXTURE_2D, textureHandle.id);
-  // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-  //              GL_UNSIGNED_BYTE, textureData.image.getPixelsPtr());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, image.get());
   glGenerateMipmap(GL_TEXTURE_2D);
 
   // Set texture parameters.
@@ -341,25 +357,25 @@ auto Renderer::loadTexture(const Texture &textureData) -> TextureHandle {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  Log::status("Texture '"s + textureData.path + "' loaded with ID "s +
+  Log::status("Texture '"s + texture.path + "' loaded with ID "s +
               std::to_string(textureHandle.id) + "."s);
-  this->textures[textureData.path] = std::move(textureHandle);
+  this->textures[texture.path] = std::move(textureHandle);
 
-  return this->textures[textureData.path];
+  return this->textures[texture.path];
 }
 
-auto Renderer::compileShader(const Shader &shaderData) -> ShaderHandle {
-  const auto isLoaded = this->shaders.count(shaderData.path) == 1;
+auto Renderer::compileShader(const Shader &shader) -> ShaderHandle {
+  const auto isLoaded = this->shaders.count(shader.path) == 1;
 
   if (isLoaded) {
-    throw runtime_error{"Shader with path '"s + shaderData.path + "' already loaded"s};
+    throw runtime_error{"Shader with path '"s + shader.path + "' already loaded"s};
   }
 
   auto shaderHandle = ShaderHandle{};
 
-  const auto *shaderCodePtr = shaderData.code.c_str();
-  shaderHandle.id           = glCreateShader(getShaderType(shaderData.type));
-  shaderHandle.type         = shaderData.type;
+  const auto *shaderCodePtr = shader.code.c_str();
+  shaderHandle.id           = glCreateShader(getShaderType(shader.type));
+  shaderHandle.type         = shader.type;
 
   glShaderSource(shaderHandle.id, 1, &shaderCodePtr, nullptr);
   glCompileShader(shaderHandle.id);
@@ -375,15 +391,15 @@ auto Renderer::compileShader(const Shader &shaderData) -> ShaderHandle {
     errorMsg.resize(static_cast<size_t>(errorLength));
     glGetShaderInfoLog(shaderHandle.id, errorLength, &errorLength, errorMsg.data());
 
-    throw runtime_error{"Shader compilation failed: "s + shaderData.path +
-                        ": "s + errorMsg.data()};
+    throw runtime_error{"Shader compilation failed: "s + shader.path + ": "s +
+                        errorMsg.data()};
   }
 
-  Log::status("Shader '"s + shaderData.path + "' compiled with ID "s +
+  Log::status("Shader '"s + shader.path + "' compiled with ID "s +
               std::to_string(shaderHandle.id) + "."s);
-  this->shaders[shaderData.path] = std::move(shaderHandle);
+  this->shaders[shader.path] = std::move(shaderHandle);
 
-  return this->shaders[shaderData.path];
+  return this->shaders[shader.path];
 }
 
 auto Renderer::linkShaders(const string &name, const ShaderHandles &shaderHandles)

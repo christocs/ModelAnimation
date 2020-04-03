@@ -20,7 +20,7 @@ namespace Afk {
     float near        = 25.0;
     float far         = 10000.0f;
     float speed       = 500.0f;
-    float sensitivity = 0.05f;
+    float sensitivity = 0.1f;
 
     auto getFront() const -> glm::vec3;
     auto getRight() const -> glm::vec3;

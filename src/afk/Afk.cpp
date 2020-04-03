@@ -8,12 +8,15 @@
 
 #include "afk/io/Log.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
+
 using Afk::Engine;
 using Afk::Log;
 using glm::vec3;
 
 // FIXME: Move to event manager
-static auto mouseCallback(GLFWwindow *window, double x, double y) -> void {
+static auto mouseCallback([[maybe_unused]] GLFWwindow *window, double x, double y) -> void {
   static auto lastX      = 0.0f;
   static auto lastY      = 0.0f;
   static auto firstFrame = true;
@@ -77,7 +80,8 @@ auto Engine::render() -> void {
 
   // FIXME
   this->renderer.useShader(shader);
-  this->renderer.setUniform(shader, "projection", this->camera.getProjectionMatrix(6, 9));
+  this->renderer.setUniform(shader, "projection",
+                            this->camera.getProjectionMatrix(width, height));
   this->renderer.setUniform(shader, "view", this->camera.getViewMatrix());
 
   auto transform        = Transform{};
@@ -109,7 +113,7 @@ auto Engine::update() -> void {
 }
 
 auto Engine::getTime() -> float {
-  return glfwGetTime();
+  return static_cast<float>(glfwGetTime());
 }
 
 auto Engine::getDeltaTime() -> float {

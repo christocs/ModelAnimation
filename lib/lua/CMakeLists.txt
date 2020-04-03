@@ -1,40 +1,40 @@
 project(lua)
 
 add_library(lua STATIC
-    src/lauxlib.c
-    src/liolib.c
-    src/lopcodes.c
-    src/lstate.c
-    src/lobject.c
-    src/lmathlib.c
-    src/loadlib.c
-    src/lvm.c
-    src/lfunc.c
-    src/lstrlib.c
-    src/lua.c
-    src/linit.c
-    src/lstring.c
-    src/lundump.c
-    src/lctype.c
-    src/ltable.c
-    src/ldump.c
-    src/loslib.c
-    src/lgc.c
-    src/lzio.c
-    src/ldblib.c
-    src/lutf8lib.c
-    src/lmem.c
-    src/lcorolib.c
-    src/lcode.c
-    src/ltablib.c
-    src/lbitlib.c
-    src/lapi.c
-    src/lbaselib.c
-    src/ldebug.c
-    src/lparser.c
-    src/llex.c
-    src/ltm.c
-    src/ldo.c
+    lua/lauxlib.c
+    lua/liolib.c
+    lua/lopcodes.c
+    lua/lstate.c
+    lua/lobject.c
+    lua/lmathlib.c
+    lua/loadlib.c
+    lua/lvm.c
+    lua/lfunc.c
+    lua/lstrlib.c
+    lua/lua.c
+    lua/linit.c
+    lua/lstring.c
+    lua/lundump.c
+    lua/lctype.c
+    lua/ltable.c
+    lua/ldump.c
+    lua/loslib.c
+    lua/lgc.c
+    lua/lzio.c
+    lua/ldblib.c
+    lua/lutf8lib.c
+    lua/lmem.c
+    lua/lcorolib.c
+    lua/lcode.c
+    lua/ltablib.c
+    lua/lbitlib.c
+    lua/lapi.c
+    lua/lbaselib.c
+    lua/ldebug.c
+    lua/lparser.c
+    lua/llex.c
+    lua/ltm.c
+    lua/ldo.c
 )
 
-target_include_directories(lua PUBLIC src)
+target_include_directories(lua PUBLIC .)

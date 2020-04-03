@@ -98,6 +98,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     LuaBridge
     glm
     glfw
+    stb
 )
 
 # Symlink resources to the binary location.
