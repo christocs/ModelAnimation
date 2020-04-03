@@ -20,6 +20,7 @@
 #include "afk/Afk.hpp"
 #include "afk/io/Log.hpp"
 #include "afk/io/Path.hpp"
+#include "afk/renderer/GlfwDeleter.hpp"
 #include "afk/renderer/Mesh.hpp"
 #include "afk/renderer/Model.hpp"
 #include "afk/renderer/Shader.hpp"
