@@ -1,14 +1,26 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 
 namespace Afk {
-  class Log {
-  public:
-    static constexpr bool SHOW_STATUS = true;
-    static constexpr bool SHOW_ERROR  = true;
+  namespace Internal {
+    class Status {};
+    class Error {};
 
-    static auto status(const std::string &msg) -> void;
-    static auto error(const std::string &msg) -> void;
-  };
+    template<typename T>
+    auto operator<<(Status &log, T const &value) -> Status & {
+      std::cout << value;
+      return log;
+    }
+
+    template<typename T>
+    auto operator<<(Error &log, T const &value) -> Error & {
+      std::cerr << value;
+      return log;
+    }
+  }
+
+  extern Internal::Status status;
+  extern Internal::Error error;
 }

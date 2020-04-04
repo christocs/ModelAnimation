@@ -1,16 +1,17 @@
 #pragma once
 
+#include <filesystem>
 #include <string>
 
 namespace Afk {
   struct Shader {
     enum class Type { Vertex, Fragment };
 
-    std::string path = {};
-    std::string code = {};
-    Type type        = {};
+    std::filesystem::path file_path = {};
+    std::string code                = {};
+    Type type                       = {};
 
     Shader() = default;
-    Shader(const std::string &_path);
+    Shader(std::filesystem::path _file_path);
   };
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <vector>
 
 #include "afk/renderer/Mesh.hpp"
@@ -9,11 +10,12 @@ namespace Afk {
   struct Model {
     using Meshes = std::vector<Mesh>;
 
-    Meshes meshes    = {};
-    std::string path = {};
-    std::string dir  = {};
+    Meshes meshes = {};
+
+    std::filesystem::path file_path = {};
+    std::filesystem::path file_dir  = {};
 
     Model() = default;
-    Model(const std::string &_path);
+    Model(std::filesystem::path _file_path);
   };
 }

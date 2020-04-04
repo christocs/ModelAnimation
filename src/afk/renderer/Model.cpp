@@ -1,18 +1,18 @@
 #include "afk/renderer/Model.hpp"
 
-#include <string>
+#include <filesystem>
 
 #include "afk/io/ModelLoader.hpp"
-
-using std::string;
 
 using Afk::Model;
 using Afk::ModelLoader;
 
-Model::Model(const string &_path) {
-  auto tmp = ModelLoader{}.load(_path);
+using std::filesystem::path;
 
-  this->meshes = std::move(tmp.meshes);
-  this->path   = std::move(tmp.path);
-  this->dir    = std::move(tmp.dir);
+Model::Model(path _file_path) {
+  auto tmp = ModelLoader{}.load(_file_path);
+
+  this->meshes    = std::move(tmp.meshes);
+  this->file_path = std::move(tmp.file_path);
+  this->file_dir  = std::move(tmp.file_dir);
 }

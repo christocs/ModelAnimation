@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -33,10 +34,10 @@ namespace Afk {
       using ShaderProgramHandle = OpenGl::ShaderProgramHandle;
       using TextureHandle       = OpenGl::TextureHandle;
 
-      using ShaderMap        = std::unordered_map<std::string, ShaderHandle>;
-      using ShaderProgramMap = std::unordered_map<std::string, ShaderProgramHandle>;
-      using ModelMap         = std::unordered_map<std::string, ModelHandle>;
-      using TextureMap       = std::unordered_map<std::string, TextureHandle>;
+      using Shaders        = std::unordered_map<std::string, ShaderHandle>;
+      using ShaderPrograms = std::unordered_map<std::string, ShaderProgramHandle>;
+      using Models         = std::unordered_map<std::string, ModelHandle>;
+      using Textures       = std::unordered_map<std::string, TextureHandle>;
 
       using ShaderHandles = std::vector<ShaderHandle>;
       using Window        = std::shared_ptr<GLFWwindow>;
@@ -61,9 +62,9 @@ namespace Afk {
       auto bind_texture(const TextureHandle &texture) const -> void;
 
       // Resource management
-      auto get_model(const std::string &path) -> ModelHandle;
-      auto get_texture(const std::string &path) -> TextureHandle;
-      auto get_shader(const std::string &path) -> ShaderHandle;
+      auto get_model(std::filesystem::path file_path) -> ModelHandle;
+      auto get_texture(std::filesystem::path file_path) -> TextureHandle;
+      auto get_shader(std::filesystem::path file_path) -> ShaderHandle;
       auto get_shader_program(const std::string &name) -> ShaderProgramHandle;
 
       // Resource loading
@@ -90,10 +91,10 @@ namespace Afk {
       const int opengl_major_version = 4;
       const int opengl_minor_version = 1;
 
-      ModelMap models                  = {};
-      TextureMap textures              = {};
-      ShaderMap shaders                = {};
-      ShaderProgramMap shader_programs = {};
+      Models models                  = {};
+      Textures textures              = {};
+      Shaders shaders                = {};
+      ShaderPrograms shader_programs = {};
 
       bool enable_vsync      = true;
       bool wireframe_enabled = false;

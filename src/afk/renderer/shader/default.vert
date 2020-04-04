@@ -1,15 +1,19 @@
 #version 410 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoords;
+layout (location = 0) in vec3 in_pos;
+layout (location = 1) in vec3 in_normal;
+layout (location = 2) in vec2 in_uvs;
 
-out vec2 TexCoords;
+uniform struct Matrices {
+    mat4 model;
+    mat4 view;
+    mat4 projection;
+} u_matrices;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+out VertexData {
+    vec2 uvs;
+} o;
 
 void main() {
-    TexCoords = aTexCoords;
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    o.uvs = in_uvs;
+    gl_Position = u_matrices.projection * u_matrices.view * u_matrices.model * vec4(in_pos, 1.0);
 }

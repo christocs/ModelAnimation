@@ -1,7 +1,5 @@
 #include "afk/Afk.hpp"
 
-#include <iostream>
-
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,7 +10,6 @@
 #include <stb/stb_image.h>
 
 using Afk::Engine;
-using Afk::Log;
 using glm::vec3;
 
 auto Engine::move_mouse(const Event &evt) -> void {
@@ -92,9 +89,9 @@ auto Engine::render() -> void {
 
   // FIXME
   this->renderer.use_shader(shader);
-  this->renderer.set_uniform(shader, "projection",
+  this->renderer.set_uniform(shader, "u_matrices.projection",
                              this->camera.get_projection_matrix(width, height));
-  this->renderer.set_uniform(shader, "view", this->camera.get_view_matrix());
+  this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
   auto transform        = Transform{};
   transform.translation = vec3{0.0f, -1.0f, 0.0f};
@@ -111,7 +108,7 @@ auto Engine::update() -> void {
   }
 
   if ((this->get_time() - this->last_fps_update) >= 1.0f) {
-    Log::status("FPS: " + std::to_string(this->fps_count));
+    Afk::status << "FPS: " << this->fps_count << '\n';
     this->last_fps_update = this->get_time();
     this->fps_count       = 0;
   }
