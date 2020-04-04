@@ -15,16 +15,17 @@ using Afk::Engine;
 using Afk::Log;
 using glm::vec3;
 
-// FIXME: Move to event manager
-static auto mouse_callback([[maybe_unused]] GLFWwindow *window, double x, double y) -> void {
+static auto move_mouse(Afk::Event evt) -> void {
+  auto move = std::get<Afk::Event::MouseMove>(evt.data);
+
   static auto last_x      = 0.0f;
   static auto last_y      = 0.0f;
   static auto first_frame = true;
 
   auto &afk = Engine::get();
 
-  const auto dx = static_cast<float>(x) - last_x;
-  const auto dy = static_cast<float>(y) - last_y;
+  const auto dx = static_cast<float>(move.mouse_x) - last_x;
+  const auto dy = static_cast<float>(move.mouse_y) - last_y;
 
   if (!first_frame) {
     afk.camera.handle_mouse(dx, dy);
@@ -32,8 +33,8 @@ static auto mouse_callback([[maybe_unused]] GLFWwindow *window, double x, double
     first_frame = false;
   }
 
-  last_x = static_cast<float>(x);
-  last_y = static_cast<float>(y);
+  last_x = static_cast<float>(move.mouse_x);
+  last_y = static_cast<float>(move.mouse_y);
 }
 
 static auto resize_window_callback([[maybe_unused]] GLFWwindow *window,
@@ -51,7 +52,8 @@ auto Engine::get() -> Engine & {
 }
 
 Engine::Engine() {
-  glfwSetCursorPosCallback(this->renderer.window.get(), mouse_callback);
+  this->events.setup_callbacks(this->renderer.window.get());
+  this->events.register_event(Afk::Event::EventType::MouseMove, move_mouse);
   glfwSetFramebufferSizeCallback(this->renderer.window.get(), resize_window_callback);
   glfwSetInputMode(this->renderer.window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
@@ -101,7 +103,7 @@ auto Engine::render() -> void {
 }
 
 auto Engine::update() -> void {
-  glfwPollEvents();
+  this->events.pump_events();
 
   if (glfwWindowShouldClose(this->renderer.window.get())) {
     this->is_running = false;
