@@ -9,30 +9,42 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-using Afk::Engine;
 using glm::vec3;
 
-// FIXME: Move to event manager
-static auto mouse_callback([[maybe_unused]] GLFWwindow *window, double x, double y) -> void {
+using Afk::Engine;
+using Afk::Event;
+using Action   = Afk::Event::Action;
+using Movement = Afk::Camera::Movement;
+
+auto Engine::move_mouse(Event event) -> void {
+  const auto data = std::get<Event::MouseMove>(event.data);
+
   static auto last_x      = 0.0f;
   static auto last_y      = 0.0f;
   static auto first_frame = true;
 
-  auto &afk = Engine::get();
-
-  const auto dx = static_cast<float>(x) - last_x;
-  const auto dy = static_cast<float>(y) - last_y;
+  const auto dx = static_cast<float>(data.x) - last_x;
+  const auto dy = static_cast<float>(data.y) - last_y;
 
   if (!first_frame) {
-    afk.camera.handle_mouse(dx, dy);
+    this->camera.handle_mouse(dx, dy);
   } else {
     first_frame = false;
   }
 
-  last_x = static_cast<float>(x);
-  last_y = static_cast<float>(y);
+  last_x = static_cast<float>(data.x);
+  last_y = static_cast<float>(data.y);
 }
 
+auto Engine::move_keyboard(Event event) -> void {
+  const auto data = std::get<Event::Key>(event.data);
+
+  if (data.key_code == GLFW_KEY_ESCAPE) {
+    this->is_running = false;
+  }
+}
+
+// FIXME: Move someone more appropriate.
 static auto resize_window_callback([[maybe_unused]] GLFWwindow *window,
                                    int width, int height) -> void {
   auto &afk = Engine::get();
@@ -47,34 +59,35 @@ auto Engine::get() -> Engine & {
   return instance;
 }
 
-Engine::Engine() {
-  glfwSetCursorPosCallback(this->renderer.window.get(), mouse_callback);
-  glfwSetFramebufferSizeCallback(this->renderer.window.get(), resize_window_callback);
-  glfwSetInputMode(this->renderer.window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+// FIXME: Move somewhere more appropriate.
+auto Engine::update_camera() -> void {
+  if (this->event_manager.key_state.at(Action::Forward)) {
+    this->camera.handle_key(Movement::Forward, this->get_delta_time());
+  }
+
+  if (this->event_manager.key_state.at(Action::Left)) {
+    this->camera.handle_key(Movement::Left, this->get_delta_time());
+  }
+
+  if (this->event_manager.key_state.at(Action::Backward)) {
+    this->camera.handle_key(Movement::Backward, this->get_delta_time());
+  }
+
+  if (this->event_manager.key_state.at(Action::Right)) {
+    this->camera.handle_key(Movement::Right, this->get_delta_time());
+  }
 }
 
-// FIXME: Move to event manager
-auto Engine::handle_keys() -> void {
+Engine::Engine() {
+  this->event_manager.setup_callbacks(this->renderer.window.get());
 
-  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_W)) {
-    this->camera.handle_key(Camera::Movement::Forward, this->get_delta_time());
-  }
+  this->event_manager.register_event(
+      Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
+  this->event_manager.register_event(
+      Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
 
-  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_A)) {
-    this->camera.handle_key(Camera::Movement::Left, this->get_delta_time());
-  }
-
-  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_S)) {
-    this->camera.handle_key(Camera::Movement::Backward, this->get_delta_time());
-  }
-
-  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_D)) {
-    this->camera.handle_key(Camera::Movement::Right, this->get_delta_time());
-  }
-
-  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_ESCAPE)) {
-    this->is_running = false;
-  }
+  glfwSetFramebufferSizeCallback(this->renderer.window.get(), resize_window_callback);
+  glfwSetInputMode(this->renderer.window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 auto Engine::render() -> void {
@@ -98,19 +111,19 @@ auto Engine::render() -> void {
 }
 
 auto Engine::update() -> void {
-  glfwPollEvents();
+  this->event_manager.pump_events();
 
   if (glfwWindowShouldClose(this->renderer.window.get())) {
     this->is_running = false;
   }
-
-  this->handle_keys();
 
   if ((this->get_time() - this->last_fps_update) >= 1.0f) {
     Afk::status << "FPS: " << this->fps_count << '\n';
     this->last_fps_update = this->get_time();
     this->fps_count       = 0;
   }
+
+  this->update_camera();
 
   ++this->fps_count;
   this->last_update = this->get_time();
