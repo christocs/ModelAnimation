@@ -1,8 +1,36 @@
-#include "ScriptKeyboard.hpp"
+#include "ScriptSetup.hpp"
 
 #include <GLFW/glfw3.h>
 
-auto LuaKeyboard::get_keys() -> std::vector<Key> & {
+#include "afk/events/Event.hpp"
+
+using Afk::Event;
+
+auto Afk::Lua::get_events() -> std::vector<LuaEvent> & {
+  static std::vector<LuaEvent> s{
+      {"KeyDown", static_cast<int>(Event::EventType::KeyDown)},
+      {"KeyUp", static_cast<int>(Event::EventType::KeyUp)},
+      {"MouseDown", static_cast<int>(Event::EventType::MouseDown)},
+      {"MouseUp", static_cast<int>(Event::EventType::MouseUp)},
+      {"MouseMove", static_cast<int>(Event::EventType::MouseMove)},
+      {"MouseScroll", static_cast<int>(Event::EventType::MouseScroll)},
+      {"TextEnter", static_cast<int>(Event::EventType::TextEnter)},
+      {"Update", static_cast<int>(Event::EventType::Update)},
+  };
+  return s;
+}
+
+auto Afk::Lua::get_buttons() -> std::vector<Mouse> & {
+  static std::vector<Mouse> s{
+      {"Left", GLFW_MOUSE_BUTTON_1},   {"Right", GLFW_MOUSE_BUTTON_2},
+      {"Middle", GLFW_MOUSE_BUTTON_3}, {"Mouse4", GLFW_MOUSE_BUTTON_4},
+      {"Mouse5", GLFW_MOUSE_BUTTON_5}, {"Mouse6", GLFW_MOUSE_BUTTON_6},
+      {"Mouse7", GLFW_MOUSE_BUTTON_7}, {"Mouse8", GLFW_MOUSE_BUTTON_8},
+  };
+  return s;
+}
+
+auto Afk::Lua::get_keys() -> std::vector<Key> & {
   static std::vector<Key> s{
       {"A", GLFW_KEY_A},
       {"B", GLFW_KEY_B},

@@ -2,8 +2,8 @@
 
 #include <stdexcept>
 
-#include "ScriptKeyboard.hpp"
-#include "ScriptMouse.hpp"
+#include "ScriptSetup.hpp"
+#include "afk/events/Events.hpp"
 #include "afk/io/Path.hpp"
 
 /**
@@ -11,16 +11,27 @@
  */
 auto Afk::ScriptComponent::setup_lua_state(lua_State *lua) -> void {
   auto keyns = luabridge::getGlobalNamespace(lua).beginNamespace("key");
-  for (auto &key : LuaKeyboard::get_keys()) {
+  for (auto &key : Afk::Lua::get_keys()) {
     // key.code can't be changed from lua's side
     keyns.addVariable<int>(key.name.c_str(), &key.code, false);
   }
   keyns.endNamespace();
   auto mousens = luabridge::getGlobalNamespace(lua).beginNamespace("mouse");
-  for (auto &btn : LuaMouse::get_buttons()) {
+  for (auto &btn : Afk::Lua::get_buttons()) {
     mousens.addVariable<int>(btn.name.c_str(), &btn.button, false);
   }
   mousens.endNamespace();
+
+  auto evtmgr =
+      luabridge::getGlobalNamespace(lua).beginClass<EventManager>("events");
+  for (auto &evt : Afk::Lua::get_events()) {
+    evtmgr.addStaticProperty<int>(evt.name.c_str(), &evt.event, false);
+  }
+  // TODO: Think of a way to allow live reloading with this registration type
+  // (Right now when you reload the file I think old registered events will stay around)
+  // (Maybe need some alternate register function that lua will use)
+  // evtmgr.addFunction("register", &Afk::EventManager::register_event);
+  evtmgr.endClass();
 }
 
 Afk::ScriptComponent::ScriptComponent(lua_State *lua, const std::string &filename)
