@@ -1,6 +1,7 @@
 #include "afk/renderer/opengl/Renderer.hpp"
 
 #include <cassert>
+#include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -37,13 +38,13 @@ using std::size_t;
 using std::string;
 using std::unordered_map;
 using std::vector;
+using std::filesystem::path;
 
 using glm::mat4;
 using glm::vec3;
 using glm::vec4;
 
 using Afk::Engine;
-using Afk::Path;
 using Afk::Shader;
 using Afk::Texture;
 using Afk::OpenGl::ModelHandle;
@@ -129,34 +130,34 @@ auto Renderer::swap_buffers() -> void {
   glfwSwapBuffers(this->window.get());
 }
 
-auto Renderer::get_model(const string &path) -> ModelHandle {
-  const auto is_loaded = this->models.count(path) == 1;
+auto Renderer::get_model(path file_path) -> ModelHandle {
+  const auto is_loaded = this->models.count(file_path) == 1;
 
   if (!is_loaded) {
-    this->models[path] = this->load_model(Model{path});
+    this->models[file_path.string()] = this->load_model(Model{file_path});
   }
 
-  return this->models.at(path);
+  return this->models.at(file_path.string());
 }
 
-auto Renderer::get_texture(const string &path) -> TextureHandle {
-  const auto is_loaded = this->textures.count(path) == 1;
+auto Renderer::get_texture(path file_path) -> TextureHandle {
+  const auto is_loaded = this->textures.count(file_path) == 1;
 
   if (!is_loaded) {
-    this->textures[path] = this->load_texture(Texture{path});
+    this->textures[file_path.string()] = this->load_texture(Texture{file_path});
   }
 
-  return this->textures.at(path);
+  return this->textures.at(file_path.string());
 }
 
-auto Renderer::get_shader(const string &path) -> ShaderHandle {
-  const auto is_loaded = this->shaders.count(path) == 1;
+auto Renderer::get_shader(path file_path) -> ShaderHandle {
+  const auto is_loaded = this->shaders.count(file_path) == 1;
 
   if (!is_loaded) {
-    this->shaders[path] = this->compile_shader(Shader{path});
+    this->shaders[file_path.string()] = this->compile_shader(Shader{file_path});
   }
 
-  return this->shaders.at(path);
+  return this->shaders.at(file_path.string());
 }
 
 auto Renderer::get_shader_program(const string &name) -> ShaderProgramHandle {
@@ -295,10 +296,10 @@ auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
 }
 
 auto Renderer::load_model(const Model &model) -> ModelHandle {
-  const auto is_loaded = this->models.count(model.path) == 1;
+  const auto is_loaded = this->models.count(model.file_path) == 1;
 
   if (is_loaded) {
-    throw runtime_error{"Model with path '"s + model.path + "' already loaded"s};
+    throw runtime_error{"Model with path '"s + model.file_path.string() + "' already loaded"s};
   }
 
   auto modelHandle = ModelHandle{};
@@ -308,11 +309,11 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
     auto mesh_handle = this->load_mesh(mesh);
 
     for (const auto &texture : mesh.textures) {
-      auto texture_handle = this->get_texture(texture.path);
+      auto texture_handle = this->get_texture(texture.file_path);
 
       if (texture_handle.type != texture.type) {
-        this->textures[texture.path].type = texture.type;
-        texture_handle.type               = texture.type;
+        this->textures[texture.file_path].type = texture.type;
+        texture_handle.type                    = texture.type;
       }
 
       mesh_handle.textures.push_back(std::move(texture_handle));
@@ -321,28 +322,28 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
     modelHandle.meshes.push_back(std::move(mesh_handle));
   }
 
-  this->models[model.path] = std::move(modelHandle);
+  this->models[model.file_path] = std::move(modelHandle);
 
-  return this->models[model.path];
+  return this->models[model.file_path];
 }
 
 auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
-  const auto is_loaded = this->textures.count(texture.path) == 1;
+  const auto is_loaded = this->textures.count(texture.file_path) == 1;
 
   if (is_loaded) {
-    throw runtime_error{"Texture with path '"s + texture.path + "' already loaded"s};
+    throw runtime_error{"Texture with path '"s + texture.file_path.string() + "' already loaded"s};
   }
 
   auto width    = 0;
   auto height   = 0;
   auto channels = 0;
   auto image    = shared_ptr<unsigned char>{
-      stbi_load(Path::get_absolute_path(texture.path).c_str(), &width, &height,
-                &channels, STBI_rgb_alpha),
+      stbi_load(Afk::get_resource_path(texture.file_path).c_str(), &width,
+                &height, &channels, STBI_rgb_alpha),
       stbi_image_free};
 
   if (image == nullptr) {
-    throw runtime_error{"Failed to load image: '"s + texture.path + "'"s};
+    throw runtime_error{"Failed to load image: '"s + texture.file_path.string() + "'"s};
   }
 
   auto texture_handle = TextureHandle{};
@@ -361,18 +362,18 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  Afk::status << "Texture '"s << texture.path << "' loaded with ID "s
+  Afk::status << "Texture '"s << texture.file_path << "' loaded with ID "s
               << texture_handle.id << ".\n"s;
-  this->textures[texture.path] = std::move(texture_handle);
+  this->textures[texture.file_path] = std::move(texture_handle);
 
-  return this->textures[texture.path];
+  return this->textures[texture.file_path];
 }
 
 auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
-  const auto is_loaded = this->shaders.count(shader.path) == 1;
+  const auto is_loaded = this->shaders.count(shader.file_path) == 1;
 
   if (is_loaded) {
-    throw runtime_error{"Shader with path '"s + shader.path + "' already loaded"s};
+    throw runtime_error{"Shader with path '"s + shader.file_path.string() + "' already loaded"s};
   }
 
   auto shader_handle = ShaderHandle{};
@@ -395,15 +396,15 @@ auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
     error_msg.resize(static_cast<size_t>(error_length));
     glGetShaderInfoLog(shader_handle.id, error_length, &error_length, error_msg.data());
 
-    throw runtime_error{"Shader compilation failed: "s + shader.path + ": "s +
-                        error_msg.data()};
+    throw runtime_error{"Shader compilation failed: "s +
+                        shader.file_path.string() + ": "s + error_msg.data()};
   }
 
-  Afk::status << "Shader '"s << shader.path << "' compiled with ID "s
+  Afk::status << "Shader '"s << shader.file_path << "' compiled with ID "s
               << shader_handle.id << ".\n"s;
-  this->shaders[shader.path] = std::move(shader_handle);
+  this->shaders[shader.file_path.string()] = std::move(shader_handle);
 
-  return this->shaders[shader.path];
+  return this->shaders[shader.file_path.string()];
 }
 
 auto Renderer::link_shaders(const string &name, const ShaderHandles &shader_handles)

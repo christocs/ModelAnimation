@@ -1,19 +1,13 @@
 #include "afk/renderer/Texture.hpp"
 
-#include <stdexcept>
-#include <string>
+#include <filesystem>
 
 #include "afk/io/Path.hpp"
 
-using namespace std::string_literals;
-using std::runtime_error;
-using std::string;
+using std::filesystem::path;
 
-using Afk::Path;
 using Afk::Texture;
 
-Texture::Texture(const string &_path) {
-  const auto abs_path = Path::get_absolute_path(_path);
-
-  this->path = _path;
+Texture::Texture(path _file_path) {
+  this->file_path = Afk::get_resource_path(_file_path);
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
@@ -11,7 +13,7 @@ namespace Afk {
   public:
     Model model = {};
 
-    auto load(const std::string &path) -> Model;
+    auto load(std::filesystem::path file_path) -> Model;
 
   private:
     auto process_node(const aiScene *scene, const aiNode *node, glm::mat4 transform) -> void;
@@ -21,6 +23,6 @@ namespace Afk {
     auto get_textures(const aiMaterial *material) -> Mesh::Textures;
     auto get_material_textures(const aiMaterial *material, Texture::Type type)
         -> Mesh::Textures;
-    auto get_texture_path(const std::string &path) const -> std::string;
+    auto get_texture_path(std::filesystem::path file_path) const -> std::filesystem::path;
   };
 }
