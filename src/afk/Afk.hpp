@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 
+#include "afk/events/Events.hpp"
 #include "afk/renderer/Camera.hpp"
 #include "afk/renderer/Renderer.hpp"
 
@@ -12,6 +13,7 @@ namespace Afk {
 
     Renderer renderer = {};
     Camera camera     = {};
+    Events events     = {};
 
     Engine();
     Engine(Engine &&)      = delete;
