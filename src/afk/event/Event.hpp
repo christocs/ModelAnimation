@@ -47,7 +47,8 @@ namespace Afk {
       Update
     };
 
-    using Data = std::variant<MouseMove, MouseButton, Key, Text, MouseScroll, Update>;
+    using Data =
+        std::variant<std::monostate, MouseMove, MouseButton, Key, Text, MouseScroll, Update>;
 
     Data data = {};
     Type type = {};
