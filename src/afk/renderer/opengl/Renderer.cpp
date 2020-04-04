@@ -43,7 +43,6 @@ using glm::vec3;
 using glm::vec4;
 
 using Afk::Engine;
-using Afk::Log;
 using Afk::Path;
 using Afk::Shader;
 using Afk::Texture;
@@ -106,7 +105,7 @@ Renderer::Renderer() {
   }
 
   glEnable(GL_DEPTH_TEST);
-  Log::status("OpenGL renderer initialized.");
+  Afk::status << "OpenGL renderer initialized.\n";
 }
 
 auto Renderer::get_window_size() -> pair<unsigned, unsigned> {
@@ -362,8 +361,8 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  Log::status("Texture '"s + texture.path + "' loaded with ID "s +
-              std::to_string(texture_handle.id) + "."s);
+  Afk::status << "Texture '"s << texture.path << "' loaded with ID "s
+              << texture_handle.id << ".\n"s;
   this->textures[texture.path] = std::move(texture_handle);
 
   return this->textures[texture.path];
@@ -400,8 +399,8 @@ auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
                         error_msg.data()};
   }
 
-  Log::status("Shader '"s + shader.path + "' compiled with ID "s +
-              std::to_string(shader_handle.id) + "."s);
+  Afk::status << "Shader '"s << shader.path << "' compiled with ID "s
+              << shader_handle.id << ".\n"s;
   this->shaders[shader.path] = std::move(shader_handle);
 
   return this->shaders[shader.path];
@@ -441,8 +440,8 @@ auto Renderer::link_shaders(const string &name, const ShaderHandles &shader_hand
                         error_msg.data()};
   }
 
-  Log::status("Shader program '"s + name + "' linked with ID "s +
-              std::to_string(shader_program.id) + "."s);
+  Afk::status << "Shader program '"s << name << "' linked with ID "s
+              << shader_program.id << ".\n"s;
   this->shader_programs[name] = std::move(shader_program);
 
   return this->shader_programs[name];

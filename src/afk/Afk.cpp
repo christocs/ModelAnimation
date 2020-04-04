@@ -1,7 +1,5 @@
 #include "afk/Afk.hpp"
 
-#include <iostream>
-
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,7 +10,6 @@
 #include <stb/stb_image.h>
 
 using Afk::Engine;
-using Afk::Log;
 using glm::vec3;
 
 // FIXME: Move to event manager
@@ -110,7 +107,7 @@ auto Engine::update() -> void {
   this->handle_keys();
 
   if ((this->get_time() - this->last_fps_update) >= 1.0f) {
-    Log::status("FPS: " + std::to_string(this->fps_count));
+    Afk::status << "FPS: " << this->fps_count << '\n';
     this->last_fps_update = this->get_time();
     this->fps_count       = 0;
   }

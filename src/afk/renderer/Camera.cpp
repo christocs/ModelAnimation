@@ -1,7 +1,6 @@
 #include "afk/renderer/Camera.hpp"
 
 #include <algorithm>
-#include <iostream>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

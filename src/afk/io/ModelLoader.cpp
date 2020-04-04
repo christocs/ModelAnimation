@@ -1,7 +1,6 @@
 #include "afk/io/ModelLoader.hpp"
 
 #include <fstream>
-#include <iostream>
 #include <iterator>
 #include <stdexcept>
 #include <string>
