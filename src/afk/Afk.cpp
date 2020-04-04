@@ -15,20 +15,18 @@ using Afk::Engine;
 using Afk::Log;
 using glm::vec3;
 
-static auto move_mouse(Afk::Event evt) -> void {
-  auto move = std::get<Afk::Event::MouseMove>(evt.data);
+auto Engine::move_mouse(const Event &evt) -> void {
+  auto move = std::get<Event::MouseMove>(evt.data);
 
   static auto last_x      = 0.0f;
   static auto last_y      = 0.0f;
   static auto first_frame = true;
 
-  auto &afk = Engine::get();
-
   const auto dx = static_cast<float>(move.mouse_x) - last_x;
   const auto dy = static_cast<float>(move.mouse_y) - last_y;
 
   if (!first_frame) {
-    afk.camera.handle_mouse(dx, dy);
+    this->camera.handle_mouse(dx, dy);
   } else {
     first_frame = false;
   }
@@ -53,28 +51,31 @@ auto Engine::get() -> Engine & {
 
 Engine::Engine() {
   this->events.setup_callbacks(this->renderer.window.get());
-  this->events.register_event(Afk::Event::EventType::MouseMove, move_mouse);
+  this->events.register_event(
+      Afk::Event::EventType::MouseMove,
+      std::bind(&Afk::Engine::move_mouse, this, std::placeholders::_1));
+  this->events.register_event(
+      Afk::Event::EventType::KeyDown,
+      std::bind(&Afk::Engine::move_keyboard, this, std::placeholders::_1));
   glfwSetFramebufferSizeCallback(this->renderer.window.get(), resize_window_callback);
   glfwSetInputMode(this->renderer.window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
-// FIXME: Move to event manager
-auto Engine::handle_keys() -> void {
-
-  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_W)) {
+auto Engine::move_keyboard(const Event &e) -> void {
+  auto evt = std::get<Afk::Event::Key>(e.data);
+  if (evt.key_code == GLFW_KEY_W) {
     this->camera.handle_key(Camera::Movement::Forward, this->get_delta_time());
   }
 
-  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_A)) {
+  if (evt.key_code == GLFW_KEY_A) {
     this->camera.handle_key(Camera::Movement::Left, this->get_delta_time());
   }
 
-  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_S)) {
+  if (evt.key_code == GLFW_KEY_S) {
     this->camera.handle_key(Camera::Movement::Backward, this->get_delta_time());
   }
 
-  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_D)) {
-    this->camera.handle_key(Camera::Movement::Right, this->get_delta_time());
+  if (evt.key_code == GLFW_KEY_D) {
   }
 
   if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_ESCAPE)) {
@@ -108,8 +109,6 @@ auto Engine::update() -> void {
   if (glfwWindowShouldClose(this->renderer.window.get())) {
     this->is_running = false;
   }
-
-  this->handle_keys();
 
   if ((this->get_time() - this->last_fps_update) >= 1.0f) {
     Log::status("FPS: " + std::to_string(this->fps_count));

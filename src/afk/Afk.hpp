@@ -30,10 +30,10 @@ namespace Afk {
     auto get_delta_time() -> float;
     auto get_is_running() const -> bool;
 
-    auto handle_keys() -> void;
-    auto handle_mouse() -> void;
-
   private:
+    auto move_keyboard(const Event &e) -> void;
+    auto move_mouse(const Event &e) -> void;
+    auto handle_mouse() -> void;
     bool is_running       = true;
     unsigned fps_count    = {};
     float last_update     = {};
