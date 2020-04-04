@@ -89,9 +89,9 @@ auto Engine::render() -> void {
 
   // FIXME
   this->renderer.use_shader(shader);
-  this->renderer.set_uniform(shader, "projection",
+  this->renderer.set_uniform(shader, "u_matrices.projection",
                              this->camera.get_projection_matrix(width, height));
-  this->renderer.set_uniform(shader, "view", this->camera.get_view_matrix());
+  this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
   auto transform        = Transform{};
   transform.translation = vec3{0.0f, -1.0f, 0.0f};

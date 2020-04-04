@@ -1,13 +1,18 @@
 #version 410 core
-out vec4 FragColor;
 
-in vec2 TexCoords;
+uniform struct Textures {
+    sampler2D diffuse;
+    sampler2D specular;
+    sampler2D normal;
+    sampler2D height;
+} u_textures;
 
-uniform sampler2D texture_diffuse_1;
-uniform sampler2D texture_specular_1;
-uniform sampler2D texture_normal_1;
-uniform sampler2D texture_height_1;
+in VertexData {
+    vec2 uvs;
+} i;
+
+out vec4 out_color;
 
 void main() {
-    FragColor = texture(texture_diffuse_1, TexCoords);
+    out_color = texture(u_textures.diffuse, i.uvs);
 }

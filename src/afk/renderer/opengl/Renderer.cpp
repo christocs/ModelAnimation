@@ -188,23 +188,29 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
     assert(mesh.vao > 0);
     assert(mesh.num_indices > 0);
 
-    auto material_count = vector<unsigned>{};
+    auto material_bound = vector<bool>{};
 
     const auto num_material_types = static_cast<size_t>(Texture::Type::Count);
-    material_count.resize(num_material_types);
+    material_bound.resize(num_material_types);
     for (auto i = size_t{0}; i < num_material_types; ++i) {
-      material_count[i] = 1u;
+      material_bound[i] = false;
     }
 
     // Bind all of the textures to shader uniforms.
     for (auto i = size_t{0}; i < mesh.textures.size(); i++) {
       this->set_texture_unit(GL_TEXTURE0 + i);
 
-      auto name   = get_material_as_string(mesh.textures[i].type);
-      auto number = std::to_string(material_count[i]);
-      material_count[i] += 1;
+      auto name = get_material_as_string(mesh.textures[i].type);
 
-      this->set_uniform(shader, name + "_" + number, static_cast<int>(i));
+      const auto index = static_cast<size_t>(mesh.textures[i].type);
+
+      if ((material_bound[index])) {
+        throw runtime_error{"Material "s + name + " already bound"s};
+      } else {
+        material_bound[index] = true;
+      }
+
+      this->set_uniform(shader, "u_textures."s + name, static_cast<int>(i));
       this->bind_texture(mesh.textures[i]);
     }
 
@@ -220,7 +226,7 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
     model_matrix *= glm::mat4_cast(mesh.transform.rotation);
     model_matrix = glm::scale(model_matrix, mesh.transform.scale);
 
-    this->set_uniform(shader, "model", model_matrix);
+    this->set_uniform(shader, "u_matrices.model", model_matrix);
 
     // Draw the mesh.
     glBindVertexArray(mesh.vao);
