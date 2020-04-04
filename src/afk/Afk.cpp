@@ -11,16 +11,18 @@
 
 using Afk::Engine;
 using glm::vec3;
+using Action   = Afk::Event::Action;
+using Movement = Afk::Camera::Movement;
 
-auto Engine::move_mouse(const Event &evt) -> void {
-  auto move = std::get<Event::MouseMove>(evt.data);
+auto Engine::move_mouse(Event event) -> void {
+  const auto data = std::get<Event::MouseMove>(event.data);
 
   static auto last_x      = 0.0f;
   static auto last_y      = 0.0f;
   static auto first_frame = true;
 
-  const auto dx = static_cast<float>(move.mouse_x) - last_x;
-  const auto dy = static_cast<float>(move.mouse_y) - last_y;
+  const auto dx = static_cast<float>(data.x) - last_x;
+  const auto dy = static_cast<float>(data.y) - last_y;
 
   if (!first_frame) {
     this->camera.handle_mouse(dx, dy);
@@ -28,10 +30,19 @@ auto Engine::move_mouse(const Event &evt) -> void {
     first_frame = false;
   }
 
-  last_x = static_cast<float>(move.mouse_x);
-  last_y = static_cast<float>(move.mouse_y);
+  last_x = static_cast<float>(data.x);
+  last_y = static_cast<float>(data.y);
 }
 
+auto Engine::move_keyboard(Event event) -> void {
+  const auto data = std::get<Afk::Event::Key>(event.data);
+
+  if (data.key_code == GLFW_KEY_ESCAPE) {
+    this->is_running = false;
+  }
+}
+
+// FIXME: Move someone more appropriate.
 static auto resize_window_callback([[maybe_unused]] GLFWwindow *window,
                                    int width, int height) -> void {
   auto &afk = Engine::get();
@@ -46,38 +57,37 @@ auto Engine::get() -> Engine & {
   return instance;
 }
 
-Engine::Engine() {
-  this->events.setup_callbacks(this->renderer.window.get());
-  this->events.register_event(
-      Afk::Event::EventType::MouseMove,
-      std::bind(&Afk::Engine::move_mouse, this, std::placeholders::_1));
-  this->events.register_event(
-      Afk::Event::EventType::KeyDown,
-      std::bind(&Afk::Engine::move_keyboard, this, std::placeholders::_1));
-  glfwSetFramebufferSizeCallback(this->renderer.window.get(), resize_window_callback);
-  glfwSetInputMode(this->renderer.window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+// FIXME: Move somewhere more appropriate.
+auto Engine::update_camera() -> void {
+  if (this->event_manager.key_state.at(Action::Forward)) {
+    this->camera.handle_key(Movement::Forward, this->get_delta_time());
+  }
+
+  if (this->event_manager.key_state.at(Action::Left)) {
+    this->camera.handle_key(Movement::Left, this->get_delta_time());
+  }
+
+  if (this->event_manager.key_state.at(Action::Backward)) {
+    this->camera.handle_key(Movement::Backward, this->get_delta_time());
+  }
+
+  if (this->event_manager.key_state.at(Action::Right)) {
+    this->camera.handle_key(Movement::Right, this->get_delta_time());
+  }
 }
 
-auto Engine::move_keyboard(const Event &e) -> void {
-  auto evt = std::get<Afk::Event::Key>(e.data);
-  if (evt.key_code == GLFW_KEY_W) {
-    this->camera.handle_key(Camera::Movement::Forward, this->get_delta_time());
-  }
+Engine::Engine() {
+  this->event_manager.setup_callbacks(this->renderer.window.get());
 
-  if (evt.key_code == GLFW_KEY_A) {
-    this->camera.handle_key(Camera::Movement::Left, this->get_delta_time());
-  }
+  this->event_manager.register_event(Afk::Event::EventType::MouseMove, [this](Event event) {
+    this->move_mouse(event);
+  });
+  this->event_manager.register_event(Afk::Event::EventType::KeyDown, [this](Event event) {
+    this->move_keyboard(event);
+  });
 
-  if (evt.key_code == GLFW_KEY_S) {
-    this->camera.handle_key(Camera::Movement::Backward, this->get_delta_time());
-  }
-
-  if (evt.key_code == GLFW_KEY_D) {
-  }
-
-  if (glfwGetKey(this->renderer.window.get(), GLFW_KEY_ESCAPE)) {
-    this->is_running = false;
-  }
+  glfwSetFramebufferSizeCallback(this->renderer.window.get(), resize_window_callback);
+  glfwSetInputMode(this->renderer.window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 auto Engine::render() -> void {
@@ -101,7 +111,7 @@ auto Engine::render() -> void {
 }
 
 auto Engine::update() -> void {
-  this->events.pump_events();
+  this->event_manager.pump_events();
 
   if (glfwWindowShouldClose(this->renderer.window.get())) {
     this->is_running = false;
@@ -112,6 +122,8 @@ auto Engine::update() -> void {
     this->last_fps_update = this->get_time();
     this->fps_count       = 0;
   }
+
+  this->update_camera();
 
   ++this->fps_count;
   this->last_update = this->get_time();

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cstdint>
 #include <filesystem>
 #include <string>
@@ -17,7 +18,7 @@ struct lua_State;
 namespace Afk {
   class ScriptComponent {
   private:
-    std::filesystem::path script_path;
+    std::filesystem::path file_path;
     // Engine
     LuaRef on_update;
     // Keyboard
@@ -35,7 +36,7 @@ namespace Afk {
   public:
     static auto setup_lua_state(lua_State *lua) -> void;
 
-    ScriptComponent(lua_State *lua, const std::string &filename);
+    ScriptComponent(lua_State *lua, std::filesystem::path file_name);
 
     // Reload file
     auto reload(lua_State *lua) -> void;
@@ -45,7 +46,7 @@ namespace Afk {
     auto key_press(int key, bool alt, bool ctrl, bool shift) -> void;
     auto key_release(int key, bool alt, bool ctrl, bool shift) -> void;
     auto text_enter(const std::string &text) -> void;
-    auto mouse_move(int mousex, int mousey) -> void;
+    auto mouse_move(int x, int y) -> void;
     auto mouse_scroll(float delta) -> void;
     auto mouse_press(int button) -> void;
     auto mouse_release(int button) -> void;

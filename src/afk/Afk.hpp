@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "afk/events/Events.hpp"
+#include "afk/event/EventManager.hpp"
 #include "afk/renderer/Camera.hpp"
 #include "afk/renderer/Renderer.hpp"
 
@@ -11,9 +11,9 @@ namespace Afk {
   public:
     static constexpr const char *GAME_NAME = "ICT397";
 
-    Renderer renderer   = {};
-    Camera camera       = {};
-    EventManager events = {};
+    Renderer renderer          = {};
+    Camera camera              = {};
+    EventManager event_manager = {};
 
     Engine();
     Engine(Engine &&)      = delete;
@@ -31,8 +31,9 @@ namespace Afk {
     auto get_is_running() const -> bool;
 
   private:
-    auto move_keyboard(const Event &e) -> void;
-    auto move_mouse(const Event &e) -> void;
+    auto update_camera() -> void;
+    auto move_keyboard(Event e) -> void;
+    auto move_mouse(Event e) -> void;
     auto handle_mouse() -> void;
     bool is_running       = true;
     unsigned fps_count    = {};

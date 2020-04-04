@@ -5,28 +5,37 @@
 namespace Afk {
   struct Event {
     struct MouseMove {
-      double mouse_x;
-      double mouse_y;
+      double x = {};
+      double y = {};
     };
+
     struct MouseButton {
-      int mouse_code;
+      int mouse_code = {};
     };
+
     struct Key {
-      int key_code;
-      bool control;
-      bool alt;
-      bool shift;
+      int key_code = {};
+      bool control = {};
+      bool alt     = {};
+      bool shift   = {};
     };
+
     struct Text {
       std::string text;
     };
+
     struct MouseScroll {
-      double scroll_x;
-      double scroll_y;
+      double x = {};
+      double y = {};
     };
+
     struct Update {
-      float delta_time;
+      float dt = {};
     };
+
+    // FIXME: Move to keyboard  handler.
+    enum class Action { Forward, Backward, Left, Right };
+
     enum class EventType {
       MouseDown,
       MouseUp,
@@ -37,8 +46,10 @@ namespace Afk {
       MouseScroll,
       Update
     };
+
     using EventData = std::variant<MouseMove, MouseButton, Key, Text, MouseScroll, Update>;
-    EventData data;
-    EventType type;
+
+    EventData data = {};
+    EventType type = {};
   };
 }

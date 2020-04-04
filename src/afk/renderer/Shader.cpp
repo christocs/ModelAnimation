@@ -6,7 +6,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "afk/io/Log.hpp"
 #include "afk/io/Path.hpp"
 
 using Afk::Shader;

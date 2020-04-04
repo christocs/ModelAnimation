@@ -17,7 +17,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "afk/io/Log.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/renderer/Mesh.hpp"
 #include "afk/renderer/Model.hpp"

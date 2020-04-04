@@ -1,8 +1,8 @@
-#include "ScriptSetup.hpp"
+#include "afk/script/Script.hpp"
 
 #include <GLFW/glfw3.h>
 
-#include "afk/events/Event.hpp"
+#include "afk/event/Event.hpp"
 
 using Afk::Event;
 
