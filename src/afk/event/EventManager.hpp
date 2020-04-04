@@ -18,7 +18,7 @@ namespace Afk {
     EventManager() = default;
 
     auto pump_events() -> void;
-    auto register_event(Event::EventType type, Callback callback) -> void;
+    auto register_event(Event::Type type, Callback callback) -> void;
     auto setup_callbacks(GLFWwindow *window) -> void;
 
     // FIXME: Move to keyboard manager.
@@ -40,10 +40,10 @@ namespace Afk {
 
     std::queue<Event> events = {};
 
-    std::unordered_map<Event::EventType, std::vector<Callback>> callbacks = {
-        {Event::EventType::MouseDown, {}},   {Event::EventType::MouseUp, {}},
-        {Event::EventType::MouseMove, {}},   {Event::EventType::KeyDown, {}},
-        {Event::EventType::KeyUp, {}},       {Event::EventType::TextEnter, {}},
-        {Event::EventType::MouseScroll, {}}, {Event::EventType::Update, {}}};
+    std::unordered_map<Event::Type, std::vector<Callback>> callbacks = {
+        {Event::Type::MouseDown, {}},   {Event::Type::MouseUp, {}},
+        {Event::Type::MouseMove, {}},   {Event::Type::KeyDown, {}},
+        {Event::Type::KeyUp, {}},       {Event::Type::TextEnter, {}},
+        {Event::Type::MouseScroll, {}}, {Event::Type::Update, {}}};
   };
 }

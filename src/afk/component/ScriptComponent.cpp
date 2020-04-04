@@ -2,39 +2,46 @@
 
 #include <filesystem>
 #include <stdexcept>
+#include <string>
 
 #include "afk/event/EventManager.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/script/Script.hpp"
 
+using namespace std::string_literals;
+using std::runtime_error;
 using std::filesystem::path;
 
 /**
  * This should probably be moved somewhere better
  */
 auto Afk::ScriptComponent::setup_lua_state(lua_State *lua) -> void {
-  auto keyns = luabridge::getGlobalNamespace(lua).beginNamespace("key");
-  for (auto &key : Afk::Lua::get_keys()) {
+  auto key_ns = luabridge::getGlobalNamespace(lua).beginNamespace("key");
+  for (const auto &key : Afk::Script::keys) {
     // key.code can't be changed from lua's side
-    keyns.addVariable<int>(key.name.c_str(), &key.code, false);
+    key_ns.addVariable<int>(key.name.c_str(), const_cast<int *>(&key.code), false);
   }
-  keyns.endNamespace();
-  auto mousens = luabridge::getGlobalNamespace(lua).beginNamespace("mouse");
-  for (auto &btn : Afk::Lua::get_buttons()) {
-    mousens.addVariable<int>(btn.name.c_str(), &btn.button, false);
-  }
-  mousens.endNamespace();
+  key_ns.endNamespace();
 
-  auto evtmgr =
-      luabridge::getGlobalNamespace(lua).beginClass<EventManager>("events");
-  for (auto &evt : Afk::Lua::get_events()) {
-    evtmgr.addStaticProperty<int>(evt.name.c_str(), &evt.event, false);
+  auto mouse_ns = luabridge::getGlobalNamespace(lua).beginNamespace("mouse");
+  for (const auto &mouse_button : Afk::Script::mouse_buttons) {
+    mouse_ns.addVariable<int>(mouse_button.name.c_str(),
+                              const_cast<int *>(&mouse_button.button), false);
   }
+  mouse_ns.endNamespace();
+
+  auto event_manager_class =
+      luabridge::getGlobalNamespace(lua).beginClass<EventManager>("events");
+  for (const auto &event : Afk::Script::events) {
+    event_manager_class.addStaticProperty<int>(event.name.c_str(),
+                                               const_cast<int *>(&event.type), false);
+  }
+
   // TODO: Think of a way to allow live reloading with this registration type
   // (Right now when you reload the file I think old registered events will stay around)
   // (Maybe need some alternate register function that lua will use)
   // evtmgr.addFunction("register", &Afk::EventManager::register_event);
-  evtmgr.endClass();
+  event_manager_class.endClass();
 }
 
 Afk::ScriptComponent::ScriptComponent(lua_State *lua, path file_name)
@@ -48,10 +55,12 @@ auto Afk::ScriptComponent::reload(lua_State *lua) -> void {
   const auto abs_path = Afk::get_resource_path(this->file_path);
 
   this->last_file_update = std::filesystem::last_write_time(abs_path);
+
   if (luaL_dofile(lua, abs_path.c_str()) != 0) {
-    throw std::runtime_error{"Error loading " + this->file_path.string() +
-                             ": " + lua_tostring(lua, -1)};
+    throw runtime_error{"Error loading "s + this->file_path.string() + ": "s +
+                        lua_tostring(lua, -1)};
   }
+
   this->on_update        = luabridge::getGlobal(lua, "update");
   this->on_key_press     = luabridge::getGlobal(lua, "key_down");
   this->on_key_release   = luabridge::getGlobal(lua, "key_up");

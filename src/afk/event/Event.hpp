@@ -36,7 +36,7 @@ namespace Afk {
     // FIXME: Move to keyboard  handler.
     enum class Action { Forward, Backward, Left, Right };
 
-    enum class EventType {
+    enum class Type {
       MouseDown,
       MouseUp,
       MouseMove,
@@ -47,9 +47,9 @@ namespace Afk {
       Update
     };
 
-    using EventData = std::variant<MouseMove, MouseButton, Key, Text, MouseScroll, Update>;
+    using Data = std::variant<MouseMove, MouseButton, Key, Text, MouseScroll, Update>;
 
-    EventData data = {};
-    EventType type = {};
+    Data data = {};
+    Type type = {};
   };
 }

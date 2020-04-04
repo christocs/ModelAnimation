@@ -7,10 +7,11 @@
  * Acts as a façade between events and Lua.
  */
 namespace Afk {
-  namespace Lua {
-    struct Key {
+  class Script {
+  public:
+    struct Event {
       std::string name = {};
-      int code         = {};
+      int type         = {};
     };
 
     struct Mouse {
@@ -18,18 +19,13 @@ namespace Afk {
       int button       = {};
     };
 
-    struct LuaEvent {
+    struct Key {
       std::string name = {};
-      int event        = {};
+      int code         = {};
     };
 
-    /**
-     * Return not const as references to these values are used by lua.
-     * Despite being "readonly" from lua's side, they can't be const.
-     * (Even readonly variables can be changed in lua, with things like rawset.)
-     */
-    auto get_keys() -> std::vector<Key> &;
-    auto get_buttons() -> std::vector<Mouse> &;
-    auto get_events() -> std::vector<LuaEvent> &;
-  }
+    static const std::vector<Event> events;
+    static const std::vector<Mouse> mouse_buttons;
+    static const std::vector<Key> keys;
+  };
 }

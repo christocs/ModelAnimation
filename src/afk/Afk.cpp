@@ -9,8 +9,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-using Afk::Engine;
 using glm::vec3;
+
+using Afk::Engine;
+using Afk::Event;
 using Action   = Afk::Event::Action;
 using Movement = Afk::Camera::Movement;
 
@@ -35,7 +37,7 @@ auto Engine::move_mouse(Event event) -> void {
 }
 
 auto Engine::move_keyboard(Event event) -> void {
-  const auto data = std::get<Afk::Event::Key>(event.data);
+  const auto data = std::get<Event::Key>(event.data);
 
   if (data.key_code == GLFW_KEY_ESCAPE) {
     this->is_running = false;
@@ -79,12 +81,10 @@ auto Engine::update_camera() -> void {
 Engine::Engine() {
   this->event_manager.setup_callbacks(this->renderer.window.get());
 
-  this->event_manager.register_event(Afk::Event::EventType::MouseMove, [this](Event event) {
-    this->move_mouse(event);
-  });
-  this->event_manager.register_event(Afk::Event::EventType::KeyDown, [this](Event event) {
-    this->move_keyboard(event);
-  });
+  this->event_manager.register_event(
+      Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
+  this->event_manager.register_event(
+      Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
 
   glfwSetFramebufferSizeCallback(this->renderer.window.get(), resize_window_callback);
   glfwSetInputMode(this->renderer.window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);

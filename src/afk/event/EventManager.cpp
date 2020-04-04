@@ -10,8 +10,7 @@ using Action = Afk::Event::Action;
 
 auto EventManager::pump_events() -> void {
   glfwPollEvents();
-  this->events.push({Event::Update{Afk::Engine::get().get_delta_time()},
-                     Event::EventType::Update});
+  this->events.push({Event::Update{Afk::Engine::get().get_delta_time()}, Event::Type::Update});
 
   while (this->events.size() > 0) {
     const auto &current_event = this->events.front();
@@ -24,7 +23,7 @@ auto EventManager::pump_events() -> void {
   }
 }
 
-auto EventManager::register_event(Event::EventType type, Callback callback) -> void {
+auto EventManager::register_event(Event::Type type, Callback callback) -> void {
   this->callbacks[type].push_back(callback);
 }
 
@@ -48,9 +47,9 @@ auto EventManager::key_callback([[maybe_unused]] GLFWwindow *window, int key,
   const auto alt     = (mods & GLFW_MOD_ALT) == GLFW_MOD_ALT;
   const auto shift   = (mods & GLFW_MOD_SHIFT) == GLFW_MOD_SHIFT;
 
-  afk.event_manager.events.push({Event::Key{key, control, alt, shift},
-                                 action == GLFW_PRESS ? Event::EventType::KeyDown
-                                                      : Event::EventType::KeyUp});
+  afk.event_manager.events.push(
+      {Event::Key{key, control, alt, shift},
+       action == GLFW_PRESS ? Event::Type::KeyDown : Event::Type::KeyUp});
 
   // FIXME: Move to keyboard manager.
   const auto new_state = action == GLFW_PRESS ? true : false;
@@ -75,24 +74,23 @@ auto EventManager::char_callback([[maybe_unused]] GLFWwindow *window,
                                  [[maybe_unused]] uint32_t codepoint) -> void {
   // FIXME: Implement this
   // Afk::Engine::get().event_manager.events.push(
-  //     {Event::Text{std::string{""}}, Event::EventType::TextEnter});
+  //     {Event::Text{std::string{""}}, Event::Type::TextEnter});
 }
 
 auto EventManager::mouse_pos_callback([[maybe_unused]] GLFWwindow *window,
                                       double x, double y) -> void {
-  Afk::Engine::get().event_manager.events.push(
-      {Event::MouseMove{x, y}, Event::EventType::MouseMove});
+  Afk::Engine::get().event_manager.events.push({Event::MouseMove{x, y}, Event::Type::MouseMove});
 }
 
 auto EventManager::mouse_press_callback([[maybe_unused]] GLFWwindow *window, int button,
                                         int action, [[maybe_unused]] int mods) -> void {
   Afk::Engine::get().event_manager.events.push(
-      {Event::MouseButton{button}, action == GLFW_PRESS ? Event::EventType::MouseDown
-                                                        : Event::EventType::MouseUp});
+      {Event::MouseButton{button},
+       action == GLFW_PRESS ? Event::Type::MouseDown : Event::Type::MouseUp});
 }
 
 auto EventManager::mouse_scroll_callback([[maybe_unused]] GLFWwindow *window,
                                          double dx, double dy) -> void {
   Afk::Engine::get().event_manager.events.push(
-      {Event::MouseScroll{dx, dy}, Event::EventType::MouseScroll});
+      {Event::MouseScroll{dx, dy}, Event::Type::MouseScroll});
 }
