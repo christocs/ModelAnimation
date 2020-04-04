@@ -76,18 +76,18 @@ auto Afk::ScriptComponent::mouse_move(int mousex, int mousey) -> void {
     this->on_mouse_move(mousex, mousey);
   }
 }
-auto Afk::ScriptComponent::mouse_scroll(float delta, int mousex, int mousey) -> void {
+auto Afk::ScriptComponent::mouse_scroll(float delta) -> void {
   if (this->on_mouse_scroll.isFunction()) {
-    this->on_mouse_scroll(delta, mousex, mousey);
+    this->on_mouse_scroll(delta);
   }
 }
-auto Afk::ScriptComponent::mouse_press(int button, int mousex, int mousey) -> void {
+auto Afk::ScriptComponent::mouse_press(int button) -> void {
   if (this->on_mouse_press.isFunction()) {
-    this->on_mouse_press(button, mousex, mousey);
+    this->on_mouse_press(button);
   }
 }
-auto Afk::ScriptComponent::mouse_release(int button, int mousex, int mousey) -> void {
+auto Afk::ScriptComponent::mouse_release(int button) -> void {
   if (this->on_mouse_release.isFunction()) {
-    this->on_mouse_release(button, mousex, mousey);
+    this->on_mouse_release(button);
   }
 }

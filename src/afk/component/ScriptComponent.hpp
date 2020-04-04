@@ -41,15 +41,13 @@ namespace Afk {
     auto reload(lua_State *lua) -> void;
     auto reload_if_old(lua_State *lua) -> void;
 
-    // Assuming DT is float for now, will change if needed.
     auto update(float dt) -> void;
     auto key_press(int key, bool alt, bool ctrl, bool shift) -> void;
     auto key_release(int key, bool alt, bool ctrl, bool shift) -> void;
     auto text_enter(const std::string &text) -> void;
     auto mouse_move(int mousex, int mousey) -> void;
-    // No point in supporting multiple mouse wheels (although SFML does)
-    auto mouse_scroll(float delta, int mousex, int mousey) -> void;
-    auto mouse_press(int button, int mousex, int mousey) -> void;
-    auto mouse_release(int button, int mousex, int mousey) -> void;
+    auto mouse_scroll(float delta) -> void;
+    auto mouse_press(int button) -> void;
+    auto mouse_release(int button) -> void;
   };
 }
