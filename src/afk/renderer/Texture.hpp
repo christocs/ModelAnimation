@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstddef>
-#include <string>
+#include <filesystem>
 #include <vector>
 
 namespace Afk {
@@ -14,10 +14,10 @@ namespace Afk {
       Count
     };
 
-    Type type        = Type::Diffuse;
-    std::string path = {};
+    Type type                       = Type::Diffuse;
+    std::filesystem::path file_path = {};
 
     Texture() = default;
-    Texture(const std::string &_path);
+    Texture(std::filesystem::path _file_path);
   };
 }

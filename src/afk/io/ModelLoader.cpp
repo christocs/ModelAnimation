@@ -1,5 +1,7 @@
 #include "afk/io/ModelLoader.hpp"
 
+#include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
@@ -15,6 +17,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "afk/io/Log.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/renderer/Mesh.hpp"
 #include "afk/renderer/Model.hpp"
@@ -28,9 +31,9 @@ using std::runtime_error;
 using std::string;
 using std::unordered_map;
 using std::vector;
+using std::filesystem::path;
 
 using Afk::ModelLoader;
-using Afk::Path;
 using Afk::Texture;
 
 constexpr unsigned ASSIMP_OPTIONS =
@@ -59,14 +62,17 @@ static auto to_glm(aiVector3t<float> m) -> vec3 {
   return vec3{m.x, m.y, m.z};
 }
 
-auto ModelLoader::load(const string &path) -> Model {
-  const auto absPath = Path::get_absolute_path(path);
-  auto importer      = Assimp::Importer{};
+auto ModelLoader::load(path file_path) -> Model {
+  const auto abs_path = Afk::get_resource_path(file_path);
+  auto importer       = Assimp::Importer{};
 
-  this->model.path = path;
-  this->model.dir  = Path::get_directory(path);
+  this->model.file_path = file_path;
+  this->model.file_dir  = file_path.parent_path();
 
-  const auto *scene = importer.ReadFile(absPath, ASSIMP_OPTIONS);
+  Afk::status << file_path.string() << '\n';
+  Afk::status << abs_path.string() << '\n';
+
+  const auto *scene = importer.ReadFile(abs_path.string(), ASSIMP_OPTIONS);
 
   if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
     throw runtime_error{"Model load error: "s + importer.GetErrorString()};
@@ -156,12 +162,16 @@ auto ModelLoader::get_material_textures(const aiMaterial *material, Texture::Typ
 
   for (auto i = 0u; i < texture_count; ++i) {
     auto assimp_path = aiString{};
-    material->GetTexture(get_assimp_texture_type(type), i, &assimp_path);
-    const auto path = get_texture_path(string{assimp_path.C_Str()});
 
-    auto texture = Texture{};
-    texture.type = type;
-    texture.path = path;
+    material->GetTexture(get_assimp_texture_type(type), i, &assimp_path);
+    // FIXME: Export models just with filenames in Blender, remove this.
+    auto raw_path = string{assimp_path.C_Str()};
+    std::replace(raw_path.begin(), raw_path.end(), '\\', '/');
+    const auto file_path = get_texture_path(path{raw_path});
+
+    auto texture      = Texture{};
+    texture.type      = type;
+    texture.file_path = file_path;
     textures.push_back(texture);
   }
 
@@ -188,6 +198,6 @@ auto ModelLoader::get_textures(const aiMaterial *material) -> Mesh::Textures {
   return textures;
 }
 
-auto ModelLoader::get_texture_path(const string &path) const -> string {
-  return this->model.dir + "/textures/" + Path::get_filename(path);
+auto ModelLoader::get_texture_path(path file_path) const -> path {
+  return this->model.file_dir / "textures" / file_path.filename();
 }
