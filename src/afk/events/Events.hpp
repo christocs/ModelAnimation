@@ -1,16 +1,18 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <queue>
 #include <vector>
 
-#include "Callback.hpp"
 #include "Event.hpp"
 
 struct GLFWwindow;
 namespace Afk {
   class EventManager {
+    using Callback = std::function<void(const Afk::Event &)>;
+
   public:
     EventManager();
 
