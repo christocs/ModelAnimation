@@ -31,8 +31,8 @@ auto EventManager::setup_callbacks(GLFWwindow *win) -> void {
   glfwSetScrollCallback(win, mouse_scroll_callback);
 }
 
-auto EventManager::key_callback(GLFWwindow *win, int key, int scancode,
-                                int action, int mods) -> void {
+auto EventManager::key_callback([[maybe_unused]] GLFWwindow *win, int key,
+                                [[maybe_unused]] int scancode, int action, int mods) -> void {
   if (action == GLFW_REPEAT) {
     return;
   }
@@ -40,28 +40,28 @@ auto EventManager::key_callback(GLFWwindow *win, int key, int scancode,
   auto alt     = (mods & GLFW_MOD_ALT) == GLFW_MOD_ALT;
   auto shift   = (mods & GLFW_MOD_SHIFT) == GLFW_MOD_SHIFT;
   Afk::Engine::get().events.events.push(
-      {Event::Key{
-           key,
-       },
+      {Event::Key{key, control, alt, shift},
        action == GLFW_PRESS ? Event::EventType::KeyDown : Event::EventType::KeyUp});
 }
-auto EventManager::char_callback(GLFWwindow *win, uint32_t codepoint) -> void {
+auto EventManager::char_callback([[maybe_unused]] GLFWwindow *win, uint32_t codepoint)
+    -> void {
   throw "not implemented";
   Afk::Engine::get().events.events.push(
       {Event::Text{std::string{""}}, Event::EventType::TextEnter});
 }
-auto EventManager::mouse_pos_callback(GLFWwindow *win, double xpos, double ypos) -> void {
+auto EventManager::mouse_pos_callback([[maybe_unused]] GLFWwindow *win,
+                                      double xpos, double ypos) -> void {
   Afk::Engine::get().events.events.push(
       {Event::MouseMove{xpos, ypos}, Event::EventType::MouseMove});
 }
-auto EventManager::mouse_press_callback(GLFWwindow *win, int btn, int action, int mods)
-    -> void {
+auto EventManager::mouse_press_callback([[maybe_unused]] GLFWwindow *win,
+                                        int btn, int action, int mods) -> void {
   Afk::Engine::get().events.events.push(
       {Event::MouseButton{btn}, action == GLFW_PRESS ? Event::EventType::MouseDown
                                                      : Event::EventType::MouseUp});
 }
-auto EventManager::mouse_scroll_callback(GLFWwindow *win, double xdelta, double ydelta)
-    -> void {
+auto EventManager::mouse_scroll_callback([[maybe_unused]] GLFWwindow *win,
+                                         double xdelta, double ydelta) -> void {
   Afk::Engine::get().events.events.push(
       {Event::MouseScroll{xdelta, ydelta}, Event::EventType::MouseScroll});
 }
