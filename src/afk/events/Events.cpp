@@ -1,8 +1,10 @@
 #include "Events.hpp"
 
+// dont move
+#include "afk/Afk.hpp"
+// dont move
 #include <GLFW/glfw3.h>
 
-#include "afk/Afk.hpp"
 using Afk::EventManager;
 
 EventManager::EventManager() {}
@@ -43,19 +45,19 @@ auto EventManager::key_callback([[maybe_unused]] GLFWwindow *win, int key,
       {Event::Key{key, control, alt, shift},
        action == GLFW_PRESS ? Event::EventType::KeyDown : Event::EventType::KeyUp});
 }
-auto EventManager::char_callback([[maybe_unused]] GLFWwindow *win, uint32_t codepoint)
-    -> void {
+auto EventManager::char_callback([[maybe_unused]] GLFWwindow *win,
+                                 [[maybe_unused]] uint32_t codepoint) -> void {
   throw "not implemented";
-  Afk::Engine::get().events.events.push(
-      {Event::Text{std::string{""}}, Event::EventType::TextEnter});
+  // Afk::Engine::get().events.events.push(
+  //     {Event::Text{std::string{""}}, Event::EventType::TextEnter});
 }
 auto EventManager::mouse_pos_callback([[maybe_unused]] GLFWwindow *win,
                                       double xpos, double ypos) -> void {
   Afk::Engine::get().events.events.push(
       {Event::MouseMove{xpos, ypos}, Event::EventType::MouseMove});
 }
-auto EventManager::mouse_press_callback([[maybe_unused]] GLFWwindow *win,
-                                        int btn, int action, int mods) -> void {
+auto EventManager::mouse_press_callback([[maybe_unused]] GLFWwindow *win, int btn,
+                                        int action, [[maybe_unused]] int mods) -> void {
   Afk::Engine::get().events.events.push(
       {Event::MouseButton{btn}, action == GLFW_PRESS ? Event::EventType::MouseDown
                                                      : Event::EventType::MouseUp});
