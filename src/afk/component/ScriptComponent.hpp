@@ -17,13 +17,13 @@ struct lua_State;
 namespace Afk {
   class ScriptComponent {
   private:
-    std::filesystem::path scriptPath;
+    std::filesystem::path script_path;
     // Engine
     LuaRef on_update;
     // Keyboard
     LuaRef on_key_press;
     LuaRef on_key_release;
-    LuaRef on_tex_tEnter;
+    LuaRef on_text_enter;
     // Mouse
     LuaRef on_mouse_move;
     LuaRef on_mouse_scroll;
@@ -43,13 +43,13 @@ namespace Afk {
 
     // Assuming DT is float for now, will change if needed.
     auto update(float dt) -> void;
-    // auto key_press(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift) -> void;
-    // auto key_release(sf::Keyboard::Key key, bool alt, bool ctrl, bool shift) -> void;
+    auto key_press(int key, bool alt, bool ctrl, bool shift) -> void;
+    auto key_release(int key, bool alt, bool ctrl, bool shift) -> void;
     auto text_enter(const std::string &text) -> void;
     auto mouse_move(int mousex, int mousey) -> void;
     // No point in supporting multiple mouse wheels (although SFML does)
     auto mouse_scroll(float delta, int mousex, int mousey) -> void;
-    // auto mouse_press(sf::Mouse::Button button, int mousex, int mousey) -> void;
-    // auto mouse_release(sf::Mouse::Button button, int mousex, int mousey) -> void;
+    auto mouse_press(int button, int mousex, int mousey) -> void;
+    auto mouse_release(int button, int mousex, int mousey) -> void;
   };
 }

@@ -3,7 +3,7 @@
 #include <vector>
 
 /**
- * Basically acts as a façade between sf::Mouse and Lua
+ * Basically acts as a façade between glfw's mouse and Lua
  */
 namespace LuaMouse {
   struct Mouse {
@@ -15,5 +15,5 @@ namespace LuaMouse {
    * Despite being "readonly" from lua's side, they can't be const.
    * (Even readonly variables can be changed in lua, with things like rawset.)
    */
-  auto getButtons() -> std::vector<Mouse> &;
+  auto get_buttons() -> std::vector<Mouse> &;
 }
