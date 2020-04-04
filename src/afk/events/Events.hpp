@@ -12,8 +12,6 @@ struct GLFWwindow;
 namespace Afk {
   class EventManager {
   public:
-    // events available to sub to:
-    // update, mousemove, mouseup, mousedown, keyup, keydown, textenter,
     EventManager();
 
     auto pump_events() -> void;
