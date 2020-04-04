@@ -9,6 +9,8 @@ EventManager::EventManager() {}
 
 auto EventManager::pump_events() -> void {
   glfwPollEvents();
+  this->events.push({Event::Update{Afk::Engine::get().get_delta_time()},
+                     Event::EventType::Update});
   while (this->events.size() > 0) {
     const auto &current_event = this->events.front();
     for (auto &event_callback : this->callbacks[current_event.type]) {

@@ -25,7 +25,7 @@ namespace Afk {
       double scroll_y;
     };
     struct Update {
-      double delta_time;
+      float delta_time;
     };
     enum class EventType {
       MouseDown,
