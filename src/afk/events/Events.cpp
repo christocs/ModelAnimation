@@ -47,7 +47,7 @@ auto EventManager::key_callback([[maybe_unused]] GLFWwindow *win, int key,
 }
 auto EventManager::char_callback([[maybe_unused]] GLFWwindow *win,
                                  [[maybe_unused]] uint32_t codepoint) -> void {
-  throw "not implemented";
+  // FIXME: Implement this
   // Afk::Engine::get().events.events.push(
   //     {Event::Text{std::string{""}}, Event::EventType::TextEnter});
 }
