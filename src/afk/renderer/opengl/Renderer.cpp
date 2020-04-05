@@ -131,7 +131,9 @@ auto Renderer::swap_buffers() -> void {
 }
 
 auto Renderer::get_model(path file_path) -> ModelHandle {
-  const auto is_loaded = this->models.count(file_path) == 1;
+  const auto is_loaded = this->models.count(file_path.string()) == 1;
+
+  file_path = file_path.make_preferred();
 
   if (!is_loaded) {
     this->models[file_path.string()] = this->load_model(Model{file_path});
@@ -141,7 +143,9 @@ auto Renderer::get_model(path file_path) -> ModelHandle {
 }
 
 auto Renderer::get_texture(path file_path) -> TextureHandle {
-  const auto is_loaded = this->textures.count(file_path) == 1;
+  const auto is_loaded = this->textures.count(file_path.string()) == 1;
+
+  file_path = file_path.make_preferred();
 
   if (!is_loaded) {
     this->textures[file_path.string()] = this->load_texture(Texture{file_path});
@@ -151,7 +155,9 @@ auto Renderer::get_texture(path file_path) -> TextureHandle {
 }
 
 auto Renderer::get_shader(path file_path) -> ShaderHandle {
-  const auto is_loaded = this->shaders.count(file_path) == 1;
+  const auto is_loaded = this->shaders.count(file_path.string()) == 1;
+
+  file_path = file_path.make_preferred();
 
   if (!is_loaded) {
     this->shaders[file_path.string()] = this->compile_shader(Shader{file_path});
@@ -322,13 +328,13 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
     modelHandle.meshes.push_back(std::move(mesh_handle));
   }
 
-  this->models[model.file_path] = std::move(modelHandle);
+  this->models[model.file_path.string()] = std::move(modelHandle);
 
-  return this->models[model.file_path];
+  return this->models[model.file_path.string()];
 }
 
 auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
-  const auto is_loaded = this->textures.count(texture.file_path) == 1;
+  const auto is_loaded = this->textures.count(texture.file_path.string()) == 1;
 
   if (is_loaded) {
     throw runtime_error{"Texture with path '"s + texture.file_path.string() + "' already loaded"s};
@@ -338,8 +344,8 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
   auto height   = 0;
   auto channels = 0;
   auto image    = shared_ptr<unsigned char>{
-      stbi_load(Afk::get_resource_path(texture.file_path).c_str(), &width,
-                &height, &channels, STBI_rgb_alpha),
+      stbi_load(Afk::get_resource_path(texture.file_path).string().c_str(),
+                &width, &height, &channels, STBI_rgb_alpha),
       stbi_image_free};
 
   if (image == nullptr) {
@@ -362,15 +368,15 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  Afk::status << "Texture '"s << texture.file_path << "' loaded with ID "s
+  Afk::status << "Texture "s << texture.file_path << " loaded with ID "s
               << texture_handle.id << ".\n"s;
   this->textures[texture.file_path] = std::move(texture_handle);
 
-  return this->textures[texture.file_path];
+  return this->textures[texture.file_path.string()];
 }
 
 auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
-  const auto is_loaded = this->shaders.count(shader.file_path) == 1;
+  const auto is_loaded = this->shaders.count(shader.file_path.string()) == 1;
 
   if (is_loaded) {
     throw runtime_error{"Shader with path '"s + shader.file_path.string() + "' already loaded"s};
@@ -400,7 +406,7 @@ auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
                         shader.file_path.string() + ": "s + error_msg.data()};
   }
 
-  Afk::status << "Shader '"s << shader.file_path << "' compiled with ID "s
+  Afk::status << "Shader "s << shader.file_path << " compiled with ID "s
               << shader_handle.id << ".\n"s;
   this->shaders[shader.file_path.string()] = std::move(shader_handle);
 
@@ -441,7 +447,7 @@ auto Renderer::link_shaders(const string &name, const ShaderHandles &shader_hand
                         error_msg.data()};
   }
 
-  Afk::status << "Shader program '"s << name << "' linked with ID "s
+  Afk::status << "Shader program "s << name << " linked with ID "s
               << shader_program.id << ".\n"s;
   this->shader_programs[name] = std::move(shader_program);
 

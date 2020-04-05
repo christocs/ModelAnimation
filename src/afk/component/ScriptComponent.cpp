@@ -56,7 +56,7 @@ auto Afk::ScriptComponent::reload(lua_State *lua) -> void {
 
   this->last_file_update = std::filesystem::last_write_time(abs_path);
 
-  if (luaL_dofile(lua, abs_path.c_str()) != 0) {
+  if (luaL_dofile(lua, abs_path.string().c_str()) != 0) {
     throw runtime_error{"Error loading "s + this->file_path.string() + ": "s +
                         lua_tostring(lua, -1)};
   }

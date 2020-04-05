@@ -17,7 +17,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "afk/io/Log.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/renderer/Mesh.hpp"
 #include "afk/renderer/Model.hpp"
@@ -68,9 +67,6 @@ auto ModelLoader::load(path file_path) -> Model {
 
   this->model.file_path = file_path;
   this->model.file_dir  = file_path.parent_path();
-
-  Afk::status << file_path.string() << '\n';
-  Afk::status << abs_path.string() << '\n';
 
   const auto *scene = importer.ReadFile(abs_path.string(), ASSIMP_OPTIONS);
 
@@ -162,12 +158,8 @@ auto ModelLoader::get_material_textures(const aiMaterial *material, Texture::Typ
 
   for (auto i = 0u; i < texture_count; ++i) {
     auto assimp_path = aiString{};
-
     material->GetTexture(get_assimp_texture_type(type), i, &assimp_path);
-    // FIXME: Export models just with filenames in Blender, remove this.
-    auto raw_path = string{assimp_path.C_Str()};
-    std::replace(raw_path.begin(), raw_path.end(), '\\', '/');
-    const auto file_path = get_texture_path(path{raw_path});
+    const auto file_path = get_texture_path(path{string{assimp_path.C_Str()}});
 
     auto texture      = Texture{};
     texture.type      = type;
