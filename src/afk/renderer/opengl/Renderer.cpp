@@ -318,8 +318,8 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
       auto texture_handle = this->get_texture(texture.file_path);
 
       if (texture_handle.type != texture.type) {
-        this->textures[texture.file_path].type = texture.type;
-        texture_handle.type                    = texture.type;
+        this->textures[texture.file_path.string()].type = texture.type;
+        texture_handle.type                             = texture.type;
       }
 
       mesh_handle.textures.push_back(std::move(texture_handle));
@@ -370,7 +370,7 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
 
   Afk::status << "Texture "s << texture.file_path << " loaded with ID "s
               << texture_handle.id << ".\n"s;
-  this->textures[texture.file_path] = std::move(texture_handle);
+  this->textures[texture.file_path.string()] = std::move(texture_handle);
 
   return this->textures[texture.file_path.string()];
 }
