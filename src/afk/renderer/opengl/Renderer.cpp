@@ -302,7 +302,7 @@ auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
 }
 
 auto Renderer::load_model(const Model &model) -> ModelHandle {
-  const auto is_loaded = this->models.count(model.file_path) == 1;
+  const auto is_loaded = this->models.count(model.file_path.string()) == 1;
 
   if (is_loaded) {
     throw runtime_error{"Model with path '"s + model.file_path.string() + "' already loaded"s};
