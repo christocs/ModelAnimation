@@ -62,7 +62,7 @@ static auto to_glm(aiVector3t<float> m) -> vec3 {
 }
 
 auto ModelLoader::load(path file_path) -> Model {
-  const auto abs_path = Afk::get_resource_path(file_path);
+  const auto abs_path = Afk::get_absolute_path(file_path);
   auto importer       = Assimp::Importer{};
 
   this->model.file_path = file_path;

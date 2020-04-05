@@ -29,7 +29,7 @@ static auto shader_type_from_extension(const string &extension) -> Shader::Type 
 }
 
 Shader::Shader(path _file_path) {
-  const auto abs_path = Afk::get_resource_path(_file_path);
+  const auto abs_path = Afk::get_absolute_path(_file_path);
 
   auto file = ifstream{abs_path};
 

@@ -91,8 +91,8 @@ Engine::Engine() {
 }
 
 auto Engine::render() -> void {
-  auto shader = this->renderer.get_shader_program("default");
-  auto model  = this->renderer.get_model("res/model/city/city.fbx");
+  const auto &shader = this->renderer.get_shader_program("default");
+  const auto &model  = this->renderer.get_model("res/model/city/city.fbx");
   const auto [width, height] = this->renderer.get_window_size();
 
   this->renderer.clear_screen();

@@ -52,7 +52,7 @@ Afk::ScriptComponent::ScriptComponent(lua_State *lua, path file_name)
 }
 
 auto Afk::ScriptComponent::reload(lua_State *lua) -> void {
-  const auto abs_path = Afk::get_resource_path(this->file_path);
+  const auto abs_path = Afk::get_absolute_path(this->file_path);
 
   this->last_file_update = std::filesystem::last_write_time(abs_path);
 
@@ -72,7 +72,7 @@ auto Afk::ScriptComponent::reload(lua_State *lua) -> void {
 }
 
 auto Afk::ScriptComponent::reload_if_old(lua_State *lua) -> void {
-  const auto abs_path = Afk::get_resource_path(this->file_path);
+  const auto abs_path = Afk::get_absolute_path(this->file_path);
 
   if (std::filesystem::last_write_time(abs_path) > this->last_file_update) {
     this->reload(lua);
