@@ -24,6 +24,7 @@ namespace Afk {
   struct Mesh;
   struct Model;
   struct Texture;
+  struct ShaderProgram;
 
   namespace OpenGl {
     class Renderer {
@@ -39,8 +40,7 @@ namespace Afk {
       using Models         = std::unordered_map<std::string, ModelHandle>;
       using Textures       = std::unordered_map<std::string, TextureHandle>;
 
-      using ShaderHandles = std::vector<ShaderHandle>;
-      using Window        = std::shared_ptr<GLFWwindow>;
+      using Window = std::shared_ptr<GLFWwindow>;
 
       Window window = nullptr;
 
@@ -66,15 +66,14 @@ namespace Afk {
       auto get_model(std::filesystem::path file_path) -> const ModelHandle &;
       auto get_texture(std::filesystem::path file_path) -> const TextureHandle &;
       auto get_shader(std::filesystem::path file_path) -> const ShaderHandle &;
-      auto get_shader_program(const std::string &name) -> const ShaderProgramHandle &;
+      auto get_shader_program(std::filesystem::path file_path) -> const ShaderProgramHandle &;
 
       // Resource loading
       auto load_model(const Model &model) -> ModelHandle;
       auto load_texture(const Texture &texture) -> TextureHandle;
       auto load_mesh(const Mesh &meshData) -> MeshHandle;
       auto compile_shader(const Shader &shader) -> ShaderHandle;
-      auto link_shaders(const std::string &name, const ShaderHandles &shader_handles)
-          -> ShaderProgramHandle;
+      auto link_shaders(const ShaderProgram &shader_program) -> ShaderProgramHandle;
 
       // Uniform management
       auto set_uniform(const ShaderProgramHandle &program,

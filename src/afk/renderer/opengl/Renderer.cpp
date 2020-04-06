@@ -23,6 +23,7 @@
 #include "afk/renderer/Mesh.hpp"
 #include "afk/renderer/Model.hpp"
 #include "afk/renderer/Shader.hpp"
+#include "afk/renderer/ShaderProgram.hpp"
 #include "afk/renderer/Texture.hpp"
 #include "afk/renderer/opengl/ModelHandle.hpp"
 #include "afk/renderer/opengl/ShaderHandle.hpp"
@@ -45,6 +46,7 @@ using glm::vec4;
 
 using Afk::Engine;
 using Afk::Shader;
+using Afk::ShaderProgram;
 using Afk::Texture;
 using Afk::OpenGl::ModelHandle;
 using Afk::OpenGl::Renderer;
@@ -172,12 +174,15 @@ auto Renderer::get_shader(path file_path) -> const ShaderHandle & {
   return this->shaders.at(file_path.string());
 }
 
-auto Renderer::get_shader_program(const string &name) -> const ShaderProgramHandle & {
-  const auto is_loaded = this->shader_programs.count(name) == 1;
+auto Renderer::get_shader_program(path file_path) -> const ShaderProgramHandle & {
+  const auto is_loaded = this->shader_programs.count(file_path.string()) == 1;
 
-  afk_assert(is_loaded, "Shader program '"s + name + "' is not loaded"s);
+  if (!is_loaded) {
+    this->shader_programs[file_path.string()] =
+        this->link_shaders(ShaderProgram{file_path});
+  }
 
-  return this->shader_programs.at(name);
+  return this->shader_programs.at(file_path.string());
 }
 
 auto Renderer::set_texture_unit(size_t unit) const -> void {
@@ -414,44 +419,47 @@ auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
   return this->shaders[shader.file_path.string()];
 }
 
-auto Renderer::link_shaders(const string &name, const ShaderHandles &shader_handles)
-    -> ShaderProgramHandle {
-  const auto is_loaded = this->shader_programs.count(name) == 1;
+auto Renderer::link_shaders(const ShaderProgram &shader_program) -> ShaderProgramHandle {
+  const auto is_loaded =
+      this->shader_programs.count(shader_program.file_path.string()) == 1;
 
-  afk_assert(!is_loaded, "Shader program with name '"s + name + "' already loaded"s);
+  afk_assert(!is_loaded, "Shader program with path '"s +
+                             shader_program.file_path.string() + "' already loaded"s);
 
-  auto shader_program = ShaderProgramHandle{};
+  auto shader_program_handle = ShaderProgramHandle{};
 
-  shader_program.id = glCreateProgram();
-  afk_assert(shader_program.id != 0, "Shader program creation failed");
+  shader_program_handle.id = glCreateProgram();
+  afk_assert(shader_program_handle.id != 0, "Shader program creation failed");
 
-  for (const auto &shader : shader_handles) {
-    glAttachShader(shader_program.id, shader.id);
+  for (const auto &shader_path : shader_program.shader_paths) {
+    const auto &shader_handle = this->get_shader(shader_path);
+    glAttachShader(shader_program_handle.id, shader_handle.id);
   }
 
-  glLinkProgram(shader_program.id);
+  glLinkProgram(shader_program_handle.id);
 
   auto did_succeed = GLint{};
-  glGetProgramiv(shader_program.id, GL_LINK_STATUS, &did_succeed);
+  glGetProgramiv(shader_program_handle.id, GL_LINK_STATUS, &did_succeed);
 
   if (!did_succeed) {
     auto error_length = GLint{0};
     auto error_msg    = vector<GLchar>{};
 
-    glGetProgramiv(shader_program.id, GL_INFO_LOG_LENGTH, &error_length);
+    glGetProgramiv(shader_program_handle.id, GL_INFO_LOG_LENGTH, &error_length);
     error_msg.resize(static_cast<size_t>(error_length));
-    glGetProgramInfoLog(shader_program.id, error_length, &error_length,
+    glGetProgramInfoLog(shader_program_handle.id, error_length, &error_length,
                         error_msg.data());
 
-    afk_assert(false,
-               "Shader "s + "'"s + name + "' linking failed: "s + error_msg.data());
+    afk_assert(false, "Shader "s + "'"s + shader_program.file_path.string() +
+                          "' linking failed: "s + error_msg.data());
   }
 
-  Afk::status << "Shader program '" << name << "' linked with ID "
-              << shader_program.id << ".\n";
-  this->shader_programs[name] = std::move(shader_program);
+  Afk::status << "Shader program '" << shader_program.file_path.string()
+              << "' linked with ID " << shader_program_handle.id << ".\n";
+  this->shader_programs[shader_program.file_path.string()] =
+      std::move(shader_program_handle);
 
-  return this->shader_programs[name];
+  return this->shader_programs[shader_program.file_path.string()];
 }
 
 auto Renderer::toggle_wireframe() -> void {
