@@ -2,18 +2,17 @@
 
 #include <filesystem>
 #include <fstream>
-#include <stdexcept>
 #include <string>
 #include <unordered_map>
 
 #include "afk/io/Path.hpp"
+#include "afk/utility/Assert.hpp"
 
 using Afk::Shader;
 
 using namespace std::string_literals;
 using std::ifstream;
 using std::istreambuf_iterator;
-using std::runtime_error;
 using std::string;
 using std::unordered_map;
 using std::filesystem::path;
@@ -33,9 +32,7 @@ Shader::Shader(path _file_path) {
 
   auto file = ifstream{abs_path};
 
-  if (!file) {
-    throw runtime_error{"Unable to open shader '"s + abs_path.string() + "'"s};
-  }
+  afk_assert(file.is_open(), "Unable to open shader '"s + abs_path.string() + "'"s);
 
   this->code =
       string{(istreambuf_iterator<char>(file)), istreambuf_iterator<char>()} + '\0';

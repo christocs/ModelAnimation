@@ -3,7 +3,6 @@
 #include <cassert>
 #include <filesystem>
 #include <memory>
-#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -29,10 +28,10 @@
 #include "afk/renderer/opengl/ShaderHandle.hpp"
 #include "afk/renderer/opengl/ShaderProgramHandle.hpp"
 #include "afk/renderer/opengl/TextureHandle.hpp"
+#include "afk/utility/Assert.hpp"
 
 using namespace std::string_literals;
 using std::pair;
-using std::runtime_error;
 using std::shared_ptr;
 using std::size_t;
 using std::string;
@@ -74,9 +73,7 @@ static auto get_gl_shader_type(Shader::Type type) -> GLenum {
 }
 
 Renderer::Renderer() {
-  if (!glfwInit()) {
-    throw runtime_error{"Failed to initialize GLFW"s};
-  }
+  afk_assert(glfwInit(), "Failed to initialize GLFW");
 
   // FIXME: Give user an option to change graphics settings.
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, this->opengl_major_version);
@@ -95,18 +92,33 @@ Renderer::Renderer() {
                                          glfwGetPrimaryMonitor(), nullptr),
                         glfwDestroyWindow};
 
-  if (!this->window.get()) {
-    throw runtime_error{"Failed to create window"};
-  }
-
+  afk_assert(this->window.get() != nullptr, "Failed to create window");
   glfwMakeContextCurrent(this->window.get());
-
-  if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
-    throw runtime_error{"Failed to initialize GLAD"s};
-  }
+  afk_assert(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)),
+             "Failed to initialize GLAD");
 
   glEnable(GL_DEPTH_TEST);
   Afk::status << "OpenGL renderer initialized.\n";
+}
+
+static auto get_gl_error_string(GLenum error) -> const char * {
+  switch (error) {
+    case GL_NO_ERROR: return "GL_NO_ERROR";
+    case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
+    case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
+    case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
+    case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+      return "GL_INVALID_FRAMEBUFFER_OPERATION";
+    default: afk_assert(false, "Unknown error"); return nullptr;
+  }
+}
+
+auto Renderer::check_errors() -> void {
+  auto error = GLenum{};
+  while ((error = glGetError()) != GL_NO_ERROR) {
+    afk_assert(false, "OpenGL error: "s + get_gl_error_string(error));
+  }
 }
 
 auto Renderer::get_window_size() -> pair<unsigned, unsigned> {
@@ -163,9 +175,7 @@ auto Renderer::get_shader(path file_path) -> const ShaderHandle & {
 auto Renderer::get_shader_program(const string &name) -> const ShaderProgramHandle & {
   const auto is_loaded = this->shader_programs.count(name) == 1;
 
-  if (!is_loaded) {
-    throw runtime_error{"Shader program '"s + name + "' is not loaded"s};
-  }
+  afk_assert(is_loaded, "Shader program '"s + name + "' is not loaded"s);
 
   return this->shader_programs.at(name);
 }
@@ -204,11 +214,8 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
 
       const auto index = static_cast<size_t>(mesh.textures[i].type);
 
-      if ((material_bound[index])) {
-        throw runtime_error{"Material "s + name + " already bound"s};
-      } else {
-        material_bound[index] = true;
-      }
+      afk_assert(!material_bound[index], "Material "s + name + " already bound"s);
+      material_bound[index] = true;
 
       this->set_uniform(shader, "u_textures."s + name, static_cast<int>(i));
       this->bind_texture(mesh.textures[i]);
@@ -292,15 +299,15 @@ auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
 
   glBindVertexArray(0);
 
+  this->check_errors();
+
   return mesh_handle;
 }
 
 auto Renderer::load_model(const Model &model) -> ModelHandle {
   const auto is_loaded = this->models.count(model.file_path.string()) == 1;
 
-  if (is_loaded) {
-    throw runtime_error{"Model with path '"s + model.file_path.string() + "' already loaded"s};
-  }
+  afk_assert(!is_loaded, "Model with path '"s + model.file_path.string() + "' already loaded"s);
 
   auto modelHandle = ModelHandle{};
 
@@ -312,6 +319,7 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
       const auto &texture_handle = this->get_texture(texture.file_path);
       auto &loaded_handle        = this->textures[texture.file_path.string()];
 
+      // FIXME: There's definitely a more elegant way to do this.
       if (loaded_handle.type != texture.type) {
         loaded_handle.type = texture.type;
       }
@@ -330,9 +338,8 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
 auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
   const auto is_loaded = this->textures.count(texture.file_path.string()) == 1;
 
-  if (is_loaded) {
-    throw runtime_error{"Texture with path '"s + texture.file_path.string() + "' already loaded"s};
-  }
+  afk_assert(!is_loaded, "Texture with path '"s + texture.file_path.string() + "' already loaded"s);
+
   auto width    = 0;
   auto height   = 0;
   auto channels = 0;
@@ -341,9 +348,8 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
                 &width, &height, &channels, STBI_rgb_alpha),
       stbi_image_free};
 
-  if (image == nullptr) {
-    throw runtime_error{"Failed to load image: '"s + texture.file_path.string() + "'"s};
-  }
+  afk_assert(image != nullptr,
+             "Failed to load image: '"s + texture.file_path.string() + "'"s);
 
   auto texture_handle = TextureHandle{};
   texture_handle.type = texture.type;
@@ -361,6 +367,8 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+  this->check_errors();
+
   Afk::status << "Texture '" << texture.file_path.string()
               << "' loaded with ID " << texture_handle.id << ".\n";
   this->textures[texture.file_path.string()] = std::move(texture_handle);
@@ -371,15 +379,15 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
 auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
   const auto is_loaded = this->shaders.count(shader.file_path.string()) == 1;
 
-  if (is_loaded) {
-    throw runtime_error{"Shader with path '"s + shader.file_path.string() + "' already loaded"s};
-  }
+  afk_assert(!is_loaded, "Shader with path '"s + shader.file_path.string() + "' already loaded"s);
 
   auto shader_handle = ShaderHandle{};
 
   const auto *shader_code_ptr = shader.code.c_str();
   shader_handle.id            = glCreateShader(get_gl_shader_type(shader.type));
   shader_handle.type          = shader.type;
+
+  afk_assert(shader_handle.id != 0, "Shader creation failed");
 
   glShaderSource(shader_handle.id, 1, &shader_code_ptr, nullptr);
   glCompileShader(shader_handle.id);
@@ -395,8 +403,8 @@ auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
     error_msg.resize(static_cast<size_t>(error_length));
     glGetShaderInfoLog(shader_handle.id, error_length, &error_length, error_msg.data());
 
-    throw runtime_error{"Shader compilation failed: "s +
-                        shader.file_path.string() + ": "s + error_msg.data()};
+    afk_assert(false, "Shader compilation failed: "s +
+                          shader.file_path.string() + ": "s + error_msg.data());
   }
 
   Afk::status << "Shader '" << shader.file_path.string()
@@ -410,13 +418,12 @@ auto Renderer::link_shaders(const string &name, const ShaderHandles &shader_hand
     -> ShaderProgramHandle {
   const auto is_loaded = this->shader_programs.count(name) == 1;
 
-  if (is_loaded) {
-    throw runtime_error{"Shader program with name '"s + name + "' already loaded"s};
-  }
+  afk_assert(!is_loaded, "Shader program with name '"s + name + "' already loaded"s);
 
   auto shader_program = ShaderProgramHandle{};
 
   shader_program.id = glCreateProgram();
+  afk_assert(shader_program.id != 0, "Shader program creation failed");
 
   for (const auto &shader : shader_handles) {
     glAttachShader(shader_program.id, shader.id);
@@ -436,8 +443,8 @@ auto Renderer::link_shaders(const string &name, const ShaderHandles &shader_hand
     glGetProgramInfoLog(shader_program.id, error_length, &error_length,
                         error_msg.data());
 
-    throw runtime_error{"Shader "s + "'"s + name + "' linking failed: "s +
-                        error_msg.data()};
+    afk_assert(false,
+               "Shader "s + "'"s + name + "' linking failed: "s + error_msg.data());
   }
 
   Afk::status << "Shader program '" << name << "' linked with ID "

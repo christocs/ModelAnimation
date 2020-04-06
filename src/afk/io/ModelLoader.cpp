@@ -4,7 +4,6 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
-#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -21,12 +20,12 @@
 #include "afk/renderer/Mesh.hpp"
 #include "afk/renderer/Model.hpp"
 #include "afk/renderer/Texture.hpp"
+#include "afk/utility/Assert.hpp"
 
 using namespace std::string_literals;
 using glm::mat4;
 using glm::vec2;
 using glm::vec3;
-using std::runtime_error;
 using std::string;
 using std::unordered_map;
 using std::vector;
@@ -70,9 +69,8 @@ auto ModelLoader::load(path file_path) -> Model {
 
   const auto *scene = importer.ReadFile(abs_path.string(), ASSIMP_OPTIONS);
 
-  if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-    throw runtime_error{"Model load error: "s + importer.GetErrorString()};
-  }
+  afk_assert(scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || scene->mRootNode,
+             "Model load error: "s + importer.GetErrorString());
 
   this->model.meshes.reserve(scene->mNumMeshes);
   this->process_node(scene, scene->mRootNode, to_glm(scene->mRootNode->mTransformation));

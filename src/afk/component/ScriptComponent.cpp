@@ -1,15 +1,14 @@
 #include "afk/component/ScriptComponent.hpp"
 
 #include <filesystem>
-#include <stdexcept>
 #include <string>
 
 #include "afk/event/EventManager.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/script/Script.hpp"
+#include "afk/utility/Assert.hpp"
 
 using namespace std::string_literals;
-using std::runtime_error;
 using std::filesystem::path;
 
 /**
@@ -56,10 +55,8 @@ auto Afk::ScriptComponent::reload(lua_State *lua) -> void {
 
   this->last_file_update = std::filesystem::last_write_time(abs_path);
 
-  if (luaL_dofile(lua, abs_path.string().c_str()) != 0) {
-    throw runtime_error{"Error loading "s + this->file_path.string() + ": "s +
-                        lua_tostring(lua, -1)};
-  }
+  afk_assert(luaL_dofile(lua, abs_path.string().c_str()) != 0,
+             "Error loading "s + this->file_path.string() + ": "s + lua_tostring(lua, -1));
 
   this->on_update        = luabridge::getGlobal(lua, "update");
   this->on_key_press     = luabridge::getGlobal(lua, "key_down");

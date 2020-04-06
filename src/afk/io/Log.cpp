@@ -4,4 +4,3 @@ using Afk::Internal::Error;
 using Afk::Internal::Status;
 
 Status Afk::status = {};
-Error Afk::error   = {};

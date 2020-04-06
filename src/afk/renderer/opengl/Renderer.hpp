@@ -46,6 +46,7 @@ namespace Afk {
 
       Renderer();
 
+      auto check_errors() -> void;
       auto toggle_wireframe() -> void;
       auto get_window_size() -> std::pair<unsigned, unsigned>;
 
