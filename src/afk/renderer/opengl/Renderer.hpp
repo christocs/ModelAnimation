@@ -3,8 +3,8 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include <glad/glad.h>
@@ -40,20 +40,22 @@ namespace Afk {
       using Models         = std::unordered_map<std::string, ModelHandle>;
       using Textures       = std::unordered_map<std::string, TextureHandle>;
 
-      using Window = std::shared_ptr<GLFWwindow>;
+      using Window = std::add_pointer<GLFWwindow>::type;
 
-      Window window = nullptr;
+      Window window          = nullptr;
+      bool wireframe_enabled = false;
 
       Renderer();
+      ~Renderer();
 
-      auto check_errors() -> void;
-      auto toggle_wireframe() -> void;
-      auto get_window_size() -> std::pair<unsigned, unsigned>;
+      auto set_option(GLenum option, bool state) const -> void;
+      auto check_errors() const -> void;
+      auto get_window_size() const -> glm::ivec2;
 
       // Draw commands
       auto clear_screen(glm::vec4 clear_color = {1.0f, 1.0f, 1.0f, 1.0f}) const -> void;
       auto swap_buffers() -> void;
-      auto set_viewport(int x, int y, unsigned width, unsigned height) const -> void;
+      auto set_viewport(int x, int y, int width, int height) const -> void;
       auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader,
                       Transform transform) const -> void;
 
@@ -90,14 +92,12 @@ namespace Afk {
     private:
       const int opengl_major_version = 4;
       const int opengl_minor_version = 1;
+      const bool enable_vsync        = true;
 
       Models models                  = {};
       Textures textures              = {};
       Shaders shaders                = {};
       ShaderPrograms shader_programs = {};
-
-      bool enable_vsync      = true;
-      bool wireframe_enabled = false;
     };
   }
 }

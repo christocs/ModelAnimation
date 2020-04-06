@@ -5,6 +5,7 @@
 #include "afk/event/EventManager.hpp"
 #include "afk/renderer/Camera.hpp"
 #include "afk/renderer/Renderer.hpp"
+#include "afk/ui/Ui.hpp"
 
 namespace Afk {
   class Engine {
@@ -12,6 +13,7 @@ namespace Afk {
     static constexpr const char *GAME_NAME = "ICT397";
 
     Renderer renderer          = {};
+    Ui ui                      = {this->renderer.window};
     Camera camera              = {};
     EventManager event_manager = {};
 
@@ -35,8 +37,9 @@ namespace Afk {
     auto move_keyboard(Event e) -> void;
     auto move_mouse(Event e) -> void;
     auto handle_mouse() -> void;
+
     bool is_running       = true;
-    unsigned fps_count    = {};
+    int fps_count         = {};
     float last_update     = {};
     float last_fps_update = {};
   };

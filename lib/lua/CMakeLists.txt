@@ -1,6 +1,8 @@
 project(lua)
 
-add_library(lua STATIC
+add_library(lua STATIC)
+
+target_sources(lua PRIVATE
     lua/lauxlib.c
     lua/liolib.c
     lua/lopcodes.c

@@ -3,13 +3,16 @@ function(target_ignore_header_warnings target scope)
     target_include_directories(${target} SYSTEM ${scope} ${lib_include_dirs})
 endfunction()
 
-# Disable ASSIMP building tests.
+# Assimp
 option(ASSIMP_BUILD_TESTS OFF)
 option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
-# Disable cpplocate building tests.
+# cpplocate
 option(OPTION_BUILD_TESTS OFF)
-# Disable glfw tests and example programs.
+# glfw
 option(GLFW_BUILD_EXAMPLES OFF)
+option(GLFW_BUILD_TESTS OFF)
+option(GLFW_BUILD_DOCS OFF)
+option(GLFW_USE_HYBRID_HPG ON)
 option(GLFW_BUILD_TESTS OFF)
 option(GLFW_BUILD_DOCS OFF)
 
@@ -17,12 +20,6 @@ option(GLFW_BUILD_DOCS OFF)
 if (UNIX)
     option(USE_LIBCPP OFF)
 endif()
-
-# Force using discrete GPUs.
-option(GLFW_USE_HYBRID_HPG ON)
-# Disable glfw building tests and documentation.
-option(GLFW_BUILD_TESTS OFF)
-option(GLFW_BUILD_DOCS OFF)
 
 # Build libraries.
 string(REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -40,14 +37,15 @@ add_compile_options(
 # Include our dependencies.
 add_subdirectory(entt)
 add_subdirectory(assimp)
-add_subdirectory(glad)
 add_subdirectory(cpplocate)
 add_subdirectory(reactphysics3d)
 add_subdirectory(lua)
 add_subdirectory(lua-bridge)
 add_subdirectory(glm)
-add_subdirectory(glfw)
 add_subdirectory(stb)
+add_subdirectory(glfw)
+add_subdirectory(glad)
+add_subdirectory(imgui)
 
 # DLLs were a mistake.
 set_target_properties(reactphysics3d PROPERTIES ENABLE_EXPORTS ON)
@@ -59,15 +57,18 @@ set_target_properties(cpplocate PROPERTIES DEBUG_POSTFIX "")
 set_target_properties(reactphysics3d PROPERTIES DEBUG_POSTFIX "")
 set_target_properties(lua PROPERTIES DEBUG_POSTFIX "")
 set_target_properties(glfw PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(glad PROPERTIES DEBUG_POSTFIX "")
+set_target_properties(imgui PROPERTIES DEBUG_POSTFIX "")
 
 # Ignore header warnings in our libraries.
 target_ignore_header_warnings(EnTT INTERFACE)
 target_ignore_header_warnings(assimp INTERFACE)
 target_ignore_header_warnings(reactphysics3d INTERFACE)
-target_ignore_header_warnings(glad INTERFACE)
 target_ignore_header_warnings(cpplocate INTERFACE)
 target_ignore_header_warnings(lua INTERFACE)
 target_ignore_header_warnings(LuaBridge INTERFACE)
+target_ignore_header_warnings(stb INTERFACE)
 target_ignore_header_warnings(glm INTERFACE)
 target_ignore_header_warnings(glfw INTERFACE)
-target_ignore_header_warnings(stb INTERFACE)
+target_ignore_header_warnings(glad INTERFACE)
+target_ignore_header_warnings(imgui INTERFACE)

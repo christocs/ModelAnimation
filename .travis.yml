@@ -16,8 +16,8 @@ jobs:
           - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages: [clang-9, libstdc++-9-dev, ninja-build, libgl1-mesa-dev, libx11-dev,
                    libxrandr-dev, libudev-dev, libfreetype6-dev, libopenal-dev,
-                   libflac++-dev, libvorbis-dev, libc++-dev, libxinerama-dev,
-                   libxcursor-dev libxi-dev]
+                   libflac++-dev, libvorbis-dev, libxinerama-dev,
+                   libxcursor-dev libxi-dev, libc++-9-dev, libc++abi-9-dev]
     env:
       - CC=clang-9 CXX=clang++-9
 

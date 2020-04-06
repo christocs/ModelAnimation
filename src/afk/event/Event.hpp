@@ -1,4 +1,6 @@
 #pragma once
+
+#include <cstdint>
 #include <string>
 #include <variant>
 
@@ -10,18 +12,22 @@ namespace Afk {
     };
 
     struct MouseButton {
-      int mouse_code = {};
+      int button   = {};
+      bool control = {};
+      bool alt     = {};
+      bool shift   = {};
     };
 
     struct Key {
-      int key_code = {};
+      int key      = {};
+      int scancode = {};
       bool control = {};
       bool alt     = {};
       bool shift   = {};
     };
 
     struct Text {
-      std::string text;
+      uint32_t codepoint = {};
     };
 
     struct MouseScroll {
@@ -42,6 +48,7 @@ namespace Afk {
       MouseMove,
       KeyDown,
       KeyUp,
+      KeyRepeat,
       TextEnter,
       MouseScroll,
       Update

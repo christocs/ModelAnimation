@@ -13,7 +13,7 @@ namespace Afk {
     auto handle_key(Movement movement, float deltaTime) -> void;
 
     auto get_view_matrix() -> glm::mat4;
-    auto get_projection_matrix(unsigned width, unsigned height) const -> glm::mat4;
+    auto get_projection_matrix(int width, int height) const -> glm::mat4;
 
   private:
     float fov         = 75.0f;

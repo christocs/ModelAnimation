@@ -43,7 +43,7 @@ auto Camera::get_view_matrix() -> mat4 {
   return glm::lookAt(this->position, this->position + this->get_front(), this->get_up());
 }
 
-auto Camera::get_projection_matrix(unsigned width, unsigned height) const -> mat4 {
+auto Camera::get_projection_matrix(int width, int height) const -> mat4 {
   const auto w = static_cast<float>(width);
   const auto h = static_cast<float>(height);
 
