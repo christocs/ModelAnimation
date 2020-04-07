@@ -11,8 +11,6 @@ option(WarningsAsErrors "WarningsAsErrors" OFF)
 set(SANITIZER_OS "Darwin,Linux")
 set(SANITIZER_FLAGS "-fsanitize=address,undefined,leak")
 set(LIBCPP_OS "Linux")
-set(LIBCPP_CXX_FLAGS "-stdlib=libc++")
-set(LIBCPP_LINKER_FLAGS "-lc++abi")
 # Disable in-source builds.
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -76,8 +74,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
     # Enable the clang sanitizer.
     $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:${SANITIZER_FLAGS}>
-    # Use libc++ on Linux.
-    $<$<PLATFORM_ID:${LIBCPP_OS}>:${LIBCPP_CXX_FLAGS}>
     # Set default visibility to hidden.
     $<$<AND:$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>,$<PLATFORM_ID:Windows>>:
         -fvisibility=hidden -fvisibility-inlines-hidden>
@@ -105,7 +101,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glm
     stb
     imgui
-    $<$<PLATFORM_ID:${LIBCPP_OS}>:${LIBCPP_LINKER_FLAGS}>
 )
 
 # Symlink resources to the binary location.
