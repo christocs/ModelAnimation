@@ -18,5 +18,5 @@ target_sources(imgui PRIVATE
 )
 
 target_compile_definitions(imgui PRIVATE IMGUI_USER_CONFIG=\"${CMAKE_CURRENT_SOURCE_DIR}/imgui_config.h\")
-target_include_directories(imgui PUBLIC include imgui)
+target_include_directories(imgui PUBLIC . imgui)
 target_link_libraries(imgui PRIVATE glfw glad ${APP_SERVICES_LIBRARY} ${COCOA_LIBRARY})

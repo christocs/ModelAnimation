@@ -1,1 +1,0 @@
-../../imgui/examples/imgui_impl_allegro5.h
