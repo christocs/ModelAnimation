@@ -109,7 +109,7 @@ Renderer::Renderer() {
   afk_assert(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)),
              "Failed to initialize GLAD");
 
-  Afk::status << "OpenGL renderer initialized.\n";
+  Afk::status << "Renderer subsystem (OpenGL) initialized.\n";
 }
 
 Renderer::~Renderer() {

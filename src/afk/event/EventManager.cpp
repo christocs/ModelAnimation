@@ -2,12 +2,17 @@
 
 #include "afk/Afk.hpp"
 #include "afk/event/Event.hpp"
+#include "afk/io/Log.hpp"
 
 // Must be included after GLAD.
 #include <GLFW/glfw3.h>
 
 using Afk::EventManager;
 using Action = Afk::Event::Action;
+
+EventManager::EventManager() {
+  Afk::status << "Event manager subsystem initialized.\n";
+}
 
 auto EventManager::pump_events() -> void {
   glfwPollEvents();

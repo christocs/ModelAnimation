@@ -21,7 +21,6 @@ Ui::Ui(Renderer::Window _window)
   ImGui::CreateContext();
   auto &io = ImGui::GetIO();
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-  Afk::status << this->ini_path << '\n';
   io.IniFilename = this->ini_path.c_str();
   // ImGui::LoadIniSettingsFromDisk(this->ini_path.c_str());
   ImGui::StyleColorsDark();
@@ -31,6 +30,8 @@ Ui::Ui(Renderer::Window _window)
       Afk::get_absolute_path("res/font/NotoSans-Regular.ttf").string().c_str(), 19.0f);
   auto &style = ImGui::GetStyle();
   style.ScaleAllSizes(1.5f);
+
+  Afk::status << "UI subsystem initialized.\n";
 }
 
 Ui::~Ui() {
@@ -41,14 +42,14 @@ Ui::~Ui() {
 }
 
 auto Ui::draw() -> void {
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplGlfw_NewFrame();
-  ImGui::NewFrame();
-
   if (this->is_visible) {
-    ImGui::ShowDemoWindow(&this->is_visible);
-  }
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
 
-  ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    ImGui::ShowDemoWindow(&this->is_visible);
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  }
 }
