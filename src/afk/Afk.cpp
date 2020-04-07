@@ -19,10 +19,6 @@ using Afk::Event;
 using Action   = Afk::Event::Action;
 using Movement = Afk::Camera::Movement;
 
-static auto glfw_error_callback(int error, const char *msg) {
-  afk_assert(false, msg);
-}
-
 auto Engine::move_mouse(Event event) -> void {
   const auto data = std::get<Event::MouseMove>(event.data);
 

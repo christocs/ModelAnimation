@@ -2,9 +2,10 @@ project(stb)
 
 add_library(stb)
 
-target_sources(stb PRIVATE
-    Dummy.cpp
-    stb/stb_vorbis.c
-)
+target_sources(stb PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/stb_image.cpp)
 
-target_include_directories(stb PUBLIC .)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/stb_image.cpp
+"#define STB_IMAGE_IMPLEMENTATION\n\
+#include \"stb_image.h\"")
+
+target_include_directories(stb PUBLIC . PRIVATE stb)
