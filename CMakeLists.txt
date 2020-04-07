@@ -110,4 +110,8 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
-    ${CMAKE_SOURCE_DIR}/src/afk/renderer/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)
+    ${CMAKE_SOURCE_DIR}/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${CMAKE_SOURCE_DIR}/cfg $<TARGET_FILE_DIR:${PROJECT_NAME}>/cfg)

@@ -14,6 +14,7 @@ namespace Afk {
 
     auto draw() -> void;
 
+    std::string ini_path    = {};
     bool is_visible         = false;
     Renderer::Window window = {};
   };
