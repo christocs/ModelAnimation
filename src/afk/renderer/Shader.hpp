@@ -12,6 +12,6 @@ namespace Afk {
     Type type                       = {};
 
     Shader() = default;
-    Shader(std::filesystem::path _file_path);
+    Shader(const std::filesystem::path &_file_path);
   };
 }

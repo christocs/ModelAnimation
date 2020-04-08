@@ -13,6 +13,7 @@ namespace Afk {
     ~Ui();
 
     auto draw() -> void;
+    auto prepare() -> void;
 
     std::string ini_path    = {};
     bool is_visible         = false;

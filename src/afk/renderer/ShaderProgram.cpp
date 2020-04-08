@@ -15,7 +15,7 @@ using namespace std::string_literals;
 
 using Afk::ShaderProgram;
 
-ShaderProgram::ShaderProgram(path _file_path) {
+ShaderProgram::ShaderProgram(const path &_file_path) {
   const auto abs_path = Afk::get_absolute_path(_file_path);
   auto file           = ifstream{abs_path};
 

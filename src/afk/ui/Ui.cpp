@@ -41,11 +41,13 @@ Ui::~Ui() {
   ImGui::DestroyContext();
 }
 
-auto Ui::draw() -> void {
+auto Ui::prepare() -> void {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
+}
 
+auto Ui::draw() -> void {
   if (this->is_visible) {
     ImGui::ShowDemoWindow(&this->is_visible);
   }

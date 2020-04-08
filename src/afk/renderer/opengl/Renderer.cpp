@@ -159,7 +159,7 @@ auto Renderer::swap_buffers() -> void {
   glfwSwapBuffers(this->window);
 }
 
-auto Renderer::get_model(path file_path) -> const ModelHandle & {
+auto Renderer::get_model(const path &file_path) -> const ModelHandle & {
   const auto is_loaded = this->models.count(file_path.string()) == 1;
 
   if (!is_loaded) {
@@ -169,7 +169,7 @@ auto Renderer::get_model(path file_path) -> const ModelHandle & {
   return this->models.at(file_path.string());
 }
 
-auto Renderer::get_texture(path file_path) -> const TextureHandle & {
+auto Renderer::get_texture(const path &file_path) -> const TextureHandle & {
   const auto is_loaded = this->textures.count(file_path.string()) == 1;
 
   if (!is_loaded) {
@@ -179,7 +179,7 @@ auto Renderer::get_texture(path file_path) -> const TextureHandle & {
   return this->textures.at(file_path.string());
 }
 
-auto Renderer::get_shader(path file_path) -> const ShaderHandle & {
+auto Renderer::get_shader(const path &file_path) -> const ShaderHandle & {
   const auto is_loaded = this->shaders.count(file_path.string()) == 1;
 
   if (!is_loaded) {
@@ -189,7 +189,7 @@ auto Renderer::get_shader(path file_path) -> const ShaderHandle & {
   return this->shaders.at(file_path.string());
 }
 
-auto Renderer::get_shader_program(path file_path) -> const ShaderProgramHandle & {
+auto Renderer::get_shader_program(const path &file_path) -> const ShaderProgramHandle & {
   const auto is_loaded = this->shader_programs.count(file_path.string()) == 1;
 
   if (!is_loaded) {

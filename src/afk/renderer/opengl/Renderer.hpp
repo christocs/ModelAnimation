@@ -65,10 +65,11 @@ namespace Afk {
       auto bind_texture(const TextureHandle &texture) const -> void;
 
       // Resource management
-      auto get_model(std::filesystem::path file_path) -> const ModelHandle &;
-      auto get_texture(std::filesystem::path file_path) -> const TextureHandle &;
-      auto get_shader(std::filesystem::path file_path) -> const ShaderHandle &;
-      auto get_shader_program(std::filesystem::path file_path) -> const ShaderProgramHandle &;
+      auto get_model(const std::filesystem::path &file_path) -> const ModelHandle &;
+      auto get_texture(const std::filesystem::path &file_path) -> const TextureHandle &;
+      auto get_shader(const std::filesystem::path &file_path) -> const ShaderHandle &;
+      auto get_shader_program(const std::filesystem::path &file_path)
+          -> const ShaderProgramHandle &;
 
       // Resource loading
       auto load_model(const Model &model) -> ModelHandle;

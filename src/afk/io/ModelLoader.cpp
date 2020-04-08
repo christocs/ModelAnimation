@@ -60,7 +60,7 @@ static auto to_glm(aiVector3t<float> m) -> vec3 {
   return vec3{m.x, m.y, m.z};
 }
 
-auto ModelLoader::load(path file_path) -> Model {
+auto ModelLoader::load(const path &file_path) -> Model {
   const auto abs_path = Afk::get_absolute_path(file_path);
   auto importer       = Assimp::Importer{};
 
@@ -188,6 +188,6 @@ auto ModelLoader::get_textures(const aiMaterial *material) -> Mesh::Textures {
   return textures;
 }
 
-auto ModelLoader::get_texture_path(path file_path) const -> path {
+auto ModelLoader::get_texture_path(const path &file_path) const -> path {
   return this->model.file_dir / "textures" / file_path.filename();
 }

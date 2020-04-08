@@ -103,6 +103,7 @@ auto Engine::render() -> void {
   const auto window_size = this->renderer.get_window_size();
 
   this->renderer.clear_screen();
+  this->ui.prepare();
 
   // FIXME: Move to a scene manager.
   this->renderer.use_shader(shader);
