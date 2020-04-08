@@ -10,7 +10,7 @@ using std::filesystem::path;
 
 static auto normalise_path(const string &raw_path) -> path {
   auto tmp = raw_path;
-#if defined(WIN32)
+#ifdef WIN32
   std::replace(tmp.begin(), tmp.end(), '\\', '/');
 #endif
 

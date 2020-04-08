@@ -17,6 +17,7 @@
 #include <GLFW/glfw3.h>
 
 #include "afk/Afk.hpp"
+#include "afk/debug/Assert.hpp"
 #include "afk/io/Log.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/renderer/Mesh.hpp"
@@ -28,7 +29,6 @@
 #include "afk/renderer/opengl/ShaderHandle.hpp"
 #include "afk/renderer/opengl/ShaderProgramHandle.hpp"
 #include "afk/renderer/opengl/TextureHandle.hpp"
-#include "afk/utility/Assert.hpp"
 
 using namespace std::string_literals;
 using std::pair;
@@ -183,12 +183,12 @@ auto Renderer::get_shader_program(const path &file_path) -> const ShaderProgramH
 }
 
 auto Renderer::set_texture_unit(size_t unit) const -> void {
-  afk_assert(unit > 0, "Invalid texure ID");
+  afk_assert_debug(unit > 0, "Invalid texure ID");
   glActiveTexture(unit);
 }
 
 auto Renderer::bind_texture(const TextureHandle &texture) const -> void {
-  afk_assert(texture.id > 0, "Invalid texture unit");
+  afk_assert_debug(texture.id > 0, "Invalid texture unit");
   glBindTexture(GL_TEXTURE_2D, texture.id);
 }
 
@@ -197,13 +197,8 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
   glPolygonMode(GL_FRONT_AND_BACK, this->wireframe_enabled ? GL_LINE : GL_FILL);
 
   for (const auto &mesh : model.meshes) {
-    auto material_bound = vector<bool>{};
 
-    const auto num_material_types = static_cast<size_t>(Texture::Type::Count);
-    material_bound.resize(num_material_types);
-    for (auto i = size_t{0}; i < num_material_types; ++i) {
-      material_bound[i] = false;
-    }
+    auto material_bound = vector<bool>(static_cast<size_t>(Texture::Type::Count));
 
     // Bind all of the textures to shader uniforms.
     for (auto i = size_t{0}; i < mesh.textures.size(); i++) {
@@ -213,7 +208,7 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
 
       const auto index = static_cast<size_t>(mesh.textures[i].type);
 
-      afk_assert(!material_bound[index], "Material "s + name + " already bound"s);
+      afk_assert_debug(!material_bound[index], "Material "s + name + " already bound"s);
       material_bound[index] = true;
 
       this->set_uniform(shader, "u_textures."s + name, static_cast<int>(i));
@@ -244,7 +239,7 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
 }
 
 auto Renderer::use_shader(const ShaderProgramHandle &shader) const -> void {
-  afk_assert(shader.id > 0, "Invalid shader ID");
+  afk_assert_debug(shader.id > 0, "Invalid shader ID");
   glUseProgram(shader.id);
 }
 
@@ -457,30 +452,30 @@ auto Renderer::link_shaders(const ShaderProgram &shader_program) -> ShaderProgra
 
 auto Renderer::set_uniform(const ShaderProgramHandle &program,
                            const string &name, bool value) const -> void {
-  afk_assert(program.id > 0, "Invalid shader program ID");
+  afk_assert_debug(program.id > 0, "Invalid shader program ID");
   glUniform1i(glGetUniformLocation(program.id, name.c_str()),
               static_cast<GLboolean>(value));
 }
 
 auto Renderer::set_uniform(const ShaderProgramHandle &program,
                            const string &name, int value) const -> void {
-  afk_assert(program.id > 0, "Invalid shader program ID");
+  afk_assert_debug(program.id > 0, "Invalid shader program ID");
   glUniform1i(glGetUniformLocation(program.id, name.c_str()), static_cast<GLint>(value));
 }
 
 auto Renderer::set_uniform(const ShaderProgramHandle &program,
                            const string &name, float value) const -> void {
-  afk_assert(program.id > 0, "Invalid shader program ID");
+  afk_assert_debug(program.id > 0, "Invalid shader program ID");
   glUniform1f(glGetUniformLocation(program.id, name.c_str()), static_cast<GLfloat>(value));
 }
 auto Renderer::set_uniform(const ShaderProgramHandle &program,
                            const string &name, vec3 value) const -> void {
-  afk_assert(program.id > 0, "Invalid shader program ID");
+  afk_assert_debug(program.id > 0, "Invalid shader program ID");
   glUniform3fv(glGetUniformLocation(program.id, name.c_str()), 1, glm::value_ptr(value));
 }
 auto Renderer::set_uniform(const ShaderProgramHandle &program,
                            const string &name, mat4 value) const -> void {
-  afk_assert(program.id > 0, "Invalid shader program ID");
+  afk_assert_debug(program.id > 0, "Invalid shader program ID");
   glUniformMatrix4fv(glGetUniformLocation(program.id, name.c_str()), 1,
                      GL_FALSE, glm::value_ptr(value));
 }

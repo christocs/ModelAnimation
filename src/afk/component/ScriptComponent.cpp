@@ -3,10 +3,10 @@
 #include <filesystem>
 #include <string>
 
+#include "afk/debug/Assert.hpp"
 #include "afk/event/EventManager.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/script/Script.hpp"
-#include "afk/utility/Assert.hpp"
 
 using namespace std::string_literals;
 using std::filesystem::path;

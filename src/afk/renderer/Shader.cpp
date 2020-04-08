@@ -5,8 +5,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "afk/debug/Assert.hpp"
 #include "afk/io/Path.hpp"
-#include "afk/utility/Assert.hpp"
 
 using Afk::Shader;
 

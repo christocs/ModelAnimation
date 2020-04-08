@@ -4,9 +4,9 @@
 #include <fstream>
 #include <string>
 
+#include "afk/debug/Assert.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/renderer/Shader.hpp"
-#include "afk/utility/Assert.hpp"
 
 using std::ifstream;
 using std::string;

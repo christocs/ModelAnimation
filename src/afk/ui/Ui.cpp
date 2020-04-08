@@ -5,10 +5,10 @@
 #include <imgui/imgui.h>
 
 #include "afk/Afk.hpp"
+#include "afk/debug/Assert.hpp"
 #include "afk/io/Log.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/renderer/Renderer.hpp"
-#include "afk/utility/Assert.hpp"
 
 using Afk::Engine;
 using Afk::Ui;

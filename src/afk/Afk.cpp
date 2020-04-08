@@ -7,8 +7,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "afk/debug/Assert.hpp"
 #include "afk/io/Log.hpp"
-#include "afk/utility/Assert.hpp"
 
 using namespace std::string_literals;
 
