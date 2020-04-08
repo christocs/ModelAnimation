@@ -82,7 +82,10 @@ auto Renderer::set_option(GLenum option, bool state) const -> void {
   }
 }
 
-Renderer::Renderer() {
+Renderer::Renderer()
+  : models(0, PathHash{}, PathEquals{}), textures(0, PathHash{}, PathEquals{}),
+    shaders(0, PathHash{}, PathEquals{}),
+    shader_programs(0, PathHash{}, PathEquals{}) {
   afk_assert(glfwInit(), "Failed to initialize GLFW");
 
   // FIXME: Give user an option to change graphics settings.
@@ -117,26 +120,6 @@ Renderer::~Renderer() {
   glfwTerminate();
 }
 
-static auto get_gl_error_string(GLenum error) -> const char * {
-  switch (error) {
-    case GL_NO_ERROR: return "GL_NO_ERROR";
-    case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
-    case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
-    case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
-    case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
-    case GL_INVALID_FRAMEBUFFER_OPERATION:
-      return "GL_INVALID_FRAMEBUFFER_OPERATION";
-    default: afk_assert(false, "Unknown error"); return nullptr;
-  }
-}
-
-auto Renderer::check_errors() const -> void {
-  auto error = GLenum{};
-  while ((error = glGetError()) != GL_NO_ERROR) {
-    afk_assert(false, "OpenGL error: "s + get_gl_error_string(error));
-  }
-}
-
 auto Renderer::get_window_size() const -> ivec2 {
   auto width  = 0;
   auto height = 0;
@@ -160,44 +143,43 @@ auto Renderer::swap_buffers() -> void {
 }
 
 auto Renderer::get_model(const path &file_path) -> const ModelHandle & {
-  const auto is_loaded = this->models.count(file_path.string()) == 1;
+  const auto is_loaded = this->models.count(file_path) == 1;
 
   if (!is_loaded) {
-    this->models[file_path.string()] = this->load_model(Model{file_path});
+    this->models[file_path] = this->load_model(Model{file_path});
   }
 
-  return this->models.at(file_path.string());
+  return this->models.at(file_path);
 }
 
 auto Renderer::get_texture(const path &file_path) -> const TextureHandle & {
-  const auto is_loaded = this->textures.count(file_path.string()) == 1;
+  const auto is_loaded = this->textures.count(file_path) == 1;
 
   if (!is_loaded) {
-    this->textures[file_path.string()] = this->load_texture(Texture{file_path});
+    this->textures[file_path] = this->load_texture(Texture{file_path});
   }
 
-  return this->textures.at(file_path.string());
+  return this->textures.at(file_path);
 }
 
 auto Renderer::get_shader(const path &file_path) -> const ShaderHandle & {
-  const auto is_loaded = this->shaders.count(file_path.string()) == 1;
+  const auto is_loaded = this->shaders.count(file_path) == 1;
 
   if (!is_loaded) {
-    this->shaders[file_path.string()] = this->compile_shader(Shader{file_path});
+    this->shaders[file_path] = this->compile_shader(Shader{file_path});
   }
 
-  return this->shaders.at(file_path.string());
+  return this->shaders.at(file_path);
 }
 
 auto Renderer::get_shader_program(const path &file_path) -> const ShaderProgramHandle & {
-  const auto is_loaded = this->shader_programs.count(file_path.string()) == 1;
+  const auto is_loaded = this->shader_programs.count(file_path) == 1;
 
   if (!is_loaded) {
-    this->shader_programs[file_path.string()] =
-        this->link_shaders(ShaderProgram{file_path});
+    this->shader_programs[file_path] = this->link_shaders(ShaderProgram{file_path});
   }
 
-  return this->shader_programs.at(file_path.string());
+  return this->shader_programs.at(file_path);
 }
 
 auto Renderer::set_texture_unit(size_t unit) const -> void {
@@ -212,14 +194,9 @@ auto Renderer::bind_texture(const TextureHandle &texture) const -> void {
 
 auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &shader,
                           Transform transform) const -> void {
-  afk_assert(model.meshes.size() > 0, "No meshes to draw");
-
   glPolygonMode(GL_FRONT_AND_BACK, this->wireframe_enabled ? GL_LINE : GL_FILL);
 
   for (const auto &mesh : model.meshes) {
-    afk_assert(mesh.vao > 0, "Invalid mesh VAO");
-    afk_assert(mesh.num_indices >= 0, "Invalid number of vertices");
-
     auto material_bound = vector<bool>{};
 
     const auto num_material_types = static_cast<size_t>(Texture::Type::Count);
@@ -284,6 +261,10 @@ auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
   glGenBuffers(1, &mesh_handle.vbo);
   glGenBuffers(1, &mesh_handle.ibo);
 
+  afk_assert(mesh_handle.vao > 0, "Mesh VAO creation failed");
+  afk_assert(mesh_handle.vbo > 0, "Mesh VBO creation failed");
+  afk_assert(mesh_handle.ibo > 0, "Mesh IBO creation failed");
+
   // Load data into the vertex buffer.
   glBindVertexArray(mesh_handle.vao);
   glBindBuffer(GL_ARRAY_BUFFER, mesh_handle.vbo);
@@ -321,13 +302,11 @@ auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
 
   glBindVertexArray(0);
 
-  this->check_errors();
-
   return mesh_handle;
 }
 
 auto Renderer::load_model(const Model &model) -> ModelHandle {
-  const auto is_loaded = this->models.count(model.file_path.string()) == 1;
+  const auto is_loaded = this->models.count(model.file_path) == 1;
 
   afk_assert(!is_loaded, "Model with path '"s + model.file_path.string() + "' already loaded"s);
 
@@ -339,7 +318,7 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
 
     for (const auto &texture : mesh.textures) {
       const auto &texture_handle = this->get_texture(texture.file_path);
-      auto &loaded_handle        = this->textures[texture.file_path.string()];
+      auto &loaded_handle        = this->textures[texture.file_path];
 
       // FIXME: There's definitely a more elegant way to do this.
       if (loaded_handle.type != texture.type) {
@@ -352,13 +331,13 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
     modelHandle.meshes.push_back(std::move(mesh_handle));
   }
 
-  this->models[model.file_path.string()] = std::move(modelHandle);
+  this->models[model.file_path] = std::move(modelHandle);
 
-  return this->models[model.file_path.string()];
+  return this->models[model.file_path];
 }
 
 auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
-  const auto is_loaded = this->textures.count(texture.file_path.string()) == 1;
+  const auto is_loaded = this->textures.count(texture.file_path) == 1;
 
   afk_assert(!is_loaded, "Texture with path '"s + texture.file_path.string() + "' already loaded"s);
 
@@ -378,6 +357,7 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
 
   // Send the texture to the GPU.
   glGenTextures(1, &texture_handle.id);
+  afk_assert(texture_handle.id > 0, "Texture creation failed");
   glBindTexture(GL_TEXTURE_2D, texture_handle.id);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, image.get());
@@ -389,17 +369,15 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  this->check_errors();
-
   Afk::status << "Texture '" << texture.file_path.string()
               << "' loaded with ID " << texture_handle.id << ".\n";
-  this->textures[texture.file_path.string()] = std::move(texture_handle);
+  this->textures[texture.file_path] = std::move(texture_handle);
 
-  return this->textures[texture.file_path.string()];
+  return this->textures[texture.file_path];
 }
 
 auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
-  const auto is_loaded = this->shaders.count(shader.file_path.string()) == 1;
+  const auto is_loaded = this->shaders.count(shader.file_path) == 1;
 
   afk_assert(!is_loaded, "Shader with path '"s + shader.file_path.string() + "' already loaded"s);
 
@@ -431,14 +409,13 @@ auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
 
   Afk::status << "Shader '" << shader.file_path.string()
               << "' compiled with ID " << shader_handle.id << ".\n";
-  this->shaders[shader.file_path.string()] = std::move(shader_handle);
+  this->shaders[shader.file_path] = std::move(shader_handle);
 
-  return this->shaders[shader.file_path.string()];
+  return this->shaders[shader.file_path];
 }
 
 auto Renderer::link_shaders(const ShaderProgram &shader_program) -> ShaderProgramHandle {
-  const auto is_loaded =
-      this->shader_programs.count(shader_program.file_path.string()) == 1;
+  const auto is_loaded = this->shader_programs.count(shader_program.file_path) == 1;
 
   afk_assert(!is_loaded, "Shader program with path '"s +
                              shader_program.file_path.string() + "' already loaded"s);
@@ -473,10 +450,9 @@ auto Renderer::link_shaders(const ShaderProgram &shader_program) -> ShaderProgra
 
   Afk::status << "Shader program '" << shader_program.file_path.string()
               << "' linked with ID " << shader_program_handle.id << ".\n";
-  this->shader_programs[shader_program.file_path.string()] =
-      std::move(shader_program_handle);
+  this->shader_programs[shader_program.file_path] = std::move(shader_program_handle);
 
-  return this->shader_programs[shader_program.file_path.string()];
+  return this->shader_programs[shader_program.file_path];
 }
 
 auto Renderer::set_uniform(const ShaderProgramHandle &program,

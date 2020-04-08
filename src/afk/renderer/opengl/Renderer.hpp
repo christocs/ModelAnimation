@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -35,10 +36,27 @@ namespace Afk {
       using ShaderProgramHandle = OpenGl::ShaderProgramHandle;
       using TextureHandle       = OpenGl::TextureHandle;
 
-      using Shaders        = std::unordered_map<std::string, ShaderHandle>;
-      using ShaderPrograms = std::unordered_map<std::string, ShaderProgramHandle>;
-      using Models         = std::unordered_map<std::string, ModelHandle>;
-      using Textures       = std::unordered_map<std::string, TextureHandle>;
+      struct PathHash {
+        auto operator()(const std::filesystem::path &p) const -> std::size_t {
+          return std::filesystem::hash_value(p);
+        }
+      };
+
+      struct PathEquals {
+        auto operator()(const std::filesystem::path &lhs,
+                        const std::filesystem::path &rhs) const -> bool {
+          return lhs.lexically_normal() == rhs.lexically_normal();
+        }
+      };
+
+      using Models =
+          std::unordered_map<std::filesystem::path, ModelHandle, PathHash, PathEquals>;
+      using Textures =
+          std::unordered_map<std::filesystem::path, TextureHandle, PathHash, PathEquals>;
+      using Shaders =
+          std::unordered_map<std::filesystem::path, ShaderHandle, PathHash, PathEquals>;
+      using ShaderPrograms =
+          std::unordered_map<std::filesystem::path, ShaderProgramHandle, PathHash, PathEquals>;
 
       using Window = std::add_pointer<GLFWwindow>::type;
 
