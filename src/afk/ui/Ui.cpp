@@ -1,5 +1,7 @@
 #include "afk/ui/Ui.hpp"
 
+#include <vector>
+
 #include <imgui/examples/imgui_impl_glfw.h>
 #include <imgui/examples/imgui_impl_opengl3.h>
 #include <imgui/imgui.h>
@@ -9,11 +11,13 @@
 #include "afk/io/Log.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/renderer/Renderer.hpp"
+#include "afk/ui/Unicode.hpp"
 #include "cmake/Git.hpp"
 #include "cmake/Version.hpp"
 
 using Afk::Engine;
 using Afk::Ui;
+using std::vector;
 
 Ui::Ui(Renderer::Window _window)
   : ini_path(Afk::get_absolute_path(".imgui.ini").string()), window(_window) {
@@ -28,8 +32,11 @@ Ui::Ui(Renderer::Window _window)
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(this->window, true);
   ImGui_ImplOpenGL3_Init("#version 410");
+
   io.Fonts->AddFontFromFileTTF(
-      Afk::get_absolute_path("res/font/NotoSans-Regular.ttf").string().c_str(), 19.0f);
+      Afk::get_absolute_path("res/font/NotoSans-Regular.ttf").string().c_str(),
+      19.0f, nullptr, Afk::unicode_ranges.data());
+
   auto &style = ImGui::GetStyle();
   style.ScaleAllSizes(1.5f);
 
@@ -72,8 +79,9 @@ auto Ui::draw_about() -> void {
                 GIT_HEAD_HASH, GIT_IS_DIRTY ? "dirty" : "clean");
     ImGui::Separator();
     ImGui::Text("%s", GIT_COMMIT_SUBJECT);
-    ImGui::Text("Author:\t%s", GIT_AUTHOR_NAME);
-    ImGui::Text("Date:\t%s", GIT_COMMIT_DATE);
+    ImGui::Text("Author: %s", GIT_AUTHOR_NAME);
+    ImGui::Text("Date: %s", GIT_COMMIT_DATE);
+
     ImGui::End();
   }
 }
