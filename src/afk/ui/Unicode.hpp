@@ -4,15 +4,14 @@
 
 #include <imgui/imgui.h>
 
-template<typename V, typename... T>
-constexpr auto array_of(T &&... t) -> std::array<V, sizeof...(T)> {
-  return {{std::forward<T>(t)...}};
-}
-
 namespace Afk {
+  template<typename V, typename... T>
+  constexpr auto array_of(T &&... t) -> std::array<V, sizeof...(T)> {
+    return {{std::forward<T>(t)...}};
+  }
+
   // clang-format off
-  constexpr auto unicode_ranges =
-    array_of<ImWchar>(
+  constexpr auto unicode_ranges = array_of<ImWchar>(
     static_cast<ImWchar>(0x0020), static_cast<ImWchar>(0x007F), // Basic Latin
     static_cast<ImWchar>(0x00A0), static_cast<ImWchar>(0x00FF), // Latin-1 Supplement
     static_cast<ImWchar>(0x0100), static_cast<ImWchar>(0x017F), // Latin Extended-A
@@ -121,5 +120,4 @@ namespace Afk {
     static_cast<ImWchar>(0)
   );
   // clang-format on
-
 };
