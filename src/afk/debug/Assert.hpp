@@ -15,6 +15,8 @@
 #define afk_assert(expression, message)                                        \
   Afk::assertion(expression, message, #expression, __FILE__, __LINE__, AFK_FUNCTION)
 
+#define afk_unreachable() Afk::unreachable(__FILE__, __LINE__, AFK_FUNCTION)
+
 #ifdef NDEBUG
   #define afk_assert_debug(expression, message) ((void)0)
 #else
@@ -22,13 +24,19 @@
     Afk::assertion(expression, message, #expression, __FILE__, __LINE__, AFK_FUNCTION)
 #endif
 
-#define afk_unreachable() Afk::unreachable(__FILE__, __LINE__)
+#ifdef NDEBUG
+  #define afk_unreachable_debug() ((void)0)
+#else
+  #define afk_unreachable_debug()                                              \
+    Afk::unreachable(__FILE__, __LINE__, AFK_FUNCTION)
+#endif
 
 namespace Afk {
   auto assertion(bool condition, const std::string &msg,
                  const std::string &expression, const std::string &file_name,
                  std::size_t line_num, const std::string &function_name) -> void;
-  [[noreturn]] auto unreachable(const std::string &file_name, std::size_t line_num) -> void;
+  [[noreturn]] auto unreachable(const std::string &file_name, std::size_t line_num,
+                                const std::string &function_name) -> void;
 }
 
 inline auto Afk::assertion(bool condition, const std::string &msg,
@@ -42,7 +50,9 @@ inline auto Afk::assertion(bool condition, const std::string &msg,
   }
 }
 
-inline auto Afk::unreachable(const std::string &file_path, size_t line_num) -> void {
-  std::cerr << file_path + ":" + std::to_string(line_num) + ": " + "Hit unreachable statement";
+inline auto Afk::unreachable(const std::string &file_path, size_t line_num,
+                             const std::string &function_name) -> void {
+  std::cerr << "\nUnreachable statement hit\n  in " + function_name + "\n  at " +
+                   file_path + ":" + std::to_string(line_num) + "\n  ";
   std::abort();
 }

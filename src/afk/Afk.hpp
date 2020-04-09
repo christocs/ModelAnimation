@@ -38,9 +38,8 @@ namespace Afk {
     auto move_mouse(Event e) -> void;
     auto handle_mouse() -> void;
 
-    bool is_running       = true;
-    int fps_count         = {};
-    float last_update     = {};
-    float last_fps_update = {};
+    bool is_running   = true;
+    int frame_count   = {};
+    float last_update = {};
   };
 }

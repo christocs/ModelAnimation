@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 3.14)
 
 # Set the project details.
 set(PROJECT_NAME afk)
-project(${PROJECT_NAME} LANGUAGES CXX)
+project(${PROJECT_NAME}
+    VERSION 0.1.0
+    LANGUAGES CXX
+)
 
 # Treat warnings as errors.
 option(WarningsAsErrors "WarningsAsErrors" OFF)
@@ -115,3 +118,14 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
     ${CMAKE_SOURCE_DIR}/cfg $<TARGET_FILE_DIR:${PROJECT_NAME}>/cfg)
+
+# Setup git header.
+set(git_info_REMOTE_PATTERN "opeik/ict397.git")
+add_subdirectory(${CMAKE_SOURCE_DIR}/cmake/modules/git_info/git_info)
+create_git_info_file(${CMAKE_BINARY_DIR}/cmake/Git.hpp cpp)
+unset(git_info_REMOTE_PATTERN)
+target_sources(${PROJECT_NAME} PRIVATE ${git_info_file_cpp})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+# Setup version header.
+configure_file(cmake/Version.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/Version.hpp @ONLY)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

@@ -132,15 +132,9 @@ auto Engine::update() -> void {
     glfwSetInputMode(this->renderer.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   }
 
-  if ((this->get_time() - this->last_fps_update) >= 1.0f) {
-    Afk::status << "FPS: " << this->fps_count << '\n';
-    this->last_fps_update = this->get_time();
-    this->fps_count       = 0;
-  }
-
   this->update_camera();
 
-  ++this->fps_count;
+  ++this->frame_count;
   this->last_update = this->get_time();
 }
 

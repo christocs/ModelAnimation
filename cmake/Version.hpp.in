@@ -1,0 +1,3 @@
+#pragma once
+
+constexpr const char *AFK_VERSION = "@CMAKE_PROJECT_VERSION@";
