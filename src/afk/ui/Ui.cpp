@@ -69,11 +69,11 @@ auto Ui::draw_about() -> void {
   if (this->show_about) {
     ImGui::Begin("About", &this->show_about);
     ImGui::Text("afk engine version %s build %.6s (%s)", AFK_VERSION,
-                git_info::SHA1, git_info::IS_DIRTY ? "dirty" : "clean");
+                GIT_HEAD_HASH, GIT_IS_DIRTY ? "dirty" : "clean");
     ImGui::Separator();
-    ImGui::Text("%s", git_info::BRANCH);
-    ImGui::Text("%s", git_info::LAST_COMMIT_SUBJECT);
-    ImGui::Text("%s", git_info::LAST_COMMIT_TIME);
+    ImGui::Text("%s", GIT_COMMIT_SUBJECT);
+    ImGui::Text("Author:\t%s", GIT_AUTHOR_NAME);
+    ImGui::Text("Date:\t%s", GIT_COMMIT_DATE);
     ImGui::End();
   }
 }
@@ -81,6 +81,8 @@ auto Ui::draw_about() -> void {
 auto Ui::draw_menu_bar() -> void {
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("View")) {
+      if (ImGui::MenuItem("About")) {
+      }
       ImGui::EndMenu();
     }
 

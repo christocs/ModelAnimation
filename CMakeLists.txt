@@ -120,12 +120,12 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     ${CMAKE_SOURCE_DIR}/cfg $<TARGET_FILE_DIR:${PROJECT_NAME}>/cfg)
 
 # Setup git header.
-set(git_info_REMOTE_PATTERN "opeik/ict397.git")
-add_subdirectory(${CMAKE_SOURCE_DIR}/cmake/modules/git_info/git_info)
-create_git_info_file(${CMAKE_BINARY_DIR}/cmake/Git.hpp cpp)
-unset(git_info_REMOTE_PATTERN)
-target_sources(${PROJECT_NAME} PRIVATE ${git_info_file_cpp})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/cmake-git-version-tracking)
+set(PRE_CONFIGURE_FILE cmake/Git.hpp.in)
+set(POST_CONFIGURE_FILE ${CMAKE_BINARY_DIR}/cmake/Git.hpp)
+include(git_watcher)
+
 # Setup version header.
-configure_file(cmake/Version.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/Version.hpp @ONLY)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+configure_file(cmake/Version.hpp.in ${CMAKE_BINARY_DIR}/cmake/Version.hpp @ONLY)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
+add_dependencies(${PROJECT_NAME} check_git)

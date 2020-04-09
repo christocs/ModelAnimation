@@ -30,6 +30,6 @@
 [submodule "lib/imgui"]
 	path = lib/imgui/imgui
 	url = https://github.com/ocornut/imgui
-[submodule "cmake/modules/git_info"]
-	path = cmake/modules/git_info
-	url = https://github.com/NOhs/git_info
+[submodule "cmake/cmake-git-version-tracking"]
+	path = cmake/cmake-git-version-tracking
+	url = https://github.com/andrew-hardin/cmake-git-version-tracking
