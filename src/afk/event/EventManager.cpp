@@ -1,12 +1,18 @@
 #include "afk/event/EventManager.hpp"
 
 #include "afk/Afk.hpp"
+#include "afk/event/Event.hpp"
+#include "afk/io/Log.hpp"
 
 // Must be included after GLAD.
 #include <GLFW/glfw3.h>
 
 using Afk::EventManager;
 using Action = Afk::Event::Action;
+
+EventManager::EventManager() {
+  Afk::status << "Event manager subsystem initialized.\n";
+}
 
 auto EventManager::pump_events() -> void {
   glfwPollEvents();
@@ -36,45 +42,51 @@ auto EventManager::setup_callbacks(GLFWwindow *window) -> void {
 }
 
 auto EventManager::key_callback([[maybe_unused]] GLFWwindow *window, int key,
-                                [[maybe_unused]] int scancode, int action, int mods) -> void {
-  if (action == GLFW_REPEAT) {
-    return;
-  }
-
+                                int scancode, int action, int mods) -> void {
   auto &afk = Engine::get();
 
   const auto control = (mods & GLFW_MOD_CONTROL) == GLFW_MOD_CONTROL;
   const auto alt     = (mods & GLFW_MOD_ALT) == GLFW_MOD_ALT;
   const auto shift   = (mods & GLFW_MOD_SHIFT) == GLFW_MOD_SHIFT;
 
-  afk.event_manager.events.push(
-      {Event::Key{key, control, alt, shift},
-       action == GLFW_PRESS ? Event::Type::KeyDown : Event::Type::KeyUp});
+  auto type = Event::Type{};
+
+  switch (action) {
+    case GLFW_PRESS: type = Event::Type::KeyDown; break;
+    case GLFW_RELEASE: type = Event::Type::KeyUp; break;
+    case GLFW_REPEAT: type = Event::Type::KeyRepeat; break;
+  }
+
+  afk.event_manager.events.push({Event::Key{key, scancode, control, alt, shift}, type});
 
   // FIXME: Move to keyboard manager.
-  const auto new_state = action == GLFW_PRESS ? true : false;
+  if (action != GLFW_REPEAT) {
+    auto new_state = false;
+    switch (action) {
+      case GLFW_PRESS: new_state = true; break;
+      case GLFW_RELEASE: new_state = false; break;
+    }
 
-  switch (key) {
-    case GLFW_KEY_W:
-      afk.event_manager.key_state[Action::Forward] = new_state;
-      break;
-    case GLFW_KEY_A:
-      afk.event_manager.key_state[Action::Left] = new_state;
-      break;
-    case GLFW_KEY_S:
-      afk.event_manager.key_state[Action::Backward] = new_state;
-      break;
-    case GLFW_KEY_D:
-      afk.event_manager.key_state[Action::Right] = new_state;
-      break;
+    switch (key) {
+      case GLFW_KEY_W:
+        afk.event_manager.key_state[Action::Forward] = new_state;
+        break;
+      case GLFW_KEY_A:
+        afk.event_manager.key_state[Action::Left] = new_state;
+        break;
+      case GLFW_KEY_S:
+        afk.event_manager.key_state[Action::Backward] = new_state;
+        break;
+      case GLFW_KEY_D:
+        afk.event_manager.key_state[Action::Right] = new_state;
+        break;
+    }
   }
 }
 
-auto EventManager::char_callback([[maybe_unused]] GLFWwindow *window,
-                                 [[maybe_unused]] uint32_t codepoint) -> void {
-  // FIXME: Implement this
-  // Afk::Engine::get().event_manager.events.push(
-  //     {Event::Text{std::string{""}}, Event::Type::TextEnter});
+auto EventManager::char_callback([[maybe_unused]] GLFWwindow *window, uint32_t codepoint)
+    -> void {
+  Afk::Engine::get().event_manager.events.push({Event::Text{codepoint}, Event::Type::TextEnter});
 }
 
 auto EventManager::mouse_pos_callback([[maybe_unused]] GLFWwindow *window,
@@ -84,9 +96,14 @@ auto EventManager::mouse_pos_callback([[maybe_unused]] GLFWwindow *window,
 
 auto EventManager::mouse_press_callback([[maybe_unused]] GLFWwindow *window, int button,
                                         int action, [[maybe_unused]] int mods) -> void {
-  Afk::Engine::get().event_manager.events.push(
-      {Event::MouseButton{button},
-       action == GLFW_PRESS ? Event::Type::MouseDown : Event::Type::MouseUp});
+  auto &afk = Engine::get();
+
+  const auto control = (mods & GLFW_MOD_CONTROL) == GLFW_MOD_CONTROL;
+  const auto alt     = (mods & GLFW_MOD_ALT) == GLFW_MOD_ALT;
+  const auto shift   = (mods & GLFW_MOD_SHIFT) == GLFW_MOD_SHIFT;
+  const auto type = action == GLFW_PRESS ? Event::Type::MouseDown : Event::Type::MouseUp;
+
+  afk.event_manager.events.push({Event::MouseButton{button, control, alt, shift}, type});
 }
 
 auto EventManager::mouse_scroll_callback([[maybe_unused]] GLFWwindow *window,

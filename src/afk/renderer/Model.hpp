@@ -16,6 +16,6 @@ namespace Afk {
     std::filesystem::path file_dir  = {};
 
     Model() = default;
-    Model(std::filesystem::path _file_path);
+    Model(const std::filesystem::path &_file_path);
   };
 }

@@ -5,8 +5,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "afk/debug/Assert.hpp"
 #include "afk/io/Path.hpp"
-#include "afk/utility/Assert.hpp"
 
 using Afk::Shader;
 
@@ -27,7 +27,7 @@ static auto shader_type_from_extension(const string &extension) -> Shader::Type 
   return types.at(extension);
 }
 
-Shader::Shader(path _file_path) {
+Shader::Shader(const path &_file_path) {
   const auto abs_path = Afk::get_absolute_path(_file_path);
 
   auto file = ifstream{abs_path};

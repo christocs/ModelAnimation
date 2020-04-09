@@ -3,10 +3,10 @@
 #include <filesystem>
 #include <string>
 
+#include "afk/debug/Assert.hpp"
 #include "afk/event/EventManager.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/script/Script.hpp"
-#include "afk/utility/Assert.hpp"
 
 using namespace std::string_literals;
 using std::filesystem::path;
@@ -43,7 +43,7 @@ auto Afk::ScriptComponent::setup_lua_state(lua_State *lua) -> void {
   event_manager_class.endClass();
 }
 
-Afk::ScriptComponent::ScriptComponent(lua_State *lua, path file_name)
+Afk::ScriptComponent::ScriptComponent(lua_State *lua, const path &file_name)
   : file_path("script" / file_name), on_update(lua), on_key_press(lua),
     on_key_release(lua), on_text_enter(lua), on_mouse_move(lua),
     on_mouse_scroll(lua), on_mouse_press(lua), on_mouse_release(lua) {

@@ -10,7 +10,7 @@ namespace Afk {
     using ShaderPaths = std::vector<std::filesystem::path>;
 
     ShaderProgram() = default;
-    ShaderProgram(std::filesystem::path _file_path);
+    ShaderProgram(const std::filesystem::path &_file_path);
 
     ShaderPaths shader_paths        = {};
     std::filesystem::path file_path = {};

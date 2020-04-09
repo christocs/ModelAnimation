@@ -1,13 +1,16 @@
 #include "afk/Afk.hpp"
 
+#include <memory>
+#include <string>
+
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "afk/debug/Assert.hpp"
 #include "afk/io/Log.hpp"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
+using namespace std::string_literals;
 
 using glm::vec3;
 
@@ -26,7 +29,7 @@ auto Engine::move_mouse(Event event) -> void {
   const auto dx = static_cast<float>(data.x) - last_x;
   const auto dy = static_cast<float>(data.y) - last_y;
 
-  if (!first_frame) {
+  if (!first_frame && !this->ui.is_visible) {
     this->camera.handle_mouse(dx, dy);
   } else {
     first_frame = false;
@@ -36,11 +39,16 @@ auto Engine::move_mouse(Event event) -> void {
   last_y = static_cast<float>(data.y);
 }
 
+// FIXME: Move to key handler.
 auto Engine::move_keyboard(Event event) -> void {
-  const auto data = std::get<Event::Key>(event.data);
+  const auto key = std::get<Event::Key>(event.data).key;
 
-  if (data.key_code == GLFW_KEY_ESCAPE) {
+  if (event.type == Event::Type::KeyDown && key == GLFW_KEY_ESCAPE) {
     this->is_running = false;
+  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_N) {
+    this->ui.is_visible = !this->ui.is_visible;
+  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_M) {
+    this->renderer.wireframe_enabled = !this->renderer.wireframe_enabled;
   }
 }
 
@@ -48,9 +56,7 @@ auto Engine::move_keyboard(Event event) -> void {
 static auto resize_window_callback([[maybe_unused]] GLFWwindow *window,
                                    int width, int height) -> void {
   auto &afk = Engine::get();
-
-  afk.renderer.set_viewport(0, 0, static_cast<unsigned>(width),
-                            static_cast<unsigned>(height));
+  afk.renderer.set_viewport(0, 0, width, height);
 }
 
 auto Engine::get() -> Engine & {
@@ -61,71 +67,74 @@ auto Engine::get() -> Engine & {
 
 // FIXME: Move somewhere more appropriate.
 auto Engine::update_camera() -> void {
-  if (this->event_manager.key_state.at(Action::Forward)) {
-    this->camera.handle_key(Movement::Forward, this->get_delta_time());
-  }
+  if (!this->ui.is_visible) {
+    if (this->event_manager.key_state.at(Action::Forward)) {
+      this->camera.handle_key(Movement::Forward, this->get_delta_time());
+    }
 
-  if (this->event_manager.key_state.at(Action::Left)) {
-    this->camera.handle_key(Movement::Left, this->get_delta_time());
-  }
+    if (this->event_manager.key_state.at(Action::Left)) {
+      this->camera.handle_key(Movement::Left, this->get_delta_time());
+    }
 
-  if (this->event_manager.key_state.at(Action::Backward)) {
-    this->camera.handle_key(Movement::Backward, this->get_delta_time());
-  }
+    if (this->event_manager.key_state.at(Action::Backward)) {
+      this->camera.handle_key(Movement::Backward, this->get_delta_time());
+    }
 
-  if (this->event_manager.key_state.at(Action::Right)) {
-    this->camera.handle_key(Movement::Right, this->get_delta_time());
+    if (this->event_manager.key_state.at(Action::Right)) {
+      this->camera.handle_key(Movement::Right, this->get_delta_time());
+    }
   }
 }
 
 Engine::Engine() {
-  this->event_manager.setup_callbacks(this->renderer.window.get());
+  this->event_manager.setup_callbacks(this->renderer.window);
 
   this->event_manager.register_event(
       Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
   this->event_manager.register_event(
       Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
 
-  glfwSetFramebufferSizeCallback(this->renderer.window.get(), resize_window_callback);
-  glfwSetInputMode(this->renderer.window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
 }
 
 auto Engine::render() -> void {
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
   const auto &model  = this->renderer.get_model("res/model/city/city.fbx");
-  const auto [width, height] = this->renderer.get_window_size();
+  const auto window_size = this->renderer.get_window_size();
 
   this->renderer.clear_screen();
+  this->ui.prepare();
 
-  // FIXME
+  // FIXME: Move to a scene manager.
   this->renderer.use_shader(shader);
-  this->renderer.set_uniform(shader, "u_matrices.projection",
-                             this->camera.get_projection_matrix(width, height));
+  this->renderer.set_uniform(
+      shader, "u_matrices.projection",
+      this->camera.get_projection_matrix(window_size.x, window_size.y));
   this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
   auto transform        = Transform{};
   transform.translation = vec3{0.0f, -1.0f, 0.0f};
-
   this->renderer.draw_model(model, shader, transform);
+  this->ui.draw();
   this->renderer.swap_buffers();
 }
 
 auto Engine::update() -> void {
   this->event_manager.pump_events();
 
-  if (glfwWindowShouldClose(this->renderer.window.get())) {
+  if (glfwWindowShouldClose(this->renderer.window)) {
     this->is_running = false;
   }
 
-  if ((this->get_time() - this->last_fps_update) >= 1.0f) {
-    Afk::status << "FPS: " << this->fps_count << '\n';
-    this->last_fps_update = this->get_time();
-    this->fps_count       = 0;
+  if (this->ui.is_visible) {
+    glfwSetInputMode(this->renderer.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  } else {
+    glfwSetInputMode(this->renderer.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   }
 
   this->update_camera();
 
-  ++this->fps_count;
+  ++this->frame_count;
   this->last_update = this->get_time();
 }
 

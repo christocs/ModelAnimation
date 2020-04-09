@@ -1,10 +1,11 @@
 #pragma once
 
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include <glad/glad.h>
@@ -35,25 +36,44 @@ namespace Afk {
       using ShaderProgramHandle = OpenGl::ShaderProgramHandle;
       using TextureHandle       = OpenGl::TextureHandle;
 
-      using Shaders        = std::unordered_map<std::string, ShaderHandle>;
-      using ShaderPrograms = std::unordered_map<std::string, ShaderProgramHandle>;
-      using Models         = std::unordered_map<std::string, ModelHandle>;
-      using Textures       = std::unordered_map<std::string, TextureHandle>;
+      struct PathHash {
+        auto operator()(const std::filesystem::path &p) const -> std::size_t {
+          return std::filesystem::hash_value(p);
+        }
+      };
 
-      using Window = std::shared_ptr<GLFWwindow>;
+      struct PathEquals {
+        auto operator()(const std::filesystem::path &lhs,
+                        const std::filesystem::path &rhs) const -> bool {
+          return lhs.lexically_normal() == rhs.lexically_normal();
+        }
+      };
 
-      Window window = nullptr;
+      using Models =
+          std::unordered_map<std::filesystem::path, ModelHandle, PathHash, PathEquals>;
+      using Textures =
+          std::unordered_map<std::filesystem::path, TextureHandle, PathHash, PathEquals>;
+      using Shaders =
+          std::unordered_map<std::filesystem::path, ShaderHandle, PathHash, PathEquals>;
+      using ShaderPrograms =
+          std::unordered_map<std::filesystem::path, ShaderProgramHandle, PathHash, PathEquals>;
+
+      using Window = std::add_pointer<GLFWwindow>::type;
+
+      Window window          = nullptr;
+      bool wireframe_enabled = false;
 
       Renderer();
+      ~Renderer();
 
-      auto check_errors() -> void;
-      auto toggle_wireframe() -> void;
-      auto get_window_size() -> std::pair<unsigned, unsigned>;
+      auto set_option(GLenum option, bool state) const -> void;
+      auto check_errors() const -> void;
+      auto get_window_size() const -> glm::ivec2;
 
       // Draw commands
       auto clear_screen(glm::vec4 clear_color = {1.0f, 1.0f, 1.0f, 1.0f}) const -> void;
       auto swap_buffers() -> void;
-      auto set_viewport(int x, int y, unsigned width, unsigned height) const -> void;
+      auto set_viewport(int x, int y, int width, int height) const -> void;
       auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader,
                       Transform transform) const -> void;
 
@@ -63,10 +83,11 @@ namespace Afk {
       auto bind_texture(const TextureHandle &texture) const -> void;
 
       // Resource management
-      auto get_model(std::filesystem::path file_path) -> const ModelHandle &;
-      auto get_texture(std::filesystem::path file_path) -> const TextureHandle &;
-      auto get_shader(std::filesystem::path file_path) -> const ShaderHandle &;
-      auto get_shader_program(std::filesystem::path file_path) -> const ShaderProgramHandle &;
+      auto get_model(const std::filesystem::path &file_path) -> const ModelHandle &;
+      auto get_texture(const std::filesystem::path &file_path) -> const TextureHandle &;
+      auto get_shader(const std::filesystem::path &file_path) -> const ShaderHandle &;
+      auto get_shader_program(const std::filesystem::path &file_path)
+          -> const ShaderProgramHandle &;
 
       // Resource loading
       auto load_model(const Model &model) -> ModelHandle;
@@ -90,14 +111,12 @@ namespace Afk {
     private:
       const int opengl_major_version = 4;
       const int opengl_minor_version = 1;
+      const bool enable_vsync        = true;
 
       Models models                  = {};
       Textures textures              = {};
       Shaders shaders                = {};
       ShaderPrograms shader_programs = {};
-
-      bool enable_vsync      = true;
-      bool wireframe_enabled = false;
     };
   }
 }

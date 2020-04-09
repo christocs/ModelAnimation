@@ -18,6 +18,6 @@ namespace Afk {
     std::filesystem::path file_path = {};
 
     Texture() = default;
-    Texture(std::filesystem::path _file_path);
+    Texture(const std::filesystem::path &_file_path);
   };
 }

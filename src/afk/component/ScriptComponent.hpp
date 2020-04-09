@@ -36,7 +36,7 @@ namespace Afk {
   public:
     static auto setup_lua_state(lua_State *lua) -> void;
 
-    ScriptComponent(lua_State *lua, std::filesystem::path file_name);
+    ScriptComponent(lua_State *lua, const std::filesystem::path &file_name);
 
     // Reload file
     auto reload(lua_State *lua) -> void;

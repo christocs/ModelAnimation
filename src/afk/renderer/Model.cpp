@@ -9,7 +9,7 @@ using Afk::ModelLoader;
 
 using std::filesystem::path;
 
-Model::Model(path _file_path) {
+Model::Model(const path &_file_path) {
   auto tmp = ModelLoader{}.load(_file_path);
 
   this->meshes    = std::move(tmp.meshes);

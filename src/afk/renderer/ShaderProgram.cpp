@@ -4,9 +4,9 @@
 #include <fstream>
 #include <string>
 
+#include "afk/debug/Assert.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/renderer/Shader.hpp"
-#include "afk/utility/Assert.hpp"
 
 using std::ifstream;
 using std::string;
@@ -15,7 +15,7 @@ using namespace std::string_literals;
 
 using Afk::ShaderProgram;
 
-ShaderProgram::ShaderProgram(path _file_path) {
+ShaderProgram::ShaderProgram(const path &_file_path) {
   const auto abs_path = Afk::get_absolute_path(_file_path);
   auto file           = ifstream{abs_path};
 

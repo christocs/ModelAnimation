@@ -3,13 +3,17 @@ cmake_minimum_required(VERSION 3.14)
 
 # Set the project details.
 set(PROJECT_NAME afk)
-project(${PROJECT_NAME} LANGUAGES CXX)
+project(${PROJECT_NAME}
+    VERSION 0.1.0
+    LANGUAGES CXX
+)
 
 # Treat warnings as errors.
 option(WarningsAsErrors "WarningsAsErrors" OFF)
 # Clang sanitizer settings.
 set(SANITIZER_OS "Darwin,Linux")
 set(SANITIZER_FLAGS "-fsanitize=address,undefined,leak")
+set(LIBCPP_OS "Linux")
 # Disable in-source builds.
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -67,14 +71,15 @@ target_compile_options(${PROJECT_NAME} PRIVATE
         -Weverything -fcolor-diagnostics
         # Disable unhelpful warnings.
         -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded
-        -Wno-deprecated-declarations -Wno-switch-enum -Wno-weak-vtables
-        -Wno-exit-time-destructors  -Wno-global-constructors>
+        -Wno-deprecated-declarations -Wno-weak-vtables
+        -Wno-exit-time-destructors -Wno-global-constructors
+        -Wno-c++2a-compat>
     # Visual Studio
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
     # Enable the clang sanitizer.
     $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:${SANITIZER_FLAGS}>
     # Set default visibility to hidden.
-    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+    $<$<AND:$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>,$<PLATFORM_ID:Windows>>:
         -fvisibility=hidden -fvisibility-inlines-hidden>
 )
 
@@ -89,16 +94,17 @@ find_package(OpenGL COMPONENTS OpenGL REQUIRED)
 # Include and link against dependencies.
 target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenGL::GL
+    glfw
+    glad
     EnTT::EnTT
     assimp
     reactphysics3d
-    glad
     cpplocate
     lua
     LuaBridge
     glm
-    glfw
     stb
+    imgui
 )
 
 # Symlink resources to the binary location.
@@ -108,4 +114,19 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
-    ${CMAKE_SOURCE_DIR}/src/afk/renderer/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)
+    ${CMAKE_SOURCE_DIR}/shader $<TARGET_FILE_DIR:${PROJECT_NAME}>/shader)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${CMAKE_SOURCE_DIR}/cfg $<TARGET_FILE_DIR:${PROJECT_NAME}>/cfg)
+
+# Setup git header.
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/cmake-git-version-tracking)
+set(PRE_CONFIGURE_FILE cmake/Git.hpp.in)
+set(POST_CONFIGURE_FILE ${CMAKE_BINARY_DIR}/cmake/Git.hpp)
+include(git_watcher)
+
+# Setup version header.
+configure_file(cmake/Version.hpp.in ${CMAKE_BINARY_DIR}/cmake/Version.hpp @ONLY)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
+add_dependencies(${PROJECT_NAME} check_git)

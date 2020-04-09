@@ -15,7 +15,7 @@ namespace Afk {
     using Callback = std::function<void(Afk::Event)>;
 
   public:
-    EventManager() = default;
+    EventManager();
 
     auto pump_events() -> void;
     auto register_event(Event::Type type, Callback callback) -> void;

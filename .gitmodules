@@ -27,3 +27,9 @@
 [submodule "lib/stb/stb"]
 	path = lib/stb/stb
 	url = https://github.com/nothings/stb
+[submodule "lib/imgui"]
+	path = lib/imgui/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "cmake/cmake-git-version-tracking"]
+	path = cmake/cmake-git-version-tracking
+	url = https://github.com/andrew-hardin/cmake-git-version-tracking
