@@ -81,7 +81,6 @@ auto Ui::draw_about() -> void {
     ImGui::Text("%s", GIT_COMMIT_SUBJECT);
     ImGui::Text("Author: %s", GIT_AUTHOR_NAME);
     ImGui::Text("Date: %s", GIT_COMMIT_DATE);
-
     ImGui::End();
   }
 }
@@ -111,15 +110,17 @@ auto Ui::draw_menu_bar() -> void {
 
 auto Ui::draw_stats() -> void {
   const auto offset_x = 10.0f;
-  const auto offset_y = 40.0f;
+  const auto offset_y = 37.0f;
   static auto corner  = 0;
-  auto &io            = ImGui::GetIO();
+
+  auto &io = ImGui::GetIO();
 
   if (corner != -1) {
-    ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - offset_x : offset_x,
-                               (corner & 2) ? io.DisplaySize.y - offset_y : offset_y);
-    ImVec2 window_pos_pivot =
-        ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+    const auto window_pos =
+        ImVec2{(corner & 1) ? io.DisplaySize.x - offset_x : offset_x,
+               (corner & 2) ? io.DisplaySize.y - offset_y : offset_y};
+    const auto window_pos_pivot =
+        ImVec2{(corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f};
     ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
   }
 
@@ -133,18 +134,24 @@ auto Ui::draw_stats() -> void {
                 static_cast<double>(io.Framerate) / 1000.0);
 
     if (ImGui::BeginPopupContextWindow()) {
-      if (ImGui::MenuItem("Custom", nullptr, corner == -1))
+      if (ImGui::MenuItem("Custom", nullptr, corner == -1)) {
         corner = -1;
-      if (ImGui::MenuItem("Top left", nullptr, corner == 0))
+      }
+      if (ImGui::MenuItem("Top left", nullptr, corner == 0)) {
         corner = 0;
-      if (ImGui::MenuItem("Top right", nullptr, corner == 1))
+      }
+      if (ImGui::MenuItem("Top right", nullptr, corner == 1)) {
         corner = 1;
-      if (ImGui::MenuItem("Bottom left", nullptr, corner == 2))
+      }
+      if (ImGui::MenuItem("Bottom left", nullptr, corner == 2)) {
         corner = 2;
-      if (ImGui::MenuItem("Bottom right", nullptr, corner == 3))
+      }
+      if (ImGui::MenuItem("Bottom right", nullptr, corner == 3)) {
         corner = 3;
-      if (this->show_stats && ImGui::MenuItem("Close"))
+      }
+      if (this->show_stats && ImGui::MenuItem("Close")) {
         this->show_stats = false;
+      }
       ImGui::EndPopup();
     }
   }
