@@ -115,7 +115,7 @@ Engine::Engine() {
   registry.assign<Afk::Collision>(cityEntity, this->world, glm::vec3(0.8f, 0.8f, 0.8f), cityTransform, 0, false, rp3d::BodyType::STATIC);
 
   auto ballTransform = Transform{};
-  ballTransform.scale = vec3{1.0f};
+  ballTransform.scale       = vec3{1.0f};
   ballTransform.translation = vec3{0.0f, 100.0f, 0.0f};
 
   auto ballEntity = registry.create();
