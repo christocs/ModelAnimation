@@ -33,9 +33,6 @@
 [submodule "cmake/cmake-git-version-tracking"]
 	path = cmake/cmake-git-version-tracking
 	url = https://github.com/andrew-hardin/cmake-git-version-tracking
-[submodule "lib/fast-noise-simd"]
-	path = lib/fast-noise-simd/fast-noise-simd
-	url = https://github.com/Auburns/FastNoiseSIMD
 [submodule "lib/frozen"]
 	path = lib/frozen
 	url = https://github.com/serge-sans-paille/frozen
