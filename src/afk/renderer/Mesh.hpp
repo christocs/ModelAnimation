@@ -20,7 +20,7 @@ namespace Afk {
 
   struct Mesh {
     using Vertices = std::vector<Vertex>;
-    using Index    = unsigned;
+    using Index    = unsigned short;
     using Indices  = std::vector<Index>;
     using Textures = std::vector<Texture>;
 

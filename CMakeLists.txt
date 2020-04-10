@@ -105,6 +105,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glm
     stb
     imgui
+    frozen::frozen
+    ctti
 )
 
 # Symlink resources to the binary location.

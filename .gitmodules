@@ -36,3 +36,9 @@
 [submodule "lib/fast-noise-simd"]
 	path = lib/fast-noise-simd/fast-noise-simd
 	url = https://github.com/Auburns/FastNoiseSIMD
+[submodule "lib/frozen"]
+	path = lib/frozen
+	url = https://github.com/serge-sans-paille/frozen
+[submodule "lib/ctti"]
+	path = lib/ctti
+	url = https://github.com/Manu343726/ctti

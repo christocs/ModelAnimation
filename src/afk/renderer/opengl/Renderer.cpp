@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include <frozen/unordered_map.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -54,25 +55,18 @@ using Afk::OpenGl::ShaderHandle;
 using Afk::OpenGl::ShaderProgramHandle;
 using Afk::OpenGl::TextureHandle;
 
-static auto get_material_as_string(Texture::Type type) -> string {
-  static const auto name = unordered_map<Texture::Type, string>{
-      {Texture::Type::Diffuse, "texture_diffuse"},   //
-      {Texture::Type::Specular, "texture_specular"}, //
-      {Texture::Type::Normal, "texture_normal"},     //
-      {Texture::Type::Height, "texture_height"},     //
-  };
+constexpr auto material_strings =
+    frozen::make_unordered_map<Texture::Type, const char *>({
+        {Texture::Type::Diffuse, "texture_diffuse"},
+        {Texture::Type::Specular, "texture_specular"},
+        {Texture::Type::Normal, "texture_normal"},
+        {Texture::Type::Height, "texture_height"},
+    });
 
-  return name.at(type);
-}
-
-static auto get_gl_shader_type(Shader::Type type) -> GLenum {
-  static const auto types = unordered_map<Shader::Type, GLenum>{
-      {Shader::Type::Vertex, GL_VERTEX_SHADER},
-      {Shader::Type::Fragment, GL_FRAGMENT_SHADER},
-  };
-
-  return types.at(type);
-}
+constexpr auto gl_shader_types = frozen::make_unordered_map<Shader::Type, GLenum>({
+    {Shader::Type::Vertex, GL_VERTEX_SHADER},
+    {Shader::Type::Fragment, GL_FRAGMENT_SHADER},
+});
 
 auto Renderer::set_option(GLenum option, bool state) const -> void {
   if (state) {
@@ -214,7 +208,7 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
     for (auto i = size_t{0}; i < mesh.textures.size(); i++) {
       this->set_texture_unit(GL_TEXTURE0 + i);
 
-      auto name = get_material_as_string(mesh.textures[i].type);
+      auto name = material_strings.at(mesh.textures[i].type);
 
       const auto index = static_cast<size_t>(mesh.textures[i].type);
 
@@ -241,7 +235,7 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
 
     // Draw the mesh.
     glBindVertexArray(mesh.vao);
-    glDrawElements(GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, mesh.num_indices, MeshHandle::INDEX, nullptr);
     glBindVertexArray(0);
 
     this->set_texture_unit(GL_TEXTURE0);
@@ -389,7 +383,7 @@ auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
   auto shader_handle = ShaderHandle{};
 
   const auto *shader_code_ptr = shader.code.c_str();
-  shader_handle.id            = glCreateShader(get_gl_shader_type(shader.type));
+  shader_handle.id            = glCreateShader(gl_shader_types.at(shader.type));
   shader_handle.type          = shader.type;
 
   afk_assert(shader_handle.id > 0, "Shader creation failed");

@@ -12,6 +12,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <cpplocate/cpplocate.h>
+#include <frozen/unordered_map.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -38,16 +39,13 @@ constexpr unsigned ASSIMP_OPTIONS =
     aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs |
     aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace | aiProcess_GlobalScale;
 
-static auto get_assimp_texture_type(Texture::Type type) -> aiTextureType {
-  static const auto types = unordered_map<Texture::Type, aiTextureType>{
-      {Texture::Type::Diffuse, aiTextureType_DIFFUSE},
-      {Texture::Type::Specular, aiTextureType_SPECULAR},
-      {Texture::Type::Normal, aiTextureType_NORMALS},
-      {Texture::Type::Height, aiTextureType_HEIGHT},
-  };
-
-  return types.at(type);
-}
+constexpr auto assimp_texture_types =
+    frozen::make_unordered_map<Texture::Type, aiTextureType>({
+        {Texture::Type::Diffuse, aiTextureType_DIFFUSE},
+        {Texture::Type::Specular, aiTextureType_SPECULAR},
+        {Texture::Type::Normal, aiTextureType_NORMALS},
+        {Texture::Type::Height, aiTextureType_HEIGHT},
+    });
 
 static auto to_glm(aiMatrix4x4t<float> m) -> mat4 {
   return mat4{m.a1, m.b1, m.c1, m.d1,  //
@@ -139,7 +137,7 @@ auto ModelLoader::get_indices(const aiMesh *mesh) -> Mesh::Indices {
     const auto face = mesh->mFaces[i];
 
     for (auto j = size_t{0}; j < face.mNumIndices; ++j) {
-      indices.push_back(face.mIndices[j]);
+      indices.push_back(static_cast<Mesh::Index>(face.mIndices[j]));
     }
   }
 
@@ -150,13 +148,13 @@ auto ModelLoader::get_material_textures(const aiMaterial *material, Texture::Typ
     -> Mesh::Textures {
   auto textures = Mesh::Textures{};
 
-  const auto texture_count = material->GetTextureCount(get_assimp_texture_type(type));
+  const auto texture_count = material->GetTextureCount(assimp_texture_types.at(type));
 
   textures.reserve(texture_count);
 
   for (auto i = 0u; i < texture_count; ++i) {
     auto assimp_path = aiString{};
-    material->GetTexture(get_assimp_texture_type(type), i, &assimp_path);
+    material->GetTexture(assimp_texture_types.at(type), i, &assimp_path);
     const auto file_path = get_texture_path(path{string{assimp_path.C_Str()}});
 
     auto texture      = Texture{};

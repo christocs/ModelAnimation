@@ -117,7 +117,7 @@ Engine::Engine() {
 
 auto Engine::render() -> void {
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  const auto &model  = this->renderer.get_model("gen/terrain");
+  const auto &model  = this->renderer.get_model("res/model/city/city.fbx");
   const auto window_size = this->renderer.get_window_size();
 
   this->renderer.clear_screen(vec4{135.0f, 206.0f, 235.0f, 1.0f});
