@@ -133,7 +133,7 @@ Engine::Engine() {
 
   auto cityTransform        = Transform{};
   cityTransform.scale       = vec3{0.25f};
-  cityTransform.translation = vec3{0.0f, 0.0f, 0.0f};
+  cityTransform.translation = vec3{0.0f, -1.0f, 0.0f};
 
   const auto cityEntity = registry.create();
   registry.assign<Afk::Transform>(cityEntity, cityTransform);
@@ -143,12 +143,12 @@ Engine::Engine() {
 
   auto ballTransform = Transform{};
   ballTransform.scale = vec3{1.0f};
-  ballTransform.translation = vec3{0.0f, 0.0f, 0.0f};
+  ballTransform.translation = vec3{0.0f, 200.0f, 0.0f};
 
   auto ballEntity = registry.create();
   registry.assign<Afk::Transform>(ballEntity, ballTransform);
 
-  registry.assign<Afk::Collision>(ballEntity, world, glm::vec3(100000000.0f, 0.1f, 100000000.0f), Transform{}, 30.0f, true, rp3d::BodyType::DYNAMIC);
+  registry.assign<Afk::Collision>(ballEntity, this->world, glm::vec3(100000000.0f, 0.1f, 100000000.0f), ballTransform, 30.0f, true, rp3d::BodyType::DYNAMIC);
   registry.assign<Afk::ModelSource>(ballEntity, "res/model/basketball/basketball.fbx");
 }
 
