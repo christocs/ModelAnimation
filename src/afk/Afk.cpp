@@ -116,7 +116,7 @@ Engine::Engine() {
 
   auto ballTransform = Transform{};
   ballTransform.scale = vec3{1.0f};
-  ballTransform.translation = vec3{0.0f, 200.0f, 0.0f};
+  ballTransform.translation = vec3{0.0f, 100.0f, 0.0f};
 
   auto ballEntity = registry.create();
   registry.assign<Afk::Transform>(ballEntity, ballTransform);
