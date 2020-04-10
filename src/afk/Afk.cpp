@@ -110,8 +110,8 @@ Engine::Engine() {
   const auto cityEntity = registry.create();
   registry.assign<Afk::Transform>(cityEntity, cityTransform);
   registry.assign<Afk::ModelSource>(cityEntity, std::string("res/model/city/city.fbx"));
-  // FIXME: Change how shapes are stored
-  registry.assign<Afk::Collision>(cityEntity, this->world, &this->boxShape, cityTransform, 0, false, rp3d::BodyType::STATIC);
+
+  registry.assign<Afk::Collision>(cityEntity, this->world, glm::vec3(0.8f, 0.8f, 0.8f), cityTransform, 0, false, rp3d::BodyType::STATIC);
 
   auto ballTransform = Transform{};
   ballTransform.scale = vec3{1.0f};
@@ -119,8 +119,8 @@ Engine::Engine() {
 
   auto ballEntity = registry.create();
   registry.assign<Afk::Transform>(ballEntity, ballTransform);
-  // FIXME: Change how shapes are stored
-  registry.assign<Afk::Collision>(ballEntity, world, &this->sphereShape, Transform{}, 30.0f, true, rp3d::BodyType::DYNAMIC);
+
+  registry.assign<Afk::Collision>(ballEntity, world, glm::vec3(100000000.0f, 0.1f, 100000000.0f), Transform{}, 30.0f, true, rp3d::BodyType::DYNAMIC);
   registry.assign<Afk::ModelSource>(ballEntity, "res/model/basketball/basketball.fbx");
 }
 

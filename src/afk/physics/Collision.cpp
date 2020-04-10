@@ -2,7 +2,7 @@
 
 using Afk::Collision;
 
-Collision::Collision(rp3d::DynamicsWorld* world, rp3d::CollisionShape* shape, Afk::Transform transform, float mass, bool gravity, rp3d::BodyType bodyType)
+Collision::Collision(rp3d::DynamicsWorld* world, glm::vec3 boundingBox, Afk::Transform transform, float mass, bool gravity, rp3d::BodyType bodyType)
 {
   // Convert Afk transform object to rp3d transform object
   // Note that Afk::Transform stores scale and rp3d::Transform does not
@@ -16,10 +16,20 @@ Collision::Collision(rp3d::DynamicsWorld* world, rp3d::CollisionShape* shape, Af
   this->body->enableGravity(gravity);
   this->body->setType(bodyType);
 
-  this->proxyShape = this->body->addCollisionShape(shape, rp3d::Transform::identity(), mass);
+  this->collisionShape = new rp3d::BoxShape(rp3d::Vector3(boundingBox.x, boundingBox.y, boundingBox.z));
+
+  this->proxyShape = this->body->addCollisionShape(this->collisionShape, rp3d::Transform::identity(), mass);
 }
 
 rp3d::RigidBody* Collision::GetBody()
 {
   return this->body;
 }
+
+/*
+Collision::~Collision()
+{
+  delete this->proxyShape;
+  delete this->collisionShape;
+  delete this->body;
+}*/
