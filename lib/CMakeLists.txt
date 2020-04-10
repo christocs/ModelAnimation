@@ -46,6 +46,7 @@ add_subdirectory(stb)
 add_subdirectory(glfw)
 add_subdirectory(glad)
 add_subdirectory(imgui)
+add_subdirectory(fast-noise-simd)
 
 # DLLs were a mistake.
 set_target_properties(reactphysics3d PROPERTIES ENABLE_EXPORTS ON)

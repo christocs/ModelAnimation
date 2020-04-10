@@ -13,6 +13,7 @@
 using namespace std::string_literals;
 
 using glm::vec3;
+using glm::vec4;
 
 using Afk::Engine;
 using Afk::Event;
@@ -102,7 +103,7 @@ auto Engine::render() -> void {
   const auto &model  = this->renderer.get_model("res/model/city/city.fbx");
   const auto window_size = this->renderer.get_window_size();
 
-  this->renderer.clear_screen();
+  this->renderer.clear_screen(vec4{135.0f, 206.0f, 235.0f, 1.0f});
   this->ui.prepare();
 
   // FIXME: Move to a scene manager.

@@ -71,7 +71,7 @@ namespace Afk {
       auto get_window_size() const -> glm::ivec2;
 
       // Draw commands
-      auto clear_screen(glm::vec4 clear_color = {1.0f, 1.0f, 1.0f, 1.0f}) const -> void;
+      auto clear_screen(glm::vec4 clear_color = {255.0f, 255.0f, 255.0f, 1.0f}) const -> void;
       auto swap_buffers() -> void;
       auto set_viewport(int x, int y, int width, int height) const -> void;
       auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader,
