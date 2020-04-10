@@ -10,6 +10,9 @@
 #include "afk/debug/Assert.hpp"
 #include "afk/io/Log.hpp"
 
+#include "afk/io/ModelSource.hpp"
+#include "afk/physics/Collision.hpp"
+
 using namespace std::string_literals;
 
 using glm::vec3;
@@ -95,11 +98,34 @@ Engine::Engine() {
       Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
 
   glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
+
+  rp3d::Vector3 gravity(0.0, -9.81f, 0);
+  this->world = new rp3d::DynamicsWorld(gravity);
+
+
+  auto cityTransform        = Transform{};
+  cityTransform.scale       = vec3{0.25f};
+  cityTransform.translation = vec3{0.0f, 0.0f, 0.0f};
+
+  const auto cityEntity = registry.create();
+  registry.assign<Afk::Transform>(cityEntity, cityTransform);
+  registry.assign<Afk::ModelSource>(cityEntity, std::string("res/model/city/city.fbx"));
+  // FIXME: Change how shapes are stored
+  registry.assign<Afk::Collision>(cityEntity, this->world, &this->boxShape, cityTransform, 0, false, rp3d::BodyType::STATIC);
+
+  auto ballTransform = Transform{};
+  ballTransform.scale = vec3{1.0f};
+  ballTransform.translation = vec3{0.0f, 0.0f, 0.0f};
+
+  auto ballEntity = registry.create();
+  registry.assign<Afk::Transform>(ballEntity, ballTransform);
+  // FIXME: Change how shapes are stored
+  registry.assign<Afk::Collision>(ballEntity, world, &this->sphereShape, Transform{}, 30.0f, true, rp3d::BodyType::DYNAMIC);
+  registry.assign<Afk::ModelSource>(ballEntity, "res/model/basketball/basketball.fbx");
 }
 
 auto Engine::render() -> void {
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  const auto &model  = this->renderer.get_model("res/model/city/city.fbx");
   const auto window_size = this->renderer.get_window_size();
 
   this->renderer.clear_screen();
@@ -112,9 +138,15 @@ auto Engine::render() -> void {
       this->camera.get_projection_matrix(window_size.x, window_size.y));
   this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
-  auto transform        = Transform{};
-  transform.translation = vec3{0.0f, -1.0f, 0.0f};
-  this->renderer.draw_model(model, shader, transform);
+  auto renderView = registry.view<Transform, ModelSource>();
+
+  for (auto entity: renderView) {
+    auto modelName = renderView.get<ModelSource>(entity);
+    auto modelTransform = renderView.get<Transform>(entity);
+    auto modelHandle = this->renderer.get_model(modelName);
+    this->renderer.draw_model(modelHandle, shader, modelTransform);
+  }
+
   this->ui.draw();
   this->renderer.swap_buffers();
 }
@@ -133,6 +165,19 @@ auto Engine::update() -> void {
   }
 
   this->update_camera();
+
+  world->update(this->get_time() - this->last_update);
+
+  // transfer transform
+  registry.view<Transform, Collision>().each([](Transform& transform, Collision& collision)
+  {
+      const auto rp3dPosition = collision.GetBody()->getTransform().getPosition();
+      const auto rp3dOreientation = collision.GetBody()->getTransform().getOrientation();
+
+      transform.translation = glm::vec3{rp3dPosition.x, rp3dPosition.y, rp3dPosition.z};
+      // FIXME: transfer rotation
+      //transform.rotation = glm::quat{rp3dOreientation.x, rp3dOreientation.y, rp3dOreientation.z, rp3dOreientation.w};
+  });
 
   ++this->frame_count;
   this->last_update = this->get_time();

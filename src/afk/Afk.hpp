@@ -7,6 +7,9 @@
 #include "afk/renderer/Renderer.hpp"
 #include "afk/ui/Ui.hpp"
 
+#include <reactphysics3d.h>
+#include <entt/entt.hpp>
+
 namespace Afk {
   class Engine {
   public:
@@ -41,5 +44,18 @@ namespace Afk {
     bool is_running   = true;
     int frame_count   = {};
     float last_update = {};
+
+    entt::registry registry;
+
+    rp3d::DynamicsWorld* world;
+
+    rp3d::RigidBody* cityBody;
+    rp3d::ProxyShape* cityShape;
+
+    rp3d::RigidBody* basketballBody;
+    rp3d::ProxyShape* basketballShape;
+
+    rp3d::SphereShape sphereShape = rp3d::SphereShape(0.8f);
+    rp3d::BoxShape boxShape = rp3d::BoxShape(rp3d::Vector3(100000000.0f, 0.1f, 100000000.0f));
   };
 }
