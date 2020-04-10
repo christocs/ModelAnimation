@@ -4,9 +4,10 @@
 #include <filesystem>
 #include <string>
 
-#include <LuaBridge/LuaBridge.h>
-
+// no_move
 #include "afk/script/LuaInclude.hpp"
+// no_move
+#include <LuaBridge/LuaBridge.h>
 
 using luabridge::LuaRef;
 struct lua_State;
