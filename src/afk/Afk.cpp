@@ -89,6 +89,34 @@ auto Engine::update_camera() -> void {
   }
 }
 
+auto Engine::update_physics(float dt) -> void {
+  world->update(dt);
+
+  // transfer transform
+  registry.view<Transform, Collision>().each([](Transform& transform, Collision& collision)
+  {
+      const auto rp3dPosition = collision.GetBody()->getTransform().getPosition();
+      const auto rp3dOreientation = collision.GetBody()->getTransform().getOrientation();
+
+      transform.translation = glm::vec3{rp3dPosition.x, rp3dPosition.y, rp3dPosition.z};
+      // FIXME: transfer rotation
+      //transform.rotation = glm::quat{rp3dOreientation.x, rp3dOreientation.y, rp3dOreientation.z, rp3dOreientation.w};
+  });
+}
+
+auto Engine::render_entities() -> void {
+  const auto &shader = this->renderer.get_shader_program("shader/default.prog");
+
+  auto renderView = registry.view<Transform, ModelSource>();
+
+  for (auto entity: renderView) {
+    auto modelName = renderView.get<ModelSource>(entity);
+    auto modelTransform = renderView.get<Transform>(entity);
+    auto modelHandle = this->renderer.get_model(modelName);
+    this->renderer.draw_model(modelHandle, shader, modelTransform);
+  }
+}
+
 Engine::Engine() {
   this->event_manager.setup_callbacks(this->renderer.window);
 
@@ -138,14 +166,7 @@ auto Engine::render() -> void {
       this->camera.get_projection_matrix(window_size.x, window_size.y));
   this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
-  auto renderView = registry.view<Transform, ModelSource>();
-
-  for (auto entity: renderView) {
-    auto modelName = renderView.get<ModelSource>(entity);
-    auto modelTransform = renderView.get<Transform>(entity);
-    auto modelHandle = this->renderer.get_model(modelName);
-    this->renderer.draw_model(modelHandle, shader, modelTransform);
-  }
+  this->render_entities();
 
   this->ui.draw();
   this->renderer.swap_buffers();
@@ -166,18 +187,7 @@ auto Engine::update() -> void {
 
   this->update_camera();
 
-  world->update(this->get_time() - this->last_update);
-
-  // transfer transform
-  registry.view<Transform, Collision>().each([](Transform& transform, Collision& collision)
-  {
-      const auto rp3dPosition = collision.GetBody()->getTransform().getPosition();
-      const auto rp3dOreientation = collision.GetBody()->getTransform().getOrientation();
-
-      transform.translation = glm::vec3{rp3dPosition.x, rp3dPosition.y, rp3dPosition.z};
-      // FIXME: transfer rotation
-      //transform.rotation = glm::quat{rp3dOreientation.x, rp3dOreientation.y, rp3dOreientation.z, rp3dOreientation.w};
-  });
+  this->update_physics(this->get_time() - this->last_update);
 
   ++this->frame_count;
   this->last_update = this->get_time();

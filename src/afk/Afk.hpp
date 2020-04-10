@@ -6,6 +6,7 @@
 #include "afk/renderer/Camera.hpp"
 #include "afk/renderer/Renderer.hpp"
 #include "afk/ui/Ui.hpp"
+#include "afk/renderer/opengl/ShaderProgramHandle.hpp"
 
 #include <reactphysics3d.h>
 #include <entt/entt.hpp>
@@ -33,6 +34,8 @@ namespace Afk {
     auto render() -> void;
     auto update() -> void;
 
+    auto render_entities() -> void;
+
     auto get_time() -> float;
     auto get_delta_time() -> float;
     auto get_is_running() const -> bool;
@@ -42,6 +45,8 @@ namespace Afk {
     auto move_keyboard(Event e) -> void;
     auto move_mouse(Event e) -> void;
     auto handle_mouse() -> void;
+
+    auto update_physics(float dt) -> void;
 
     bool is_running   = true;
     int frame_count   = {};
