@@ -9,12 +9,13 @@
 #include "afk/script/Script.hpp"
 
 using namespace std::string_literals;
+using Afk::Component::ScriptComponent;
 using std::filesystem::path;
 
 /**
  * This should probably be moved somewhere better
  */
-auto Afk::ScriptComponent::setup_lua_state(lua_State *lua) -> void {
+auto ScriptComponent::setup_lua_state(lua_State *lua) -> void {
   auto key_ns = luabridge::getGlobalNamespace(lua).beginNamespace("key");
   for (const auto &key : Afk::Script::keys) {
     // key.code can't be changed from lua's side
@@ -43,14 +44,14 @@ auto Afk::ScriptComponent::setup_lua_state(lua_State *lua) -> void {
   event_manager_class.endClass();
 }
 
-Afk::ScriptComponent::ScriptComponent(lua_State *lua, const path &file_name)
+ScriptComponent::ScriptComponent(lua_State *lua, const path &file_name)
   : file_path("script" / file_name), on_update(lua), on_key_press(lua),
     on_key_release(lua), on_text_enter(lua), on_mouse_move(lua),
     on_mouse_scroll(lua), on_mouse_press(lua), on_mouse_release(lua) {
   this->reload(lua);
 }
 
-auto Afk::ScriptComponent::reload(lua_State *lua) -> void {
+auto ScriptComponent::reload(lua_State *lua) -> void {
   const auto abs_path = Afk::get_absolute_path(this->file_path);
 
   this->last_file_update = std::filesystem::last_write_time(abs_path);
@@ -68,7 +69,7 @@ auto Afk::ScriptComponent::reload(lua_State *lua) -> void {
   this->on_text_enter    = luabridge::getGlobal(lua, "text_enter");
 }
 
-auto Afk::ScriptComponent::reload_if_old(lua_State *lua) -> void {
+auto ScriptComponent::reload_if_old(lua_State *lua) -> void {
   const auto abs_path = Afk::get_absolute_path(this->file_path);
 
   if (std::filesystem::last_write_time(abs_path) > this->last_file_update) {
@@ -76,48 +77,48 @@ auto Afk::ScriptComponent::reload_if_old(lua_State *lua) -> void {
   }
 }
 
-auto Afk::ScriptComponent::update(float dt) -> void {
+auto ScriptComponent::update(float dt) -> void {
   if (this->on_update.isFunction())
     this->on_update(dt);
 }
 
-auto Afk::ScriptComponent::key_press(int key, bool alt, bool ctrl, bool shift) -> void {
+auto ScriptComponent::key_press(int key, bool alt, bool ctrl, bool shift) -> void {
   if (this->on_key_press.isFunction()) {
     this->on_key_press(key, alt, ctrl, shift);
   }
 }
 
-auto Afk::ScriptComponent::key_release(int key, bool alt, bool ctrl, bool shift) -> void {
+auto ScriptComponent::key_release(int key, bool alt, bool ctrl, bool shift) -> void {
   if (this->on_key_release.isFunction()) {
     this->on_key_release(key, alt, ctrl, shift);
   }
 }
 
-auto Afk::ScriptComponent::text_enter(const std::string &text) -> void {
+auto ScriptComponent::text_enter(const std::string &text) -> void {
   if (this->on_text_enter.isFunction()) {
     this->on_text_enter(text);
   }
 }
 
-auto Afk::ScriptComponent::mouse_move(int x, int y) -> void {
+auto ScriptComponent::mouse_move(int x, int y) -> void {
   if (this->on_mouse_move.isFunction()) {
     this->on_mouse_move(x, y);
   }
 }
 
-auto Afk::ScriptComponent::mouse_scroll(float delta) -> void {
+auto ScriptComponent::mouse_scroll(float delta) -> void {
   if (this->on_mouse_scroll.isFunction()) {
     this->on_mouse_scroll(delta);
   }
 }
 
-auto Afk::ScriptComponent::mouse_press(int button) -> void {
+auto ScriptComponent::mouse_press(int button) -> void {
   if (this->on_mouse_press.isFunction()) {
     this->on_mouse_press(button);
   }
 }
 
-auto Afk::ScriptComponent::mouse_release(int button) -> void {
+auto ScriptComponent::mouse_release(int button) -> void {
   if (this->on_mouse_release.isFunction()) {
     this->on_mouse_release(button);
   }

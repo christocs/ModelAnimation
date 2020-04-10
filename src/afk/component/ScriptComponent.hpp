@@ -4,18 +4,14 @@
 #include <filesystem>
 #include <string>
 
-extern "C" {
-#include <lua/lauxlib.h>
-#include <lua/lua.h>
-#include <lua/lualib.h>
-}
-
 #include <LuaBridge/LuaBridge.h>
+
+#include "afk/script/LuaInclude.hpp"
 
 using luabridge::LuaRef;
 struct lua_State;
 
-namespace Afk {
+namespace Afk::Component {
   class ScriptComponent {
   private:
     std::filesystem::path file_path;
