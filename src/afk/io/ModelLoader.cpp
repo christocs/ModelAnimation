@@ -67,6 +67,9 @@ auto ModelLoader::load(const path &file_path) -> Model {
   this->model.file_path = file_path;
   this->model.file_dir  = file_path.parent_path();
 
+  afk_assert(std::filesystem::exists(abs_path),
+             "Model "s + file_path.string() + " doesn't exist"s);
+
   const auto *scene = importer.ReadFile(abs_path.string(), ASSIMP_OPTIONS);
 
   afk_assert(scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || scene->mRootNode,
