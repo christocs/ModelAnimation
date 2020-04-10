@@ -187,7 +187,7 @@ auto Engine::update() -> void {
 
   this->update_camera();
 
-  this->update_physics(this->get_time() - this->last_update);
+  this->update_physics(this->get_delta_time());
 
   ++this->frame_count;
   this->last_update = this->get_time();
