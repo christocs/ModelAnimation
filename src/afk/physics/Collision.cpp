@@ -16,20 +16,12 @@ Collision::Collision(rp3d::DynamicsWorld* world, glm::vec3 boundingBox, Afk::Tra
   this->body->enableGravity(gravity);
   this->body->setType(bodyType);
 
-  this->collisionShape = new rp3d::BoxShape(rp3d::Vector3(boundingBox.x, boundingBox.y, boundingBox.z));
+  this->collisionShape = std::make_unique<rp3d::BoxShape>(rp3d::Vector3(boundingBox.x, boundingBox.y, boundingBox.z));
 
-  this->proxyShape = this->body->addCollisionShape(this->collisionShape, rp3d::Transform::identity(), mass);
+  this->proxyShape = this->body->addCollisionShape(this->collisionShape.get(), rp3d::Transform::identity(), mass);
 }
 
 rp3d::RigidBody* Collision::GetBody()
 {
   return this->body;
 }
-
-/*
-Collision::~Collision()
-{
-  delete this->proxyShape;
-  delete this->collisionShape;
-  delete this->body;
-}*/
