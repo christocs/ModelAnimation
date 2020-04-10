@@ -111,7 +111,7 @@ auto Ui::draw_menu_bar() -> void {
 auto Ui::draw_stats() -> void {
   const auto offset_x = 10.0f;
   const auto offset_y = 37.0f;
-  static auto corner  = 0;
+  static auto corner  = 1;
 
   auto &io = ImGui::GetIO();
 
@@ -130,8 +130,17 @@ auto Ui::draw_stats() -> void {
                        ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
                        ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav)) {
 
+    const auto &afk   = Engine::get();
+    const auto pos    = afk.camera.get_position();
+    const auto angles = afk.camera.get_angles();
+
     ImGui::Text("%.1f fps (%.3f ms)", static_cast<double>(io.Framerate),
                 static_cast<double>(io.Framerate) / 1000.0);
+    ImGui::Separator();
+    ImGui::Text("Position {%.1f, %.1f, %.1f}", static_cast<double>(pos.x),
+                static_cast<double>(pos.y), static_cast<double>(pos.z));
+    ImGui::Text("Angles {%.1f, %.1f}", static_cast<double>(angles.x),
+                static_cast<double>(angles.y));
 
     if (ImGui::BeginPopupContextWindow()) {
       if (ImGui::MenuItem("Custom", nullptr, corner == -1)) {

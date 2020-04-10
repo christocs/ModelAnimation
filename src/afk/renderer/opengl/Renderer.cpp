@@ -131,11 +131,11 @@ auto Renderer::get_window_size() const -> ivec2 {
 auto Renderer::clear_screen(vec4 clear_color) const -> void {
   afk_assert_debug(clear_color.x >= 0.0f && clear_color.x <= 255.0f,
                    "Red channel out of range");
-  afk_assert_debug(clear_color.y >= 0.0f && clear_color.x <= 255.0f,
+  afk_assert_debug(clear_color.y >= 0.0f && clear_color.y <= 255.0f,
                    "Green channel out of range");
-  afk_assert_debug(clear_color.z >= 0.0f && clear_color.x <= 255,
+  afk_assert_debug(clear_color.z >= 0.0f && clear_color.z <= 255.0f,
                    "Blue channel out of range");
-  afk_assert_debug(clear_color.w >= 0.0f && clear_color.x <= 1.0f,
+  afk_assert_debug(clear_color.w >= 0.0f && clear_color.w <= 1.0f,
                    "Alpha channel out of range");
 
   glClearColor(clear_color.x / 255.0f, clear_color.y / 255.0f,

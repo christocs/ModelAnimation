@@ -6,9 +6,11 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include "afk/debug/Assert.hpp"
 #include "afk/io/Log.hpp"
+#include "afk/terrain/TerrainGenerator.hpp"
 
 using namespace std::string_literals;
 
@@ -17,6 +19,8 @@ using glm::vec4;
 
 using Afk::Engine;
 using Afk::Event;
+using Afk::TerrainGenerator;
+using Afk::Texture;
 using Action   = Afk::Event::Action;
 using Movement = Afk::Camera::Movement;
 
@@ -96,11 +100,24 @@ Engine::Engine() {
       Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
 
   glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
+
+  // FIXME: Tidy up
+  auto terrain = TerrainGenerator{};
+  terrain.generateFlatPlane(128, 1);
+  auto mesh         = terrain.take_mesh();
+  auto texture      = Texture{};
+  texture.file_path = "res/texture/terrain.png";
+  mesh.textures.push_back(std::move(texture));
+  auto model = Model{};
+  model.meshes.push_back(std::move(mesh));
+  model.file_path = "gen/terrain";
+
+  this->renderer.load_model(model);
 }
 
 auto Engine::render() -> void {
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  const auto &model  = this->renderer.get_model("res/model/city/city.fbx");
+  const auto &model  = this->renderer.get_model("gen/terrain");
   const auto window_size = this->renderer.get_window_size();
 
   this->renderer.clear_screen(vec4{135.0f, 206.0f, 235.0f, 1.0f});
@@ -114,7 +131,7 @@ auto Engine::render() -> void {
   this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
   auto transform        = Transform{};
-  transform.translation = vec3{0.0f, -1.0f, 0.0f};
+  transform.translation = vec3{-64.0f, -10.0f, -64.0f};
   this->renderer.draw_model(model, shader, transform);
   this->ui.draw();
   this->renderer.swap_buffers();

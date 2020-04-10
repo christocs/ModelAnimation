@@ -14,6 +14,8 @@ namespace Afk {
 
     auto get_view_matrix() -> glm::mat4;
     auto get_projection_matrix(int width, int height) const -> glm::mat4;
+    auto get_position() const -> glm::vec3;
+    auto get_angles() const -> glm::vec2;
 
   private:
     float fov         = 75.0f;

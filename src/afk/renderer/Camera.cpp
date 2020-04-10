@@ -8,6 +8,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 using glm::mat4;
+using glm::vec2;
 using glm::vec3;
 
 using Afk::Camera;
@@ -70,4 +71,12 @@ auto Camera::get_right() const -> vec3 {
 
 auto Camera::get_up() const -> vec3 {
   return glm::normalize(glm::cross(this->get_right(), this->get_front()));
+}
+
+auto Camera::get_position() const -> vec3 {
+  return this->position;
+}
+
+auto Camera::get_angles() const -> vec2 {
+  return this->angles;
 }
