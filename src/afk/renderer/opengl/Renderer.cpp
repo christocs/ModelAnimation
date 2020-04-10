@@ -333,15 +333,17 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
 
 auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
   const auto is_loaded = this->textures.count(texture.file_path) == 1;
+  const auto abs_path  = Afk::get_absolute_path(texture.file_path);
 
   afk_assert(!is_loaded, "Texture with path '"s + texture.file_path.string() + "' already loaded"s);
+  afk_assert(std::filesystem::exists(abs_path),
+             "Texture "s + texture.file_path.string() + " doesn't exist"s);
 
   auto width    = 0;
   auto height   = 0;
   auto channels = 0;
   auto image    = shared_ptr<unsigned char>{
-      stbi_load(Afk::get_absolute_path(texture.file_path).string().c_str(),
-                &width, &height, &channels, STBI_rgb_alpha),
+      stbi_load(abs_path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha),
       stbi_image_free};
 
   afk_assert(image != nullptr,
