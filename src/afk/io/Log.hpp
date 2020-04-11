@@ -5,7 +5,6 @@
 #include <sstream>
 
 #include "afk/Afk.hpp"
-#include "afk/debug/Assert.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/ui/Log.hpp"
 

@@ -37,7 +37,7 @@ auto Engine::initialize() -> void {
       Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
 
   // FIXME: Tidy up
-  auto terrain      = TerrainGenerator{104, 104, 20.0f}.get_model();
+  auto terrain      = TerrainGenerator{128, 128, 20.0f}.get_model();
   terrain.file_path = "gen/terrain";
   this->renderer.load_model(terrain);
   this->renderer.set_wireframe(true);

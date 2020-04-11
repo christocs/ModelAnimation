@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <fstream>
 
+#include "afk/debug/Assert.hpp"
+
 using Afk::Io::Log;
 
 using std::ofstream;
