@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <typeindex>
 #include <typeinfo>
 #include <vector>
@@ -28,12 +29,12 @@ namespace Afk {
 
       static constexpr auto GL_INDICES =
           frozen::unordered_map<ctti::type_id_t, GLenum, 6, IndexHash>(
-              {{ctti::type_id<signed char>(), GL_BYTE},
-               {ctti::type_id<unsigned char>(), GL_UNSIGNED_BYTE},
-               {ctti::type_id<short>(), GL_SHORT},
-               {ctti::type_id<unsigned short>(), GL_UNSIGNED_SHORT},
-               {ctti::type_id<int>(), GL_INT},
-               {ctti::type_id<unsigned>(), GL_UNSIGNED_INT}});
+              {{ctti::type_id<int8_t>(), GL_BYTE},
+               {ctti::type_id<uint8_t>(), GL_UNSIGNED_BYTE},
+               {ctti::type_id<int16_t>(), GL_SHORT},
+               {ctti::type_id<uint16_t>(), GL_UNSIGNED_SHORT},
+               {ctti::type_id<int32_t>(), GL_INT},
+               {ctti::type_id<uint32_t>(), GL_UNSIGNED_INT}});
 
       static constexpr auto INDEX = GL_INDICES.at(ctti::type_id<Mesh::Index>());
 

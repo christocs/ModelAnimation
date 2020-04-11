@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.14)
+
 function(target_ignore_header_warnings target scope)
     get_target_property(lib_include_dirs ${target} INTERFACE_INCLUDE_DIRECTORIES)
     target_include_directories(${target} SYSTEM ${scope} ${lib_include_dirs})
@@ -13,8 +15,6 @@ option(GLFW_BUILD_EXAMPLES OFF)
 option(GLFW_BUILD_TESTS OFF)
 option(GLFW_BUILD_DOCS OFF)
 option(GLFW_USE_HYBRID_HPG ON)
-option(GLFW_BUILD_TESTS OFF)
-option(GLFW_BUILD_DOCS OFF)
 
 # Fixes an entt warning on UNIX systems.
 if (UNIX)
@@ -46,7 +46,7 @@ add_subdirectory(stb)
 add_subdirectory(glfw)
 add_subdirectory(glad)
 add_subdirectory(imgui)
-add_subdirectory(fast-noise-simd)
+add_subdirectory(fastnoise-simd)
 add_subdirectory(frozen)
 add_subdirectory(ctti)
 

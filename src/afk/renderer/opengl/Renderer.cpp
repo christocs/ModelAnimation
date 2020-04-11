@@ -1,6 +1,7 @@
 #include "afk/renderer/opengl/Renderer.hpp"
 
 #include <filesystem>
+#include <limits>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -250,6 +251,8 @@ auto Renderer::use_shader(const ShaderProgramHandle &shader) const -> void {
 auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
   afk_assert(mesh.vertices.size() > 0, "Mesh missing vertices");
   afk_assert(mesh.indices.size() > 0, "Mesh missing indices");
+  afk_assert(mesh.indices.size() < std::numeric_limits<Mesh::Index>::max(),
+             "Too many indices");
 
   auto mesh_handle        = MeshHandle{};
   mesh_handle.num_indices = mesh.indices.size();

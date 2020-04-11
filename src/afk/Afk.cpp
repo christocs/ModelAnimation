@@ -102,22 +102,15 @@ Engine::Engine() {
   glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
 
   // FIXME: Tidy up
-  auto terrain = TerrainGenerator{};
-  terrain.generateFlatPlane(128, 1);
-  auto mesh         = terrain.take_mesh();
-  auto texture      = Texture{};
-  texture.file_path = "res/texture/terrain.png";
-  mesh.textures.push_back(std::move(texture));
-  auto model = Model{};
-  model.meshes.push_back(std::move(mesh));
-  model.file_path = "gen/terrain";
+  auto terrain      = TerrainGenerator{64, 64, 20.0f}.get_model();
+  terrain.file_path = "gen/terrain";
 
-  this->renderer.load_model(model);
+  this->renderer.load_model(terrain);
 }
 
 auto Engine::render() -> void {
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  const auto &model  = this->renderer.get_model("res/model/city/city.fbx");
+  const auto &terrain    = this->renderer.get_model("gen/terrain");
   const auto window_size = this->renderer.get_window_size();
 
   this->renderer.clear_screen(vec4{135.0f, 206.0f, 235.0f, 1.0f});
@@ -131,8 +124,8 @@ auto Engine::render() -> void {
   this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
   auto transform        = Transform{};
-  transform.translation = vec3{-64.0f, -10.0f, -64.0f};
-  this->renderer.draw_model(model, shader, transform);
+  transform.translation = vec3{-32.0f, -1.0f, -32.0f};
+  this->renderer.draw_model(terrain, shader, transform);
   this->ui.draw();
   this->renderer.swap_buffers();
 }

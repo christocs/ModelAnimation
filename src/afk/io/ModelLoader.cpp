@@ -133,11 +133,13 @@ auto ModelLoader::get_indices(const aiMesh *mesh) -> Mesh::Indices {
 
   indices.reserve(mesh->mNumFaces);
 
+  auto num_indices = 0;
   for (auto i = size_t{0}; i < mesh->mNumFaces; ++i) {
     const auto face = mesh->mFaces[i];
 
     for (auto j = size_t{0}; j < face.mNumIndices; ++j) {
       indices.push_back(static_cast<Mesh::Index>(face.mIndices[j]));
+      ++num_indices;
     }
   }
 

@@ -107,6 +107,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     imgui
     frozen::frozen
     ctti
+    fastnoise-simd
 )
 
 # Symlink resources to the binary location.

@@ -39,3 +39,6 @@
 [submodule "lib/ctti"]
 	path = lib/ctti
 	url = https://github.com/Manu343726/ctti
+[submodule "lib/fastnoise-simd/fastnoise-simd"]
+	path = lib/fastnoise-simd/fastnoise-simd
+	url = https://github.com/opeik/FastNoiseSIMD
