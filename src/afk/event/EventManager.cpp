@@ -32,11 +32,13 @@ auto EventManager::register_event(Event::Type type, Callback callback) -> void {
 }
 
 auto EventManager::setup_callbacks(GLFWwindow *window) -> void {
-  glfwSetKeyCallback(window, key_callback);
-  glfwSetCharCallback(window, char_callback);
-  glfwSetCursorPosCallback(window, mouse_pos_callback);
-  glfwSetMouseButtonCallback(window, mouse_press_callback);
-  glfwSetScrollCallback(window, mouse_scroll_callback);
+  glfwSetMouseButtonCallback(window, EventManager::mouse_press_callback);
+  glfwSetScrollCallback(window, EventManager::mouse_scroll_callback);
+  glfwSetKeyCallback(window, EventManager::key_callback);
+  // FIXME: This breaks imgui keys, disabling temporarily
+  // glfwSetCharCallback(window, EventManager::char_callback);
+  glfwSetCursorPosCallback(window, EventManager::mouse_pos_callback);
+  glfwSetErrorCallback(EventManager::error_callback);
 }
 
 auto EventManager::key_callback([[maybe_unused]] GLFWwindow *window, int key,
@@ -108,4 +110,8 @@ auto EventManager::mouse_scroll_callback([[maybe_unused]] GLFWwindow *window,
                                          double dx, double dy) -> void {
   Afk::Engine::get().event_manager.events.push(
       {Event::MouseScroll{dx, dy}, Event::Type::MouseScroll});
+}
+
+auto EventManager::error_callback([[maybe_unused]] int error, const char *msg) -> void {
+  std::cerr << "glfw error: " << msg << '\n';
 }

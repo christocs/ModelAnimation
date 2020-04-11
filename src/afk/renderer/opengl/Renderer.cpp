@@ -69,6 +69,13 @@ constexpr auto gl_shader_types = frozen::make_unordered_map<Shader::Type, GLenum
     {Shader::Type::Fragment, GL_FRAGMENT_SHADER},
 });
 
+// FIXME: Move someone more appropriate.
+static auto resize_window_callback([[maybe_unused]] GLFWwindow *window,
+                                   int width, int height) -> void {
+  auto &afk = Engine::get();
+  afk.renderer.set_viewport(0, 0, width, height);
+}
+
 auto Renderer::set_option(GLenum option, bool state) const -> void {
   if (state) {
     glEnable(option);
@@ -106,6 +113,7 @@ Renderer::Renderer()
   glfwMakeContextCurrent(this->window);
   afk_assert(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)),
              "Failed to initialize GLAD");
+  glfwSetFramebufferSizeCallback(this->window, resize_window_callback);
 }
 
 Renderer::~Renderer() {

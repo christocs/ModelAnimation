@@ -37,6 +37,7 @@ namespace Afk {
     static auto mouse_press_callback(GLFWwindow *window, int button, int action,
                                      int mods) -> void;
     static auto mouse_scroll_callback(GLFWwindow *window, double dx, double dy) -> void;
+    static auto error_callback(int error, const char *msg) -> void;
 
     std::queue<Event> events = {};
 

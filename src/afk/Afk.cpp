@@ -24,6 +24,21 @@ using Afk::Texture;
 using Action   = Afk::Event::Action;
 using Movement = Afk::Camera::Movement;
 
+Engine::Engine() {
+  this->event_manager.setup_callbacks(this->renderer.window);
+
+  this->event_manager.register_event(
+      Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
+  this->event_manager.register_event(
+      Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
+
+  // FIXME: Tidy up
+  auto terrain      = TerrainGenerator{64, 64, 20.0f}.get_model();
+  terrain.file_path = "gen/terrain";
+
+  this->renderer.load_model(terrain);
+}
+
 auto Engine::move_mouse(Event event) -> void {
   const auto data = std::get<Event::MouseMove>(event.data);
 
@@ -44,6 +59,12 @@ auto Engine::move_mouse(Event event) -> void {
   last_y = static_cast<float>(data.y);
 }
 
+auto Engine::get() -> Engine & {
+  static auto instance = Engine{};
+
+  return instance;
+}
+
 // FIXME: Move to key handler.
 auto Engine::move_keyboard(Event event) -> void {
   const auto key = std::get<Event::Key>(event.data).key;
@@ -55,19 +76,6 @@ auto Engine::move_keyboard(Event event) -> void {
   } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_M) {
     this->renderer.wireframe_enabled = !this->renderer.wireframe_enabled;
   }
-}
-
-// FIXME: Move someone more appropriate.
-static auto resize_window_callback([[maybe_unused]] GLFWwindow *window,
-                                   int width, int height) -> void {
-  auto &afk = Engine::get();
-  afk.renderer.set_viewport(0, 0, width, height);
-}
-
-auto Engine::get() -> Engine & {
-  static auto instance = Engine{};
-
-  return instance;
 }
 
 // FIXME: Move somewhere more appropriate.
@@ -89,23 +97,6 @@ auto Engine::update_camera() -> void {
       this->camera.handle_key(Movement::Right, this->get_delta_time());
     }
   }
-}
-
-Engine::Engine() {
-  this->event_manager.setup_callbacks(this->renderer.window);
-
-  this->event_manager.register_event(
-      Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
-  this->event_manager.register_event(
-      Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
-
-  glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
-
-  // FIXME: Tidy up
-  auto terrain      = TerrainGenerator{64, 64, 20.0f}.get_model();
-  terrain.file_path = "gen/terrain";
-
-  this->renderer.load_model(terrain);
 }
 
 auto Engine::render() -> void {
