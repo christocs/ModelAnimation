@@ -16,10 +16,10 @@ using std::filesystem::path;
 using namespace std::string_literals;
 
 Log::Log() {
-  // FIXME: Make paths native per OS.
+  // FIXME: Unify paths per OS.
   auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
   auto ss = ostringstream{};
-  ss << ".log/" << std::put_time(std::localtime(&t), "%T-%F") << ".log";
+  ss << ".log/" << std::put_time(std::localtime(&t), "%FT%H%M%S") << ".log";
 
   this->log_path = Afk::get_absolute_path(ss.str());
   std::cout << this->log_path << '\n';
