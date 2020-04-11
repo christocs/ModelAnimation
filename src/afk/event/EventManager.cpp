@@ -10,9 +10,7 @@
 using Afk::EventManager;
 using Action = Afk::Event::Action;
 
-EventManager::EventManager() {
-  Afk::status << "Event manager subsystem initialized.\n";
-}
+EventManager::EventManager() {}
 
 auto EventManager::pump_events() -> void {
   glfwPollEvents();

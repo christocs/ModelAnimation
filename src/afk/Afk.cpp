@@ -34,7 +34,7 @@ auto Engine::move_mouse(Event event) -> void {
   const auto dx = static_cast<float>(data.x) - last_x;
   const auto dy = static_cast<float>(data.y) - last_y;
 
-  if (!first_frame && !this->ui.is_visible) {
+  if (!first_frame && !this->ui.show_menu) {
     this->camera.handle_mouse(dx, dy);
   } else {
     first_frame = false;
@@ -51,7 +51,7 @@ auto Engine::move_keyboard(Event event) -> void {
   if (event.type == Event::Type::KeyDown && key == GLFW_KEY_ESCAPE) {
     this->is_running = false;
   } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_N) {
-    this->ui.is_visible = !this->ui.is_visible;
+    this->ui.show_menu = !this->ui.show_menu;
   } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_M) {
     this->renderer.wireframe_enabled = !this->renderer.wireframe_enabled;
   }
@@ -72,7 +72,7 @@ auto Engine::get() -> Engine & {
 
 // FIXME: Move somewhere more appropriate.
 auto Engine::update_camera() -> void {
-  if (!this->ui.is_visible) {
+  if (!this->ui.show_menu) {
     if (this->event_manager.key_state.at(Action::Forward)) {
       this->camera.handle_key(Movement::Forward, this->get_delta_time());
     }
@@ -137,7 +137,7 @@ auto Engine::update() -> void {
     this->is_running = false;
   }
 
-  if (this->ui.is_visible) {
+  if (this->ui.show_menu) {
     glfwSetInputMode(this->renderer.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
   } else {
     glfwSetInputMode(this->renderer.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
