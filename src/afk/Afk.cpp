@@ -77,9 +77,9 @@ auto Engine::move_keyboard(Event event) -> void {
 
   if (event.type == Event::Type::KeyDown && key == GLFW_KEY_ESCAPE) {
     this->is_running = false;
-  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_N) {
+  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_GRAVE_ACCENT) {
     this->ui.show_menu = !this->ui.show_menu;
-  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_M) {
+  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_1) {
     this->renderer.set_wireframe(!this->renderer.get_wireframe());
   }
 }
