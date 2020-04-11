@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 project(imgui)
 
-add_library(imgui)
+add_library(imgui $<$<PLATFORM_ID:Windows>:STATIC>)
 
 if(APPLE)
    find_library(APP_SERVICES_LIBRARY ApplicationServices)
