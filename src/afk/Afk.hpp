@@ -13,9 +13,9 @@ namespace Afk {
     static constexpr const char *GAME_NAME = "ICT397";
 
     Renderer renderer          = {};
-    Camera camera              = {};
     EventManager event_manager = {};
     Ui ui                      = {};
+    Camera camera              = {};
 
     Engine()               = default;
     Engine(Engine &&)      = delete;

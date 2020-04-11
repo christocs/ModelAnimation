@@ -55,6 +55,7 @@ using Afk::OpenGl::Renderer;
 using Afk::OpenGl::ShaderHandle;
 using Afk::OpenGl::ShaderProgramHandle;
 using Afk::OpenGl::TextureHandle;
+namespace Io = Afk::Io;
 
 constexpr auto material_strings =
     frozen::make_unordered_map<Texture::Type, const char *>({
@@ -382,8 +383,8 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  Afk::status << "Texture '" << texture.file_path.string()
-              << "' loaded with ID " << texture_handle.id << ".\n";
+  Io::log << "Texture '" << texture.file_path.string() << "' loaded with ID "
+          << texture_handle.id << ".\n";
   this->textures[texture.file_path] = std::move(texture_handle);
 
   return this->textures[texture.file_path];
@@ -420,8 +421,8 @@ auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
                           shader.file_path.string() + ": "s + error_msg.data());
   }
 
-  Afk::status << "Shader '" << shader.file_path.string()
-              << "' compiled with ID " << shader_handle.id << ".\n";
+  Io::log << "Shader '" << shader.file_path.string() << "' compiled with ID "
+          << shader_handle.id << ".\n";
   this->shaders[shader.file_path] = std::move(shader_handle);
 
   return this->shaders[shader.file_path];
@@ -461,8 +462,8 @@ auto Renderer::link_shaders(const ShaderProgram &shader_program) -> ShaderProgra
                           "' linking failed: "s + error_msg.data());
   }
 
-  Afk::status << "Shader program '" << shader_program.file_path.string()
-              << "' linked with ID " << shader_program_handle.id << ".\n";
+  Io::log << "Shader program '" << shader_program.file_path.string()
+          << "' linked with ID " << shader_program_handle.id << ".\n";
   this->shader_programs[shader_program.file_path] = std::move(shader_program_handle);
 
   return this->shader_programs[shader_program.file_path];
@@ -496,4 +497,12 @@ auto Renderer::set_uniform(const ShaderProgramHandle &program,
   afk_assert_debug(program.id > 0, "Invalid shader program ID");
   glUniformMatrix4fv(glGetUniformLocation(program.id, name.c_str()), 1,
                      GL_FALSE, glm::value_ptr(value));
+}
+
+auto Renderer::set_wireframe(bool status) -> void {
+  this->wireframe_enabled = status;
+}
+
+auto Renderer::get_wireframe() const -> bool {
+  return this->wireframe_enabled;
 }

@@ -39,8 +39,8 @@ auto Engine::initialize() -> void {
   // FIXME: Tidy up
   auto terrain      = TerrainGenerator{64, 64, 20.0f}.get_model();
   terrain.file_path = "gen/terrain";
-
   this->renderer.load_model(terrain);
+  this->renderer.set_wireframe(true);
 
   this->is_initialized = true;
 }
@@ -80,7 +80,7 @@ auto Engine::move_keyboard(Event event) -> void {
   } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_N) {
     this->ui.show_menu = !this->ui.show_menu;
   } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_M) {
-    this->renderer.wireframe_enabled = !this->renderer.wireframe_enabled;
+    this->renderer.set_wireframe(!this->renderer.get_wireframe());
   }
 }
 

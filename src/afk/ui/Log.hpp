@@ -15,6 +15,6 @@ namespace Afk {
     ImGuiTextBuffer buffer     = {};
     ImGuiTextFilter filter     = {};
     ImVector<int> line_offsets = {};
-    bool auto_scroll           = {};
+    bool auto_scroll           = true;
   };
 }

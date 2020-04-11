@@ -40,8 +40,7 @@ auto EventManager::setup_callbacks(Renderer::Window window) -> void {
   glfwSetMouseButtonCallback(window, EventManager::mouse_press_callback);
   glfwSetScrollCallback(window, EventManager::mouse_scroll_callback);
   glfwSetKeyCallback(window, EventManager::key_callback);
-  // FIXME: This breaks imgui keys, disabling temporarily
-  // glfwSetCharCallback(window, EventManager::char_callback);
+  glfwSetCharCallback(window, EventManager::char_callback);
   glfwSetCursorPosCallback(window, EventManager::mouse_pos_callback);
   glfwSetErrorCallback(EventManager::error_callback);
 }

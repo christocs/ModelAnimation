@@ -60,8 +60,7 @@ namespace Afk {
 
       using Window = std::add_pointer<GLFWwindow>::type;
 
-      Window window          = nullptr;
-      bool wireframe_enabled = false;
+      Window window = nullptr;
 
       Renderer();
       ~Renderer();
@@ -113,12 +112,16 @@ namespace Afk {
       auto set_uniform(const ShaderProgramHandle &program,
                        const std::string &name, glm::mat4 value) const -> void;
 
+      auto set_wireframe(bool status) -> void;
+      auto get_wireframe() const -> bool;
+
     private:
       const int opengl_major_version = 4;
       const int opengl_minor_version = 1;
       const bool enable_vsync        = true;
 
-      bool is_initialized = false;
+      bool is_initialized    = false;
+      bool wireframe_enabled = false;
 
       Models models                  = {};
       Textures textures              = {};

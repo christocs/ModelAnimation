@@ -20,7 +20,6 @@ using Afk::Ui;
 using std::vector;
 
 Ui::~Ui() {
-  // ImGui::SaveIniSettingsToDisk(this->ini_path.c_str());
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
@@ -37,7 +36,6 @@ auto Ui::initialize(Renderer::Window _window) -> void {
   auto &io = ImGui::GetIO();
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
   io.IniFilename = this->ini_path.c_str();
-  // ImGui::LoadIniSettingsFromDisk(this->ini_path.c_str());
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(this->window, true);
   ImGui_ImplOpenGL3_Init("#version 410");
@@ -182,6 +180,6 @@ auto Ui::draw_stats() -> void {
 auto Ui::draw_log() -> void {
   if (this->show_log) {
     ImGui::SetNextWindowSize({500, 400});
-    this->log.draw("Log");
+    this->log.draw("Log", &this->show_log);
   }
 }

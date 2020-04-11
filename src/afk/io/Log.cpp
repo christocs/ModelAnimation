@@ -1,6 +1,3 @@
 #include "afk/io/Log.hpp"
 
-using Afk::Internal::Error;
-using Afk::Internal::Status;
-
-Status Afk::status = {};
+Afk::Io::Log Afk::Io::log = {};

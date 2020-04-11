@@ -9,7 +9,6 @@
 #include <glm/glm.hpp>
 
 #include "afk/debug/Assert.hpp"
-#include "afk/io/Log.hpp"
 #include "afk/renderer/Mesh.hpp"
 
 using std::vector;
@@ -61,8 +60,6 @@ auto TerrainGenerator::generate_flat_plane(int width, int length) -> void {
 
   const auto num_vertices = static_cast<size_t>(w * l);
   const auto num_indices  = static_cast<size_t>((w - 1) * (l - 1) * 6);
-
-  std::cout << num_indices << '\n';
 
   this->mesh.vertices.resize(num_vertices);
   this->mesh.indices.resize(num_indices);
