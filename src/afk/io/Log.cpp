@@ -3,7 +3,6 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <string>
 
 #include "afk/debug/Assert.hpp"
@@ -22,7 +21,6 @@ Log::Log() {
   ss << ".log/" << std::put_time(std::localtime(&t), "%FT%H%M%S") << ".log";
 
   this->log_path = Afk::get_absolute_path(ss.str());
-  std::cout << this->log_path << '\n';
   std::filesystem::create_directory(this->log_path.parent_path());
   this->log_file = ofstream{this->log_path};
   afk_assert(this->log_file.is_open(), "Failed to open log file");
