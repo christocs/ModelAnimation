@@ -4,7 +4,7 @@ project(imgui)
 
 if (WIN32)
     add_library(imgui STATIC)
-elseif()
+else()
     add_library(imgui)
 endif()
 
