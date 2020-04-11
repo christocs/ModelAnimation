@@ -24,8 +24,12 @@ using Afk::Texture;
 using Action   = Afk::Event::Action;
 using Movement = Afk::Camera::Movement;
 
-Engine::Engine() {
-  this->event_manager.setup_callbacks(this->renderer.window);
+auto Engine::initialize() -> void {
+  afk_assert(!this->is_initialized, "Engine already initialized");
+
+  this->renderer.initialize();
+  this->event_manager.initialize(this->renderer.window);
+  this->ui.initialize(this->renderer.window);
 
   this->event_manager.register_event(
       Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
@@ -37,6 +41,8 @@ Engine::Engine() {
   terrain.file_path = "gen/terrain";
 
   this->renderer.load_model(terrain);
+
+  this->is_initialized = true;
 }
 
 auto Engine::move_mouse(Event event) -> void {

@@ -65,7 +65,12 @@ namespace Afk {
 
       Renderer();
       ~Renderer();
+      Renderer(Renderer &&)      = delete;
+      Renderer(const Renderer &) = delete;
+      auto operator=(const Renderer &) -> Renderer & = delete;
+      auto operator=(Renderer &&) -> Renderer & = delete;
 
+      auto initialize() -> void;
       auto set_option(GLenum option, bool state) const -> void;
       auto check_errors() const -> void;
       auto get_window_size() const -> glm::ivec2;
@@ -112,6 +117,8 @@ namespace Afk {
       const int opengl_major_version = 4;
       const int opengl_minor_version = 1;
       const bool enable_vsync        = true;
+
+      bool is_initialized = false;
 
       Models models                  = {};
       Textures textures              = {};

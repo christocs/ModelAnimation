@@ -15,9 +15,9 @@ namespace Afk {
     Renderer renderer          = {};
     Camera camera              = {};
     EventManager event_manager = {};
-    Ui ui                      = {this->renderer.window};
+    Ui ui                      = {};
 
-    Engine();
+    Engine()               = default;
     Engine(Engine &&)      = delete;
     Engine(const Engine &) = delete;
     auto operator=(const Engine &) -> Engine & = delete;
@@ -25,6 +25,7 @@ namespace Afk {
 
     static auto get() -> Engine &;
 
+    auto initialize() -> void;
     auto render() -> void;
     auto update() -> void;
 
@@ -38,8 +39,9 @@ namespace Afk {
     auto move_mouse(Event e) -> void;
     auto handle_mouse() -> void;
 
-    bool is_running   = true;
-    int frame_count   = {};
-    float last_update = {};
+    bool is_initialized = false;
+    bool is_running     = true;
+    int frame_count     = {};
+    float last_update   = {};
   };
 }

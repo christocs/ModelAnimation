@@ -14,12 +14,17 @@ namespace Afk {
   public:
     static constexpr auto FONT_SIZE = 19.0f;
 
+    ~Ui();
+    Ui()           = default;
+    Ui(Ui &&)      = delete;
+    Ui(const Ui &) = delete;
+    auto operator=(const Ui &) -> Ui & = delete;
+    auto operator=(Ui &&) -> Ui & = delete;
+
     bool show_menu = false;
     Log log        = {};
 
-    Ui(Renderer::Window _window);
-    ~Ui();
-
+    auto initialize(Renderer::Window _window) -> void;
     auto open() -> void;
     auto close() -> void;
     auto draw() -> void;
@@ -29,11 +34,12 @@ namespace Afk {
     std::string ini_path    = {};
     Renderer::Window window = {};
 
-    bool show_stats = true;
-    bool show_demo  = false;
-    bool show_about = false;
-    bool show_log   = false;
-    float scale     = 1.5f;
+    bool show_stats     = true;
+    bool show_demo      = false;
+    bool show_about     = false;
+    bool show_log       = false;
+    bool is_initialized = false;
+    float scale         = 1.5f;
 
     std::unordered_map<std::string, ImFont *> fonts = {};
 

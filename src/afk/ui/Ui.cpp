@@ -19,9 +19,18 @@ using Afk::Engine;
 using Afk::Ui;
 using std::vector;
 
-Ui::Ui(Renderer::Window _window)
-  : ini_path(Afk::get_absolute_path(".imgui.ini").string()), window(_window) {
+Ui::~Ui() {
+  // ImGui::SaveIniSettingsToDisk(this->ini_path.c_str());
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+}
+
+auto Ui::initialize(Renderer::Window _window) -> void {
   afk_assert(_window != nullptr, "Window is uninitialized");
+  afk_assert(!this->is_initialized, "UI already initialized");
+  this->ini_path = Afk::get_absolute_path(".imgui.ini").string();
+  this->window   = _window;
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -45,13 +54,7 @@ Ui::Ui(Renderer::Window _window)
 
   auto &style = ImGui::GetStyle();
   style.ScaleAllSizes(this->scale);
-}
-
-Ui::~Ui() {
-  // ImGui::SaveIniSettingsToDisk(this->ini_path.c_str());
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-  ImGui::DestroyContext();
+  this->is_initialized = true;
 }
 
 auto Ui::prepare() const -> void {

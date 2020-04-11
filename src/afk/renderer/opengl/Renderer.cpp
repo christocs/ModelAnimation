@@ -76,18 +76,18 @@ static auto resize_window_callback([[maybe_unused]] GLFWwindow *window,
   afk.renderer.set_viewport(0, 0, width, height);
 }
 
-auto Renderer::set_option(GLenum option, bool state) const -> void {
-  if (state) {
-    glEnable(option);
-  } else {
-    glDisable(option);
-  }
-}
-
 Renderer::Renderer()
   : models(0, PathHash{}, PathEquals{}), textures(0, PathHash{}, PathEquals{}),
     shaders(0, PathHash{}, PathEquals{}),
-    shader_programs(0, PathHash{}, PathEquals{}) {
+    shader_programs(0, PathHash{}, PathEquals{}) {}
+
+Renderer::~Renderer() {
+  glfwDestroyWindow(this->window);
+  glfwTerminate();
+}
+
+auto Renderer::initialize() -> void {
+  afk_assert(!this->is_initialized, "Renderer already initialized");
   afk_assert(glfwInit(), "Failed to initialize GLFW");
 
   // FIXME: Give user an option to change graphics settings.
@@ -114,11 +114,16 @@ Renderer::Renderer()
   afk_assert(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)),
              "Failed to initialize GLAD");
   glfwSetFramebufferSizeCallback(this->window, resize_window_callback);
+
+  this->is_initialized = true;
 }
 
-Renderer::~Renderer() {
-  glfwDestroyWindow(this->window);
-  glfwTerminate();
+auto Renderer::set_option(GLenum option, bool state) const -> void {
+  if (state) {
+    glEnable(option);
+  } else {
+    glDisable(option);
+  }
 }
 
 auto Renderer::get_window_size() const -> ivec2 {
