@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 project(imgui)
 
-if (NOT WINDOWS)
+if (NOT WIN32)
     add_library(imgui)
 elseif()
     add_library(imgui STATIC)
