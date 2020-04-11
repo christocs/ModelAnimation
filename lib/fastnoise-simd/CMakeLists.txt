@@ -71,3 +71,5 @@ if(FASTNOISE_NO_SIMD_FALLBACK)
 endif()
 
 target_include_directories(fastnoise-simd INTERFACE fastnoise-simd)
+set_target_properties(fastnoise-simd PROPERTIES ENABLE_EXPORTS ON)
+set_target_properties(fastnoise-simd PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
