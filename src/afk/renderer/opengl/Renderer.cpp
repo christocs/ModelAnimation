@@ -264,7 +264,9 @@ auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
   afk_assert(mesh.vertices.size() > 0, "Mesh missing vertices");
   afk_assert(mesh.indices.size() > 0, "Mesh missing indices");
   afk_assert(mesh.indices.size() < std::numeric_limits<Mesh::Index>::max(),
-             "Too many indices");
+             "Mesh contains too many indices; "s +
+                 std::to_string(mesh.indices.size()) + " requested, max "s +
+                 std::to_string(std::numeric_limits<Mesh::Index>::max()));
 
   auto mesh_handle        = MeshHandle{};
   mesh_handle.num_indices = mesh.indices.size();

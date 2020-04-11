@@ -37,7 +37,7 @@ auto Engine::initialize() -> void {
       Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
 
   // FIXME: Tidy up
-  auto terrain      = TerrainGenerator{64, 64, 20.0f}.get_model();
+  auto terrain      = TerrainGenerator{104, 104, 20.0f}.get_model();
   terrain.file_path = "gen/terrain";
   this->renderer.load_model(terrain);
   this->renderer.set_wireframe(true);
@@ -125,7 +125,7 @@ auto Engine::render() -> void {
   this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
   auto transform        = Transform{};
-  transform.translation = vec3{-32.0f, -1.0f, -32.0f};
+  transform.translation = vec3{-52.0f, -5.0f, -52.0f};
   this->renderer.draw_model(terrain, shader, transform);
   this->ui.draw();
   this->renderer.swap_buffers();
