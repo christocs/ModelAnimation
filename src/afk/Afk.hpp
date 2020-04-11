@@ -25,6 +25,7 @@ namespace Afk {
 
     static auto get() -> Engine &;
 
+    auto exit() -> void;
     auto initialize() -> void;
     auto render() -> void;
     auto update() -> void;

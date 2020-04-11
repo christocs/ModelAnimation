@@ -115,6 +115,11 @@ namespace Afk {
       auto set_wireframe(bool status) -> void;
       auto get_wireframe() const -> bool;
 
+      auto get_models() const -> const Models &;
+      auto get_textures() const -> const Textures &;
+      auto get_shaders() const -> const Shaders &;
+      auto get_shader_programs() const -> const ShaderPrograms &;
+
     private:
       const int opengl_major_version = 4;
       const int opengl_minor_version = 1;

@@ -71,12 +71,16 @@ auto Engine::get() -> Engine & {
   return instance;
 }
 
+auto Engine::exit() -> void {
+  this->is_running = false;
+}
+
 // FIXME: Move to key handler.
 auto Engine::move_keyboard(Event event) -> void {
   const auto key = std::get<Event::Key>(event.data).key;
 
   if (event.type == Event::Type::KeyDown && key == GLFW_KEY_ESCAPE) {
-    this->is_running = false;
+    this->exit();
   } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_GRAVE_ACCENT) {
     this->ui.show_menu = !this->ui.show_menu;
   } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_1) {

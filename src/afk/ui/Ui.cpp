@@ -1,5 +1,6 @@
 #include "afk/ui/Ui.hpp"
 
+#include <filesystem>
 #include <vector>
 
 #include <imgui/examples/imgui_impl_glfw.h>
@@ -18,6 +19,7 @@
 using Afk::Engine;
 using Afk::Ui;
 using std::vector;
+using std::filesystem::path;
 
 Ui::~Ui() {
   ImGui_ImplOpenGL3_Shutdown();
@@ -70,9 +72,10 @@ auto Ui::draw() -> void {
 
   this->draw_about();
   this->draw_log();
+  this->draw_models();
 
-  if (this->show_demo) {
-    ImGui::ShowDemoWindow(&this->show_demo);
+  if (this->show_imgui) {
+    ImGui::ShowDemoWindow(&this->show_imgui);
   }
 
   ImGui::Render();
@@ -80,23 +83,30 @@ auto Ui::draw() -> void {
 }
 
 auto Ui::draw_about() -> void {
-  if (this->show_about) {
-    ImGui::Begin("About", &this->show_about);
-    ImGui::Text("afk engine version %s build %.6s (%s)", AFK_VERSION,
-                GIT_HEAD_HASH, GIT_IS_DIRTY ? "dirty" : "clean");
-    ImGui::Separator();
-    ImGui::Text("%s", GIT_COMMIT_SUBJECT);
-    ImGui::Text("Author: %s", GIT_AUTHOR_NAME);
-    ImGui::Text("Date: %s", GIT_COMMIT_DATE);
-    ImGui::End();
+  if (!this->show_about) {
+    return;
   }
+
+  ImGui::Begin("About", &this->show_about);
+  ImGui::Text("afk engine version %s build %.6s (%s)", AFK_VERSION,
+              GIT_HEAD_HASH, GIT_IS_DIRTY ? "dirty" : "clean");
+  ImGui::Separator();
+  ImGui::Text("%s", GIT_COMMIT_SUBJECT);
+  ImGui::Text("Author: %s", GIT_AUTHOR_NAME);
+  ImGui::Text("Date: %s", GIT_COMMIT_DATE);
+  ImGui::End();
 }
 
 auto Ui::draw_menu_bar() -> void {
+  auto &afk = Engine::get();
+
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("View")) {
       if (ImGui::MenuItem("Log")) {
         this->show_log = true;
+      }
+      if (ImGui::MenuItem("Models")) {
+        this->show_models = true;
       }
       ImGui::EndMenu();
     }
@@ -105,11 +115,15 @@ auto Ui::draw_menu_bar() -> void {
       if (ImGui::MenuItem("About")) {
         this->show_about = true;
       }
-      if (ImGui::MenuItem("Demo")) {
-        this->show_demo = true;
+      if (ImGui::MenuItem("Imgui")) {
+        this->show_imgui = true;
       }
 
       ImGui::EndMenu();
+    }
+
+    if (ImGui::MenuItem("Exit")) {
+      afk.exit();
     }
 
     ImGui::EndMainMenuBar();
@@ -178,8 +192,65 @@ auto Ui::draw_stats() -> void {
 }
 
 auto Ui::draw_log() -> void {
-  if (this->show_log) {
-    ImGui::SetNextWindowSize({500, 400});
-    this->log.draw("Log", &this->show_log);
+  if (!this->show_log) {
+    return;
   }
+
+  ImGui::SetNextWindowSize({500, 400});
+  this->log.draw("Log", &this->show_log);
+}
+
+auto Ui::draw_models() -> void {
+  if (!this->show_models) {
+    return;
+  }
+
+  auto &afk          = Engine::get();
+  const auto &models = afk.renderer.get_models();
+
+  ImGui::SetNextWindowSize({700, 500});
+
+  if (ImGui::Begin("Models", &this->show_models)) {
+    static auto selected = models.begin()->first;
+
+    ImGui::BeginChild("left pane", ImVec2(250, 0), true);
+    for (const auto &[key, value] : models) {
+      if (ImGui::Selectable(key.string().c_str(), selected.lexically_normal() ==
+                                                      key.lexically_normal())) {
+        selected = key;
+      }
+    }
+
+    ImGui::EndChild();
+    ImGui::SameLine();
+
+    ImGui::BeginGroup();
+
+    ImGui::BeginChild("item view", {0, -ImGui::GetFrameHeightWithSpacing()});
+
+    if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None)) {
+      if (ImGui::BeginTabItem("Details")) {
+        const auto &model = models.at(selected);
+        ImGui::TextWrapped("Total meshes: %zu\n", model.meshes.size());
+        ImGui::Separator();
+
+        auto i = 0;
+        for (const auto &mesh : model.meshes) {
+          ImGui::TextWrapped("Mesh %d:\n", i);
+          ImGui::TextWrapped("VAO: %u\n", mesh.ibo);
+          ImGui::TextWrapped("VBO: %u\n", mesh.vbo);
+          ImGui::TextWrapped("IBO: %u\n", mesh.ibo);
+          ImGui::TextWrapped("Indices: %zu\n", mesh.num_indices);
+          ImGui::Separator();
+          ++i;
+        }
+
+        ImGui::EndTabItem();
+      }
+      ImGui::EndTabBar();
+    }
+    ImGui::EndChild();
+    ImGui::EndGroup();
+  }
+  ImGui::End();
 }

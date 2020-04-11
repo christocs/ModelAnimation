@@ -35,9 +35,10 @@ namespace Afk {
     Renderer::Window window = {};
 
     bool show_stats     = true;
-    bool show_demo      = false;
+    bool show_imgui     = false;
     bool show_about     = false;
     bool show_log       = false;
+    bool show_models    = false;
     bool is_initialized = false;
     float scale         = 1.5f;
 
@@ -47,5 +48,6 @@ namespace Afk {
     auto draw_stats() -> void;
     auto draw_about() -> void;
     auto draw_log() -> void;
+    auto draw_models() -> void;
   };
 }

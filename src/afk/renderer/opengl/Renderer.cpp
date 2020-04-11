@@ -506,3 +506,18 @@ auto Renderer::set_wireframe(bool status) -> void {
 auto Renderer::get_wireframe() const -> bool {
   return this->wireframe_enabled;
 }
+
+auto Renderer::get_models() const -> const Models & {
+  return this->models;
+}
+
+auto Renderer::get_textures() const -> const Textures & {
+  return this->textures;
+}
+
+auto Renderer::get_shaders() const -> const Shaders & {
+  return this->shaders;
+}
+auto Renderer::get_shader_programs() const -> const ShaderPrograms & {
+  return this->shader_programs;
+}
