@@ -1,8 +1,10 @@
 #pragma once
 
+#include "afk/physics/Transform.hpp"
+#include "afk/physics/shape/Box.hpp"
+#include "afk/physics/shape/Sphere.hpp"
 #include <reactphysics3d.h>
 #include <entt/entt.hpp>
-#include "afk/physics/Transform.hpp"
 #include "glm/vec3.hpp"
 #include <memory>
 
@@ -12,7 +14,9 @@ namespace Afk {
     public:
       Collision() = delete;
 
-      Collision(rp3d::DynamicsWorld* world, glm::vec3 boundingBox, Afk::Transform transform, float mass, bool gravity, rp3d::BodyType bodyType);
+      Collision(rp3d::DynamicsWorld* world, Afk::Transform transform, float mass, bool gravity, rp3d::BodyType bodyType, Afk::Shape::Box boundingBox);
+
+      Collision(rp3d::DynamicsWorld* world, Afk::Transform transform, float mass, bool gravity, rp3d::BodyType bodyType, Afk::Shape::Sphere boundingSphere);
   
       rp3d::RigidBody* GetBody();
     private:

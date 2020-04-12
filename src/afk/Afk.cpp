@@ -14,6 +14,8 @@
 #include "afk/physics/Collision.hpp"
 #include "afk/physics/PhysicsSystem.hpp"
 #include "afk/renderer/ModelRenderSystem.hpp"
+#include "afk/physics/shape/Box.hpp"
+#include "afk/physics/shape/Sphere.hpp"
 
 using namespace std::string_literals;
 
@@ -112,7 +114,7 @@ Engine::Engine() {
   registry.assign<Afk::Transform>(cityEntity, cityTransform);
   registry.assign<Afk::ModelSource>(cityEntity, std::string("res/model/city/city.fbx"));
 
-  registry.assign<Afk::Collision>(cityEntity, this->world, glm::vec3(0.8f, 0.8f, 0.8f), cityTransform, 0, false, rp3d::BodyType::STATIC);
+  registry.assign<Afk::Collision>(cityEntity, this->world, cityTransform, 0, false, rp3d::BodyType::STATIC, Afk::Shape::Box{100000000.0f, 0.1f, 100000000.0f});
 
   auto ballTransform = Transform{};
   ballTransform.scale       = vec3{1.0f};
@@ -121,7 +123,7 @@ Engine::Engine() {
   auto ballEntity = registry.create();
   registry.assign<Afk::Transform>(ballEntity, ballTransform);
 
-  registry.assign<Afk::Collision>(ballEntity, this->world, glm::vec3(100000000.0f, 0.1f, 100000000.0f), ballTransform, 30.0f, true, rp3d::BodyType::DYNAMIC);
+  registry.assign<Afk::Collision>(ballEntity, this->world, ballTransform, 30.0f, true, rp3d::BodyType::DYNAMIC, Afk::Shape::Sphere{0.8f});
   registry.assign<Afk::ModelSource>(ballEntity, "res/model/basketball/basketball.fbx");
 }
 
