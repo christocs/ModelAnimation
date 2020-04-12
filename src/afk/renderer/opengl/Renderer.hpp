@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <functional>
 #include <memory>
+#include <queue>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -49,6 +50,12 @@ namespace Afk {
         }
       };
 
+      struct DrawCommand {
+        const std::filesystem::path model_path          = {};
+        const std::filesystem::path shader_program_path = {};
+        const Transform transform                       = {};
+      };
+
       using Models =
           std::unordered_map<std::filesystem::path, ModelHandle, PathHash, PathEquals>;
       using Textures =
@@ -57,6 +64,7 @@ namespace Afk {
           std::unordered_map<std::filesystem::path, ShaderHandle, PathHash, PathEquals>;
       using ShaderPrograms =
           std::unordered_map<std::filesystem::path, ShaderProgramHandle, PathHash, PathEquals>;
+      using DrawQueue = std::queue<DrawCommand>;
 
       using Window = std::add_pointer<GLFWwindow>::type;
 
@@ -78,8 +86,11 @@ namespace Afk {
       auto clear_screen(glm::vec4 clear_color = {255.0f, 255.0f, 255.0f, 1.0f}) const -> void;
       auto swap_buffers() -> void;
       auto set_viewport(int x, int y, int width, int height) const -> void;
-      auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader,
+      auto draw() -> void;
+      auto queue_draw(DrawCommand command) -> void;
+      auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader_program,
                       Transform transform) const -> void;
+      auto setup_view(const ShaderProgramHandle &shader_program) -> void;
 
       // State management
       auto use_shader(const ShaderProgramHandle &shader) const -> void;
@@ -132,6 +143,7 @@ namespace Afk {
       Textures textures              = {};
       Shaders shaders                = {};
       ShaderPrograms shader_programs = {};
+      DrawQueue draw_queue           = {};
     };
   }
 }

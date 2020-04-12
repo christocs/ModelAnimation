@@ -40,7 +40,7 @@ auto Camera::handle_key(Movement movement, float dt) -> void {
   }
 }
 
-auto Camera::get_view_matrix() -> mat4 {
+auto Camera::get_view_matrix() const -> mat4 {
   return glm::lookAt(this->position, this->position + this->get_front(), this->get_up());
 }
 

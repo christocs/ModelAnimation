@@ -72,7 +72,8 @@ auto Ui::draw() -> void {
 
   this->draw_about();
   this->draw_log();
-  this->draw_models();
+  this->draw_model_viewer();
+  this->draw_terrain_controller();
 
   if (this->show_imgui) {
     ImGui::ShowDemoWindow(&this->show_imgui);
@@ -101,12 +102,15 @@ auto Ui::draw_menu_bar() -> void {
   auto &afk = Engine::get();
 
   if (ImGui::BeginMainMenuBar()) {
-    if (ImGui::BeginMenu("View")) {
+    if (ImGui::BeginMenu("Tools")) {
       if (ImGui::MenuItem("Log")) {
         this->show_log = true;
       }
-      if (ImGui::MenuItem("Models")) {
-        this->show_models = true;
+      if (ImGui::MenuItem("Model viewer")) {
+        this->show_model_viewer = true;
+      }
+      if (ImGui::MenuItem("Terrain controller")) {
+        this->show_terrain_controller = true;
       }
       ImGui::EndMenu();
     }
@@ -200,8 +204,8 @@ auto Ui::draw_log() -> void {
   this->log.draw("Log", &this->show_log);
 }
 
-auto Ui::draw_models() -> void {
-  if (!this->show_models) {
+auto Ui::draw_model_viewer() -> void {
+  if (!this->show_model_viewer) {
     return;
   }
 
@@ -210,7 +214,7 @@ auto Ui::draw_models() -> void {
 
   ImGui::SetNextWindowSize({700, 500});
 
-  if (ImGui::Begin("Models", &this->show_models)) {
+  if (ImGui::Begin("Models", &this->show_model_viewer)) {
     static auto selected = models.begin()->first;
 
     ImGui::BeginChild("left pane", ImVec2(250, 0), true);
@@ -251,6 +255,19 @@ auto Ui::draw_models() -> void {
     }
     ImGui::EndChild();
     ImGui::EndGroup();
+  }
+  ImGui::End();
+}
+
+auto Ui::draw_terrain_controller() -> void {
+  if (!this->show_terrain_controller) {
+    return;
+  }
+
+  ImGui::SetNextWindowSize({300, 150});
+
+  if (ImGui::Begin("Terrain controller", &this->show_terrain_controller)) {
+    // ImGui::SliderFloat("slider float", &f1, 0.0f, 1.0f, "ratio = %.3f");
   }
   ImGui::End();
 }

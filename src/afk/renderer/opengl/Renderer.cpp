@@ -209,9 +209,36 @@ auto Renderer::bind_texture(const TextureHandle &texture) const -> void {
   glBindTexture(GL_TEXTURE_2D, texture.id);
 }
 
-auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &shader,
+auto Renderer::draw() -> void {
+  while (!this->draw_queue.empty()) {
+    const auto command  = this->draw_queue.front();
+    const auto &model   = this->get_model(command.model_path);
+    const auto &program = this->get_shader_program(command.shader_program_path);
+
+    this->draw_queue.pop();
+    this->draw_model(model, program, command.transform);
+  }
+}
+
+auto Renderer::queue_draw(DrawCommand command) -> void {
+  this->draw_queue.push(command);
+}
+
+auto Renderer::setup_view(const ShaderProgramHandle &shader_program) -> void {
+  const auto &afk        = Engine::get();
+  const auto window_size = this->get_window_size();
+  const auto projection =
+      afk.camera.get_projection_matrix(window_size.x, window_size.y);
+  const auto view = afk.camera.get_view_matrix();
+
+  this->set_uniform(shader_program, "u_matrices.projection", projection);
+  this->set_uniform(shader_program, "u_matrices.view", view);
+}
+
+auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &shader_program,
                           Transform transform) const -> void {
   glPolygonMode(GL_FRONT_AND_BACK, this->wireframe_enabled ? GL_LINE : GL_FILL);
+  this->use_shader(shader_program);
 
   for (const auto &mesh : model.meshes) {
 
@@ -228,7 +255,7 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
       afk_assert_debug(!material_bound[index], "Material "s + name + " already bound"s);
       material_bound[index] = true;
 
-      this->set_uniform(shader, "u_textures."s + name, static_cast<int>(i));
+      this->set_uniform(shader_program, "u_textures."s + name, static_cast<int>(i));
       this->bind_texture(mesh.textures[i]);
     }
 
@@ -244,7 +271,7 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
     model_matrix *= glm::mat4_cast(mesh.transform.rotation);
     model_matrix = glm::scale(model_matrix, mesh.transform.scale);
 
-    this->set_uniform(shader, "u_matrices.model", model_matrix);
+    this->set_uniform(shader_program, "u_matrices.model", model_matrix);
 
     // Draw the mesh.
     glBindVertexArray(mesh.vao);
@@ -489,11 +516,13 @@ auto Renderer::set_uniform(const ShaderProgramHandle &program,
   afk_assert_debug(program.id > 0, "Invalid shader program ID");
   glUniform1f(glGetUniformLocation(program.id, name.c_str()), static_cast<GLfloat>(value));
 }
+
 auto Renderer::set_uniform(const ShaderProgramHandle &program,
                            const string &name, vec3 value) const -> void {
   afk_assert_debug(program.id > 0, "Invalid shader program ID");
   glUniform3fv(glGetUniformLocation(program.id, name.c_str()), 1, glm::value_ptr(value));
 }
+
 auto Renderer::set_uniform(const ShaderProgramHandle &program,
                            const string &name, mat4 value) const -> void {
   afk_assert_debug(program.id > 0, "Invalid shader program ID");

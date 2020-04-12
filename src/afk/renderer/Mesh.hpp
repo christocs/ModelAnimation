@@ -21,7 +21,7 @@ namespace Afk {
 
   struct Mesh {
     using Vertices = std::vector<Vertex>;
-    using Index    = uint16_t;
+    using Index    = uint32_t;
     using Indices  = std::vector<Index>;
     using Textures = std::vector<Texture>;
 

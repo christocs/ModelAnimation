@@ -10,7 +10,6 @@
 
 #include "afk/debug/Assert.hpp"
 #include "afk/io/Log.hpp"
-#include "afk/terrain/TerrainGenerator.hpp"
 
 using namespace std::string_literals;
 
@@ -19,7 +18,6 @@ using glm::vec4;
 
 using Afk::Engine;
 using Afk::Event;
-using Afk::TerrainGenerator;
 using Afk::Texture;
 using Action   = Afk::Event::Action;
 using Movement = Afk::Camera::Movement;
@@ -30,18 +28,15 @@ auto Engine::initialize() -> void {
   this->renderer.initialize();
   this->event_manager.initialize(this->renderer.window);
   this->ui.initialize(this->renderer.window);
+  this->terrain_manager.initialize();
 
+  // FIXME: Move to key manager
   this->event_manager.register_event(
       Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
   this->event_manager.register_event(
       Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
 
-  // FIXME: Tidy up
-  auto terrain      = TerrainGenerator{104, 104, 20.0f}.get_model();
-  terrain.file_path = "gen/terrain";
-  this->renderer.load_model(terrain);
   this->renderer.set_wireframe(true);
-
   this->is_initialized = true;
 }
 
@@ -110,23 +105,15 @@ auto Engine::update_camera() -> void {
 }
 
 auto Engine::render() -> void {
+  // FIXME: Support multiple shader programs properly
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  const auto &terrain    = this->renderer.get_model("gen/terrain");
-  const auto window_size = this->renderer.get_window_size();
+  const auto &city   = this->renderer.get_model("res/model/city/city.fbx");
+  this->renderer.queue_draw({"res/model/city/city.fbx", "shader/default.prog", Transform{}});
 
-  this->renderer.clear_screen(vec4{135.0f, 206.0f, 235.0f, 1.0f});
+  this->renderer.clear_screen({135.0f, 206.0f, 235.0f, 1.0f});
   this->ui.prepare();
-
-  // FIXME: Move to a scene manager.
-  this->renderer.use_shader(shader);
-  this->renderer.set_uniform(
-      shader, "u_matrices.projection",
-      this->camera.get_projection_matrix(window_size.x, window_size.y));
-  this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
-
-  auto transform        = Transform{};
-  transform.translation = vec3{-52.0f, -5.0f, -52.0f};
-  this->renderer.draw_model(terrain, shader, transform);
+  this->renderer.setup_view(shader);
+  this->renderer.draw();
   this->ui.draw();
   this->renderer.swap_buffers();
 }

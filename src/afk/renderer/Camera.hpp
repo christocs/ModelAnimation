@@ -12,7 +12,7 @@ namespace Afk {
     auto handle_mouse(float deltaX, float deltaY) -> void;
     auto handle_key(Movement movement, float deltaTime) -> void;
 
-    auto get_view_matrix() -> glm::mat4;
+    auto get_view_matrix() const -> glm::mat4;
     auto get_projection_matrix(int width, int height) const -> glm::mat4;
     auto get_position() const -> glm::vec3;
     auto get_angles() const -> glm::vec2;

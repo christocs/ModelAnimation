@@ -5,6 +5,7 @@
 #include "afk/event/EventManager.hpp"
 #include "afk/renderer/Camera.hpp"
 #include "afk/renderer/Renderer.hpp"
+#include "afk/terrain/TerrainManager.hpp"
 #include "afk/ui/Ui.hpp"
 
 namespace Afk {
@@ -12,10 +13,11 @@ namespace Afk {
   public:
     static constexpr const char *GAME_NAME = "ICT397";
 
-    Renderer renderer          = {};
-    EventManager event_manager = {};
-    Ui ui                      = {};
-    Camera camera              = {};
+    Renderer renderer              = {};
+    EventManager event_manager     = {};
+    Ui ui                          = {};
+    Camera camera                  = {};
+    TerrainManager terrain_manager = {};
 
     Engine()               = default;
     Engine(Engine &&)      = delete;

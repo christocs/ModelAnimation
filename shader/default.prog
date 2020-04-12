@@ -1,2 +1,2 @@
-shader/default.vert
-shader/default.frag
+shader/position.vert
+shader/color.frag

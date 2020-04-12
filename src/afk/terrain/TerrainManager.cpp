@@ -1,4 +1,4 @@
-#include "afk/terrain/TerrainGenerator.hpp"
+#include "afk/terrain/TerrainManager.hpp"
 
 #include <array>
 #include <cmath>
@@ -18,25 +18,21 @@ using glm::vec3;
 
 using Afk::Mesh;
 using Afk::Model;
-using Afk::TerrainGenerator;
+using Afk::TerrainManager;
 using Index = Mesh::Index;
 
-TerrainGenerator::TerrainGenerator(int width, int length, float scaling) {
-  this->generate_flat_plane(width, length);
-  this->generate_height_map(width, length, scaling);
+auto TerrainManager::generate_height_map(int width, int length, float roughness,
+                                         float scaling) -> void {
+  afk_assert(width >= 1, "Invalid width");
+  afk_assert(length >= 1, "Invalid length");
 
-  for (auto i = std::size_t{0}; i < this->height.vertices.size(); ++i) {
-    this->mesh.vertices[i].position.y += this->height.vertices[i].position.y;
-  }
-}
-
-auto TerrainGenerator::generate_height_map(int width, int length, float scaling) -> void {
   const auto w = width;
   const auto l = length;
 
   const auto num_vertices = static_cast<size_t>(w * l);
 
-  auto *noise     = FastNoiseSIMD::NewFastNoiseSIMD();
+  auto *noise = FastNoiseSIMD::NewFastNoiseSIMD();
+  noise->SetFrequency(roughness);
   auto *noise_set = noise->GetSimplexFractalSet(0, 0, 0, w, 1, l);
   auto index      = size_t{0};
 
@@ -54,7 +50,10 @@ auto TerrainGenerator::generate_height_map(int width, int length, float scaling)
   FastNoiseSIMD::FreeNoiseSet(noise_set);
 }
 
-auto TerrainGenerator::generate_flat_plane(int width, int length) -> void {
+auto TerrainManager::generate_flat_plane(int width, int length) -> void {
+  afk_assert(width >= 1, "Invalid width");
+  afk_assert(length >= 1, "Invalid length");
+
   const auto w = width;
   const auto l = length;
 
@@ -88,9 +87,18 @@ auto TerrainGenerator::generate_flat_plane(int width, int length) -> void {
   }
 }
 
-auto TerrainGenerator::get_model() -> Model {
-  auto model = Model{};
-  model.meshes.push_back(std::move(this->mesh));
+auto TerrainManager::initialize() -> void {
+  afk_assert(!this->is_initialized, "Terrain manager already initialized");
 
-  return model;
+  // afk_assert(width >= 1, "Invalid width");
+  // afk_assert(length >= 1, "Invalid length");
+
+  // this->generate_flat_plane(width, length);
+  // this->generate_height_map(width, length, roughness, scaling);
+
+  // for (auto i = std::size_t{0}; i < this->height.vertices.size(); ++i) {
+  //   this->mesh.vertices[i].position.y += this->height.vertices[i].position.y;
+  // }
+
+  this->is_initialized = true;
 }

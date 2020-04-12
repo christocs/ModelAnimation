@@ -1,3 +1,3 @@
 target_sources(${PROJECT_NAME} PRIVATE
-    TerrainGenerator.cpp
+    TerrainManager.cpp
 )
