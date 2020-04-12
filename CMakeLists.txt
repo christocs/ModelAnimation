@@ -75,7 +75,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
         -Wno-exit-time-destructors -Wno-global-constructors
         -Wno-c++2a-compat>
     # Visual Studio
-    $<$<CXX_COMPILER_ID:MSVC>:/W4>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /MANIFEST:NO>
     # Enable the clang sanitizer.
     $<$<AND:$<CONFIG:Debug>,$<CXX_COMPILER_ID:Clang>,$<PLATFORM_ID:${SANITIZER_OS}>>:${SANITIZER_FLAGS}>
     # Set default visibility to hidden.
