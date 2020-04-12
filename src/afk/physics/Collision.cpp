@@ -1,18 +1,19 @@
 #include "afk/physics/Collision.hpp"
-
+#include <iostream>
 using Afk::Collision;
 
 Collision::Collision(rp3d::DynamicsWorld* world, Afk::Transform transform, float mass, bool gravity, rp3d::BodyType bodyType, Afk::Shape::Box boundingBox)
 {
-  this->collisionShape = std::make_unique<rp3d::BoxShape>(rp3d::Vector3(boundingBox.x, boundingBox.y, boundingBox.z));
+  this->collisionShape = std::make_unique<rp3d::BoxShape>(rp3d::Vector3(
+    boundingBox.x * transform.scale.x,
+    boundingBox.y * transform.scale.y,
+    boundingBox.z * transform.scale.z
+  ));
 
-  // Note that Afk::Transform stores scale and rp3d::Transform does not
-  auto transform_ = rp3d::Transform(
+  this->body = world->createRigidBody(rp3d::Transform(
     rp3d::Vector3(transform.translation[0], transform.translation[1], transform.translation[2]),
     rp3d::Quaternion(transform.rotation[0], transform.rotation[1], transform.rotation[2], transform.rotation[3])
-  );
-
-  this->body = world->createRigidBody(transform_);
+  ));
 
   this->body->enableGravity(gravity);
   this->body->setType(bodyType);
@@ -22,9 +23,10 @@ Collision::Collision(rp3d::DynamicsWorld* world, Afk::Transform transform, float
 
 Collision::Collision(rp3d::DynamicsWorld* world, Afk::Transform transform, float mass, bool gravity, rp3d::BodyType bodyType, Afk::Shape::Sphere boundingSphere)
 {
-  this->collisionShape = std::make_unique<rp3d::SphereShape>(boundingSphere);
+  // Note: have to scale sphere equally on every axis (otherwise it wouldn't be a sphere), so scaling the average of each axis
+  const auto scaleFactor = (transform.scale.x + transform.scale.y + transform.scale.z) / 3.0f;
+  this->collisionShape = std::make_unique<rp3d::SphereShape>(boundingSphere * scaleFactor);
 
-  // Note that Afk::Transform stores scale and rp3d::Transform does not
   auto transform_ = rp3d::Transform(
     rp3d::Vector3(transform.translation[0], transform.translation[1], transform.translation[2]),
     rp3d::Quaternion(transform.rotation[0], transform.rotation[1], transform.rotation[2], transform.rotation[3])
