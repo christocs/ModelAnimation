@@ -8,8 +8,7 @@ auto Afk::update_physics(entt::registry* registry, rp3d::DynamicsWorld* world, f
 
   // TODO: Scale shapes of rigid bodies on the fly
   // @see https://github.com/DanielChappuis/reactphysics3d/issues/103
-  registry->view<Afk::Transform, Afk::Collision>().each([](Afk::Transform& transform, Afk::Collision& collision)
-  {
+  registry->view<Afk::Transform, Afk::Collision>().each([](Afk::Transform& transform, Afk::Collision& collision) {
       const auto rp3dPosition = collision.GetBody()->getTransform().getPosition();
       const auto rp3dOreientation = collision.GetBody()->getTransform().getOrientation();
 
