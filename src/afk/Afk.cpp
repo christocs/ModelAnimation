@@ -12,10 +12,10 @@
 
 #include "afk/io/ModelSource.hpp"
 #include "afk/physics/Collision.hpp"
-#include "afk/physics/PhysicsSystem.hpp"
 #include "afk/renderer/ModelRenderSystem.hpp"
 #include "afk/physics/shape/Box.hpp"
 #include "afk/physics/shape/Sphere.hpp"
+#include "afk/physics/RigidBodyType.hpp"
 
 using namespace std::string_literals;
 
@@ -103,9 +103,6 @@ Engine::Engine() {
 
   glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
 
-  rp3d::Vector3 gravity(0.0, -9.81f, 0);
-  this->world = new rp3d::DynamicsWorld(gravity);
-
   auto cityTransform        = Transform{};
   cityTransform.scale       = vec3{0.25f};
   cityTransform.translation = vec3{0.0f, -1.0f, 0.0f};
@@ -114,7 +111,7 @@ Engine::Engine() {
   registry.assign<Afk::Transform>(cityEntity, cityTransform);
   registry.assign<Afk::ModelSource>(cityEntity, std::string("res/model/city/city.fbx"));
 
-  registry.assign<Afk::Collision>(cityEntity, this->world, cityTransform, 0, false, rp3d::BodyType::STATIC, Afk::Shape::Box{100000000.0f, 0.1f, 100000000.0f});
+  registry.assign<Afk::Collision>(cityEntity, &this->physics_system, cityTransform, 0, false, Afk::RigidBodyType::STATIC, Afk::Box{100000000.0f, 0.1f, 100000000.0f});
 
   auto ballTransform = Transform{};
   ballTransform.scale       = vec3{1.0f};
@@ -123,7 +120,7 @@ Engine::Engine() {
   auto ballEntity = registry.create();
   registry.assign<Afk::Transform>(ballEntity, ballTransform);
 
-  registry.assign<Afk::Collision>(ballEntity, this->world, ballTransform, 30.0f, true, rp3d::BodyType::DYNAMIC, Afk::Shape::Sphere{0.8f});
+  registry.assign<Afk::Collision>(ballEntity, &this->physics_system, ballTransform, 30.0f, true, Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
   registry.assign<Afk::ModelSource>(ballEntity, "res/model/basketball/basketball.fbx");
 }
 
@@ -162,7 +159,7 @@ auto Engine::update() -> void {
 
   this->update_camera();
 
-  Afk::update_physics(&this->registry, this->world, this->get_delta_time());
+  this->physics_system.update_physics(&this->registry, this->get_delta_time());
 
   ++this->frame_count;
   this->last_update = this->get_time();

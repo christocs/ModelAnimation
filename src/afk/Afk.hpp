@@ -9,6 +9,7 @@
 #include "afk/renderer/Renderer.hpp"
 #include "afk/ui/Ui.hpp"
 #include "afk/renderer/opengl/ShaderProgramHandle.hpp"
+#include "afk/physics/PhysicsSystem.hpp"
 
 namespace Afk {
   class Engine {
@@ -47,6 +48,6 @@ namespace Afk {
 
     entt::registry registry;
 
-    rp3d::DynamicsWorld* world;
+    Afk::PhysicsSystem physics_system;
   };
 }
