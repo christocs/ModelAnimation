@@ -25,7 +25,7 @@ auto PhysicsSystem::SetGravity(glm::vec3 gravity) {
   this->world->setGravity(rp3d_gravity);
 }
 
-auto PhysicsSystem::update_physics(entt::registry* registry, float dt) -> void {
+auto PhysicsSystem::update(entt::registry* registry, float dt) -> void {
   this->world->update(dt);
 
   // TODO: Scale shapes of rigid bodies on the fly

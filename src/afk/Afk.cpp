@@ -103,25 +103,25 @@ Engine::Engine() {
 
   glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
 
-  auto cityTransform        = Transform{};
-  cityTransform.scale       = vec3{0.25f};
-  cityTransform.translation = vec3{0.0f, -1.0f, 0.0f};
+  auto city_transform        = Transform{};
+  city_transform.scale       = vec3{0.25f};
+  city_transform.translation = vec3{0.0f, -1.0f, 0.0f};
 
-  const auto cityEntity = registry.create();
-  registry.assign<Afk::Transform>(cityEntity, cityTransform);
-  registry.assign<Afk::ModelSource>(cityEntity, std::string("res/model/city/city.fbx"));
+  const auto city_entity = registry.create();
+  registry.assign<Afk::Transform>(city_entity, city_transform);
+  registry.assign<Afk::ModelSource>(city_entity, std::string("res/model/city/city.fbx"));
 
-  registry.assign<Afk::Collision>(cityEntity, &this->physics_system, cityTransform, 0, false, Afk::RigidBodyType::STATIC, Afk::Box{100000000.0f, 0.1f, 100000000.0f});
+  registry.assign<Afk::Collision>(city_entity, &this->physics_system, city_transform, 0, false, Afk::RigidBodyType::STATIC, Afk::Box{100000000.0f, 0.1f, 100000000.0f});
 
-  auto ballTransform = Transform{};
-  ballTransform.scale       = vec3{1.0f};
-  ballTransform.translation = vec3{0.0f, 100.0f, 0.0f};
+  auto ball_transform = Transform{};
+  ball_transform.scale       = vec3{1.0f};
+  ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
 
-  auto ballEntity = registry.create();
-  registry.assign<Afk::Transform>(ballEntity, ballTransform);
+  auto ball_entity = registry.create();
+  registry.assign<Afk::Transform>(ball_entity, ball_transform);
 
-  registry.assign<Afk::Collision>(ballEntity, &this->physics_system, ballTransform, 30.0f, true, Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
-  registry.assign<Afk::ModelSource>(ballEntity, "res/model/basketball/basketball.fbx");
+  registry.assign<Afk::Collision>(ball_entity, &this->physics_system, ball_transform, 30.0f, true, Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
+  registry.assign<Afk::ModelSource>(ball_entity, "res/model/basketball/basketball.fbx");
 }
 
 auto Engine::render() -> void {
@@ -159,7 +159,7 @@ auto Engine::update() -> void {
 
   this->update_camera();
 
-  this->physics_system.update_physics(&this->registry, this->get_delta_time());
+  this->physics_system.update(&this->registry, this->get_delta_time());
 
   ++this->frame_count;
   this->last_update = this->get_time();

@@ -3,5 +3,5 @@
 #include <string>
 
 namespace Afk {
-  typedef std::string ModelSource;
+  using ModelSource = std::string;
 }

@@ -21,7 +21,7 @@ namespace Afk {
 
       auto SetGravity(glm::vec3 gravity);
 
-      auto update_physics(entt::registry* registry, float dt) -> void;
+      auto update(entt::registry* registry, float dt) -> void;
 
     private:
       World* world;
