@@ -1,14 +1,12 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <reactphysics3d.h>
 #include <entt/entt.hpp>
 
 #include "afk/event/EventManager.hpp"
 #include "afk/renderer/Camera.hpp"
 #include "afk/renderer/Renderer.hpp"
 #include "afk/ui/Ui.hpp"
-#include "afk/renderer/opengl/ShaderProgramHandle.hpp"
 #include "afk/physics/PhysicsSystem.hpp"
 
 namespace Afk {
