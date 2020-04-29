@@ -13,9 +13,7 @@ ScriptsComponent::ScriptsComponent() : loaded_files(), last_write() {}
 auto ScriptsComponent::add_script(const path &script_path, lua_State *lua,
                                   EventManager *evt_mgr) -> void {
   const auto abs_path = Afk::get_absolute_path(script_path);
-  Afk::status << script_path.string() << "\n";
-  Afk::status << abs_path.string() << "\n";
-  auto lua_script = LuaScript{evt_mgr};
+  auto lua_script     = LuaScript{evt_mgr};
   lua_script.load(abs_path, lua);
   this->loaded_files.emplace(abs_path, std::move(lua_script));
   this->last_write.emplace(abs_path, std::filesystem::last_write_time(abs_path));
