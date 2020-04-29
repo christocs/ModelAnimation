@@ -5,7 +5,6 @@
 using Afk::ScriptsComponent;
 
 ScriptsComponent::ScriptsComponent() : loaded_files(), last_write() {}
-ScriptsComponent::~ScriptsComponent() {}
 
 auto ScriptsComponent::add_script(const path &script_path, lua_State *lua) -> void {
   auto lua_script = LuaScript{&(Afk::Engine::get().event_manager)};
