@@ -28,20 +28,16 @@ auto LuaScript::setup_lua_state(lua_State *lua) -> void {
 
   auto script_class = luabridge::getGlobalNamespace(lua).beginClass<LuaScript>("script");
   for (const auto &event : Afk::Script::events) {
-    script_class.addStaticProperty<int>(event.name.c_str(),
-                                        const_cast<int *>(&event.type), false);
+    script_class.addStaticData<int>(event.name.c_str(),
+                                    const_cast<int *>(&event.type), false);
   }
-
-  // TODO: Think of a way to allow live reloading with this registration type
-  // (Right now when you reload the file I think old registered events will stay
-  // around) (Maybe need some alternate register function that lua will use)
   script_class.addFunction("register_event", &Afk::LuaScript::register_fn);
   script_class.endClass();
 }
 
 auto LuaScript::register_fn(Afk::Event::Type event_type, LuaRef func) -> void {
-  this->registered_events.push_back(
-      RegisteredLuaCall{event_type, Afk::EventManager::Callback{func}});
+  this->registered_events.push_back(RegisteredLuaCall{
+      event_type, Afk::EventManager::Callback{std::function<void(Afk::Event)>{func}}});
   auto &callback = this->registered_events.at(this->registered_events.size() - 1);
   event_manager->register_event(event_type, callback.lua_ref);
 }
@@ -62,10 +58,30 @@ auto LuaScript::unload() -> void {
   }
 }
 
-LuaScript::LuaScript(Afk::EventManager *event_manager)
-  : event_manager(event_manager), registered_events() {
+LuaScript::LuaScript(Afk::EventManager *events)
+  : event_manager(events), registered_events() {
   afk_assert(event_manager != nullptr, "Event manager must not be null.");
 }
 LuaScript::~LuaScript() {
   this->unload();
+}
+
+auto LuaScript::operator=(LuaScript &&other) -> LuaScript & {
+  this->event_manager     = other.event_manager;
+  this->registered_events = std::move(other.registered_events);
+  return *this;
+}
+LuaScript::LuaScript(LuaScript &&other) {
+  this->event_manager     = other.event_manager;
+  this->registered_events = std::move(other.registered_events);
+}
+
+auto LuaScript::operator=(const LuaScript &other) -> LuaScript & {
+  this->event_manager     = other.event_manager;
+  this->registered_events = other.registered_events;
+  return *this;
+}
+LuaScript::LuaScript(const LuaScript &other) {
+  this->event_manager     = other.event_manager;
+  this->registered_events = other.registered_events;
 }

@@ -89,10 +89,14 @@ auto Engine::update_camera() -> void {
 Engine::Engine() {
   this->event_manager.setup_callbacks(this->renderer.window);
 
-  this->event_manager.register_event(
-      Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
-  this->event_manager.register_event(
-      Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
+  this->event_manager.register_event(Event::Type::MouseMove,
+                                     Afk::EventManager::Callback{[this](Event event) {
+                                       this->move_mouse(event);
+                                     }});
+  this->event_manager.register_event(Event::Type::KeyDown,
+                                     Afk::EventManager::Callback{[this](Event event) {
+                                       this->move_keyboard(event);
+                                     }});
 
   glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
 }

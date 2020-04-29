@@ -13,7 +13,18 @@ struct GLFWwindow;
 namespace Afk {
   class EventManager {
   public:
-    using Callback = std::function<void(Afk::Event)>;
+    class Callback {
+    public:
+      Callback(std::function<void(Afk::Event)>);
+      auto operator==(const Callback &rhs) const -> bool;
+      auto operator()(const Afk::Event &arg) const -> void;
+
+    private:
+      std::function<void(Afk::Event)> func;
+      std::size_t id;
+      static std::size_t index;
+    };
+    // using Callback = std::function<void(Afk::Event)>;
 
     EventManager();
 
