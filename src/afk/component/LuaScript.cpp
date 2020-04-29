@@ -8,6 +8,12 @@
 using namespace std::string_literals;
 using Afk::LuaScript;
 
+template<typename VariantType, typename VariantReturn, typename LuabridgeScope>
+auto luabridge_add_variant(const char *name, LuabridgeScope &b) -> void {
+  b.addStaticCFunction(name, static_cast<VariantReturn (*)(VariantType)>(
+                                 std::get<VariantReturn>)
+}
+
 /**
  * This should probably be moved somewhere better
  */
@@ -26,11 +32,61 @@ auto LuaScript::setup_lua_state(lua_State *lua) -> void {
   }
   mouse_ns.endNamespace();
 
-  auto script_class = luabridge::getGlobalNamespace(lua).beginClass<LuaScript>("script");
+  auto afk_event_class =
+      luabridge::getGlobalNamespace(lua).beginClass<Afk::Event>("event");
   for (const auto &event : Afk::Script::events) {
-    script_class.addStaticData<int>(event.name.c_str(),
-                                    const_cast<int *>(&event.type), false);
+    afk_event_class.addStaticData<int>(event.name.c_str(),
+                                       const_cast<int *>(&event.type), false);
   }
+  auto events_namespace =
+      luabridge::getGlobalNamespace(lua).beginNamespace("events");
+
+  events_namespace.beginClass<Afk::Event::Key>("key")
+      .addData("alt", &Afk::Event::Key::alt, false)
+      .addData("control", &Afk::Event::Key::control, false)
+      .addData("shift", &Afk::Event::Key::shift, false)
+      .addData("key", &Afk::Event::Key::key, false)
+      .addData("keycode", &Afk::Event::Key::scancode, false)
+      .endClass();
+  luabridge_add_variant<Afk::Event::Data, Afk::Event::Key>("to_key", afk_event_class);
+
+  events_namespace.beginClass<Afk::Event::MouseButton>("mouse_button")
+      .addData("alt", &Afk::Event::MouseButton::alt, false)
+      .addData("control", &Afk::Event::MouseButton::control, false)
+      .addData("shift", &Afk::Event::MouseButton::shift, false)
+      .addData("button", &Afk::Event::MouseButton::button, false)
+      .endClass();
+  luabridge_add_variant<Afk::Event::Data, Afk::Event::MouseButton>(
+      "to_mouse_button", afk_event_class);
+
+  events_namespace.beginClass<Afk::Event::MouseButton>("mouse_button")
+      .addData("alt", &Afk::Event::MouseButton::alt, false)
+      .addData("control", &Afk::Event::MouseButton::control, false)
+      .addData("shift", &Afk::Event::MouseButton::shift, false)
+      .addData("button", &Afk::Event::MouseButton::button, false)
+      .endClass();
+  luabridge_add_variant<Afk::Event::Data, Afk::Event::MouseMove>(
+      "to_mouse_move", afk_event_class);
+
+  events_namespace.beginClass<Afk::Event::MouseScroll>("mouse_scroll")
+      .addData("x", &Afk::Event::MouseScroll::x, false)
+      .addData("y", &Afk::Event::MouseScroll::y, false)
+      .endClass();
+  luabridge_add_variant<Afk::Event::Data, Afk::Event::MouseScroll>(
+      "to_mouse_scroll", afk_event_class);
+
+  events_namespace.beginClass<Afk::Event::Text>("text")
+      .addData("codepoint", &Afk::Event::Text::codepoint, false)
+      .endClass();
+  luabridge_add_variant<Afk::Event::Data, Afk::Event::Text>("to_text", afk_event_class);
+
+  events_namespace.beginClass<Afk::Event::Update>("update")
+      .addData("delta", &Afk::Event::Update::dt, false)
+      .endClass();
+  luabridge_add_variant<Afk::Event::Data, Afk::Event::Update>("to_update", afk_event_class);
+  afk_event_class.endClass();
+
+  auto script_class = luabridge::getGlobalNamespace(lua).beginClass<LuaScript>("script");
   script_class.addFunction("register_event", &Afk::LuaScript::register_fn);
   script_class.endClass();
 }
