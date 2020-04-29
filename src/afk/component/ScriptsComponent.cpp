@@ -27,9 +27,11 @@ auto ScriptsComponent::remove_script(const path &script_path) -> void {
 auto ScriptsComponent::check_live_reload(lua_State *lua) -> void {
   for (auto &script : this->loaded_files) {
     const auto &script_path = script.first;
-    if (std::filesystem::last_write_time(script_path) > this->last_write[script_path]) {
+    auto recent_write       = std::filesystem::last_write_time(script_path);
+    if (recent_write > this->last_write[script_path]) {
       script.second.unload();
       script.second.load(script_path, lua);
+      this->last_write[script_path] = recent_write;
     }
   }
 }
