@@ -15,7 +15,6 @@ namespace Afk {
   class ScriptsComponent {
   public:
     ScriptsComponent();
-    ~ScriptsComponent();
     auto check_live_reload(lua_State *l) -> void;
     auto add_script(const path &script_path, lua_State *l) -> void;
     auto remove_script(const path &script_path) -> void;
