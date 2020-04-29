@@ -86,8 +86,8 @@ auto LuaScript::setup_lua_state(lua_State *lua) -> void {
 auto LuaScript::register_fn(Afk::Event::Type event_type, LuaRef func) -> void {
   this->registered_events.push_back(RegisteredLuaCall{
       event_type, Afk::EventManager::Callback{std::function<void(Afk::Event)>{func}}});
-  auto &callback = this->registered_events.at(this->registered_events.size() - 1);
-  event_manager->register_event(event_type, callback.lua_ref);
+  auto &evt = this->registered_events.at(this->registered_events.size() - 1);
+  event_manager->register_event(event_type, evt.callback);
 }
 
 auto LuaScript::load(const std::filesystem::path &filename, lua_State *lua) -> void {
@@ -99,8 +99,8 @@ auto LuaScript::load(const std::filesystem::path &filename, lua_State *lua) -> v
 
 auto LuaScript::unload() -> void {
   while (this->registered_events.size() > 0) {
-    auto &callback = this->registered_events[this->registered_events.size() - 1];
-    event_manager->deregister_event(callback.event_type, callback.lua_ref);
+    auto &evt = this->registered_events[this->registered_events.size() - 1];
+    event_manager->deregister_event(evt.event_type, evt.callback);
     this->registered_events.erase(this->registered_events.end() - 1);
   }
 }

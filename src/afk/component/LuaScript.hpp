@@ -19,7 +19,7 @@ namespace Afk {
   // so it can get rid of them later
   struct RegisteredLuaCall {
     Afk::Event::Type event_type;
-    Afk::EventManager::Callback lua_ref;
+    Afk::EventManager::Callback callback;
   };
 
   class LuaScript {
