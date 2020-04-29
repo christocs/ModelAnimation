@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include "afk/debug/Assert.hpp"
 #include "afk/io/Log.hpp"
@@ -20,11 +21,47 @@
 using namespace std::string_literals;
 
 using glm::vec3;
+using glm::vec4;
 
 using Afk::Engine;
 using Afk::Event;
+using Afk::Texture;
 using Action   = Afk::Event::Action;
 using Movement = Afk::Camera::Movement;
+
+auto Engine::initialize() -> void {
+  afk_assert(!this->is_initialized, "Engine already initialized");
+
+  this->renderer.initialize();
+  this->event_manager.initialize(this->renderer.window);
+  this->ui.initialize(this->renderer.window);
+  this->terrain_manager.initialize();
+
+  // FIXME: Move to key manager
+  this->event_manager.register_event(
+      Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
+  this->event_manager.register_event(
+      Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
+
+  this->renderer.set_wireframe(true);
+
+  auto city_transform        = Transform{};
+  city_transform.scale       = vec3{0.25f};
+  city_transform.translation = vec3{0.0f, -1.0f, 0.0f};
+  const auto city_entity     = registry.create();
+  registry.assign<Afk::Transform>(city_entity, city_transform);
+  registry.assign<Afk::ModelSource>(city_entity, "res/model/city/city.fbx");
+  registry.assign<Afk::Collision>(city_entity, &this->physics_system, city_transform, 0, false, Afk::RigidBodyType::STATIC, Afk::Box{100000000.0f, 0.1f, 100000000.0f});
+
+  auto ball_transform        = Transform{};
+  ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
+  auto ball_entity           = registry.create();
+  registry.assign<Afk::Transform>(ball_entity, ball_transform);
+  registry.assign<Afk::Collision>(ball_entity, &this->physics_system, ball_transform, 30.0f, true, Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
+  registry.assign<Afk::ModelSource>(ball_entity, "res/model/basketball/basketball.fbx");
+
+  this->is_initialized = true;
+}
 
 auto Engine::move_mouse(Event event) -> void {
   const auto data = std::get<Event::MouseMove>(event.data);
@@ -36,7 +73,7 @@ auto Engine::move_mouse(Event event) -> void {
   const auto dx = static_cast<float>(data.x) - last_x;
   const auto dy = static_cast<float>(data.y) - last_y;
 
-  if (!first_frame && !this->ui.is_visible) {
+  if (!first_frame && !this->ui.show_menu) {
     this->camera.handle_mouse(dx, dy);
   } else {
     first_frame = false;
@@ -46,35 +83,32 @@ auto Engine::move_mouse(Event event) -> void {
   last_y = static_cast<float>(data.y);
 }
 
-// FIXME: Move to key handler.
-auto Engine::move_keyboard(Event event) -> void {
-  const auto key = std::get<Event::Key>(event.data).key;
-
-  if (event.type == Event::Type::KeyDown && key == GLFW_KEY_ESCAPE) {
-    this->is_running = false;
-  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_N) {
-    this->ui.is_visible = !this->ui.is_visible;
-  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_M) {
-    this->renderer.wireframe_enabled = !this->renderer.wireframe_enabled;
-  }
-}
-
-// FIXME: Move someone more appropriate.
-static auto resize_window_callback([[maybe_unused]] GLFWwindow *window,
-                                   int width, int height) -> void {
-  auto &afk = Engine::get();
-  afk.renderer.set_viewport(0, 0, width, height);
-}
-
 auto Engine::get() -> Engine & {
   static auto instance = Engine{};
 
   return instance;
 }
 
+auto Engine::exit() -> void {
+  this->is_running = false;
+}
+
+// FIXME: Move to key handler.
+auto Engine::move_keyboard(Event event) -> void {
+  const auto key = std::get<Event::Key>(event.data).key;
+
+  if (event.type == Event::Type::KeyDown && key == GLFW_KEY_ESCAPE) {
+    this->exit();
+  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_GRAVE_ACCENT) {
+    this->ui.show_menu = !this->ui.show_menu;
+  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_1) {
+    this->renderer.set_wireframe(!this->renderer.get_wireframe());
+  }
+}
+
 // FIXME: Move somewhere more appropriate.
 auto Engine::update_camera() -> void {
-  if (!this->ui.is_visible) {
+  if (!this->ui.show_menu) {
     if (this->event_manager.key_state.at(Action::Forward)) {
       this->camera.handle_key(Movement::Forward, this->get_delta_time());
     }
@@ -93,53 +127,16 @@ auto Engine::update_camera() -> void {
   }
 }
 
-Engine::Engine() {
-  this->event_manager.setup_callbacks(this->renderer.window);
-
-  this->event_manager.register_event(
-      Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
-  this->event_manager.register_event(
-      Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
-
-  glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
-
-  auto city_transform        = Transform{};
-  city_transform.scale       = vec3{0.25f};
-  city_transform.translation = vec3{0.0f, -1.0f, 0.0f};
-
-  const auto city_entity = registry.create();
-  registry.assign<Afk::Transform>(city_entity, city_transform);
-  registry.assign<Afk::ModelSource>(city_entity, std::string("res/model/city/city.fbx"));
-
-  registry.assign<Afk::Collision>(city_entity, &this->physics_system, city_transform, 0, false, Afk::RigidBodyType::STATIC, Afk::Box{100000000.0f, 0.1f, 100000000.0f});
-
-  auto ball_transform = Transform{};
-  ball_transform.scale       = vec3{1.0f};
-  ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
-
-  auto ball_entity = registry.create();
-  registry.assign<Afk::Transform>(ball_entity, ball_transform);
-
-  registry.assign<Afk::Collision>(ball_entity, &this->physics_system, ball_transform, 30.0f, true, Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
-  registry.assign<Afk::ModelSource>(ball_entity, "res/model/basketball/basketball.fbx");
-}
-
 auto Engine::render() -> void {
+  // FIXME: Support multiple shader programs properly
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  const auto window_size = this->renderer.get_window_size();
 
-  this->renderer.clear_screen();
+  Afk::queue_models(&this->registry, &this->renderer, "shader/default.prog");
+
+  this->renderer.clear_screen({135.0f, 206.0f, 235.0f, 1.0f});
   this->ui.prepare();
-
-  // FIXME: Move to a scene manager.
-  this->renderer.use_shader(shader);
-  this->renderer.set_uniform(
-      shader, "u_matrices.projection",
-      this->camera.get_projection_matrix(window_size.x, window_size.y));
-  this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
-
-  Afk::render_models(&this->registry, &this->renderer, &shader);
-
+  this->renderer.setup_view(shader);
+  this->renderer.draw();
   this->ui.draw();
   this->renderer.swap_buffers();
 }
@@ -151,7 +148,7 @@ auto Engine::update() -> void {
     this->is_running = false;
   }
 
-  if (this->ui.is_visible) {
+  if (this->ui.show_menu) {
     glfwSetInputMode(this->renderer.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
   } else {
     glfwSetInputMode(this->renderer.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

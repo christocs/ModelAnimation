@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <functional>
 #include <memory>
+#include <queue>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -49,6 +50,12 @@ namespace Afk {
         }
       };
 
+      struct DrawCommand {
+        const std::filesystem::path model_path          = {};
+        const std::filesystem::path shader_program_path = {};
+        const Transform transform                       = {};
+      };
+
       using Models =
           std::unordered_map<std::filesystem::path, ModelHandle, PathHash, PathEquals>;
       using Textures =
@@ -57,25 +64,33 @@ namespace Afk {
           std::unordered_map<std::filesystem::path, ShaderHandle, PathHash, PathEquals>;
       using ShaderPrograms =
           std::unordered_map<std::filesystem::path, ShaderProgramHandle, PathHash, PathEquals>;
+      using DrawQueue = std::queue<DrawCommand>;
 
       using Window = std::add_pointer<GLFWwindow>::type;
 
-      Window window          = nullptr;
-      bool wireframe_enabled = false;
+      Window window = nullptr;
 
       Renderer();
       ~Renderer();
+      Renderer(Renderer &&)      = delete;
+      Renderer(const Renderer &) = delete;
+      auto operator=(const Renderer &) -> Renderer & = delete;
+      auto operator=(Renderer &&) -> Renderer & = delete;
 
+      auto initialize() -> void;
       auto set_option(GLenum option, bool state) const -> void;
       auto check_errors() const -> void;
       auto get_window_size() const -> glm::ivec2;
 
       // Draw commands
-      auto clear_screen(glm::vec4 clear_color = {1.0f, 1.0f, 1.0f, 1.0f}) const -> void;
+      auto clear_screen(glm::vec4 clear_color = {255.0f, 255.0f, 255.0f, 1.0f}) const -> void;
       auto swap_buffers() -> void;
       auto set_viewport(int x, int y, int width, int height) const -> void;
-      auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader,
+      auto draw() -> void;
+      auto queue_draw(DrawCommand command) -> void;
+      auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader_program,
                       Transform transform) const -> void;
+      auto setup_view(const ShaderProgramHandle &shader_program) -> void;
 
       // State management
       auto use_shader(const ShaderProgramHandle &shader) const -> void;
@@ -108,15 +123,27 @@ namespace Afk {
       auto set_uniform(const ShaderProgramHandle &program,
                        const std::string &name, glm::mat4 value) const -> void;
 
+      auto set_wireframe(bool status) -> void;
+      auto get_wireframe() const -> bool;
+
+      auto get_models() const -> const Models &;
+      auto get_textures() const -> const Textures &;
+      auto get_shaders() const -> const Shaders &;
+      auto get_shader_programs() const -> const ShaderPrograms &;
+
     private:
       const int opengl_major_version = 4;
       const int opengl_minor_version = 1;
       const bool enable_vsync        = true;
 
+      bool is_initialized    = false;
+      bool wireframe_enabled = false;
+
       Models models                  = {};
       Textures textures              = {};
       Shaders shaders                = {};
       ShaderPrograms shader_programs = {};
+      DrawQueue draw_queue           = {};
     };
   }
 }

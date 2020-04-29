@@ -1,6 +1,7 @@
 #include "afk/event/EventManager.hpp"
 
 #include "afk/Afk.hpp"
+#include "afk/debug/Assert.hpp"
 #include "afk/event/Event.hpp"
 #include "afk/io/Log.hpp"
 
@@ -10,8 +11,10 @@
 using Afk::EventManager;
 using Action = Afk::Event::Action;
 
-EventManager::EventManager() {
-  Afk::status << "Event manager subsystem initialized.\n";
+auto EventManager::initialize(Renderer::Window window) -> void {
+  afk_assert(!this->is_initialized, "Event manager already initialized");
+  this->setup_callbacks(window);
+  this->is_initialized = true;
 }
 
 auto EventManager::pump_events() -> void {
@@ -33,12 +36,13 @@ auto EventManager::register_event(Event::Type type, Callback callback) -> void {
   this->callbacks[type].push_back(callback);
 }
 
-auto EventManager::setup_callbacks(GLFWwindow *window) -> void {
-  glfwSetKeyCallback(window, key_callback);
-  glfwSetCharCallback(window, char_callback);
-  glfwSetCursorPosCallback(window, mouse_pos_callback);
-  glfwSetMouseButtonCallback(window, mouse_press_callback);
-  glfwSetScrollCallback(window, mouse_scroll_callback);
+auto EventManager::setup_callbacks(Renderer::Window window) -> void {
+  glfwSetMouseButtonCallback(window, EventManager::mouse_press_callback);
+  glfwSetScrollCallback(window, EventManager::mouse_scroll_callback);
+  glfwSetKeyCallback(window, EventManager::key_callback);
+  glfwSetCharCallback(window, EventManager::char_callback);
+  glfwSetCursorPosCallback(window, EventManager::mouse_pos_callback);
+  glfwSetErrorCallback(EventManager::error_callback);
 }
 
 auto EventManager::key_callback([[maybe_unused]] GLFWwindow *window, int key,
@@ -110,4 +114,8 @@ auto EventManager::mouse_scroll_callback([[maybe_unused]] GLFWwindow *window,
                                          double dx, double dy) -> void {
   Afk::Engine::get().event_manager.events.push(
       {Event::MouseScroll{dx, dy}, Event::Type::MouseScroll});
+}
+
+auto EventManager::error_callback([[maybe_unused]] int error, const char *msg) -> void {
+  std::cerr << "glfw error: " << msg << '\n';
 }

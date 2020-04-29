@@ -1,19 +1,36 @@
 #pragma once
 
-#include <iostream>
-#include <string>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+
+#include "afk/Afk.hpp"
+#include "afk/io/Path.hpp"
+#include "afk/ui/Log.hpp"
 
 namespace Afk {
-  namespace Internal {
-    class Status {};
-    class Error {};
+  namespace Io {
+    struct Log {
+      std::filesystem::path log_path = {};
+      std::ofstream log_file         = {};
+
+      Log();
+    };
 
     template<typename T>
-    auto operator<<(Status &log, T const &value) -> Status & {
-      std::cout << value;
+    auto operator<<(Log &log, T const &value) -> Log & {
+      using std::ostringstream;
+
+      auto &afk = Engine::get();
+      auto ss   = ostringstream{};
+
+      ss << value;
+      afk.ui.log.append("%s", ss.str().c_str());
+      log.log_file << value;
+
       return log;
     }
-  }
 
-  extern Internal::Status status;
+    inline auto log = Log{};
+  }
 }

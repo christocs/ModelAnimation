@@ -1,12 +1,14 @@
 #include "afk/renderer/opengl/Renderer.hpp"
 
 #include <filesystem>
+#include <limits>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
+#include <frozen/unordered_map.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -53,39 +55,40 @@ using Afk::OpenGl::Renderer;
 using Afk::OpenGl::ShaderHandle;
 using Afk::OpenGl::ShaderProgramHandle;
 using Afk::OpenGl::TextureHandle;
+namespace Io = Afk::Io;
 
-static auto get_material_as_string(Texture::Type type) -> string {
-  static const auto name = unordered_map<Texture::Type, string>{
-      {Texture::Type::Diffuse, "texture_diffuse"},   //
-      {Texture::Type::Specular, "texture_specular"}, //
-      {Texture::Type::Normal, "texture_normal"},     //
-      {Texture::Type::Height, "texture_height"},     //
-  };
+constexpr auto material_strings =
+    frozen::make_unordered_map<Texture::Type, const char *>({
+        {Texture::Type::Diffuse, "texture_diffuse"},
+        {Texture::Type::Specular, "texture_specular"},
+        {Texture::Type::Normal, "texture_normal"},
+        {Texture::Type::Height, "texture_height"},
+    });
 
-  return name.at(type);
-}
+constexpr auto gl_shader_types = frozen::make_unordered_map<Shader::Type, GLenum>({
+    {Shader::Type::Vertex, GL_VERTEX_SHADER},
+    {Shader::Type::Fragment, GL_FRAGMENT_SHADER},
+});
 
-static auto get_gl_shader_type(Shader::Type type) -> GLenum {
-  static const auto types = unordered_map<Shader::Type, GLenum>{
-      {Shader::Type::Vertex, GL_VERTEX_SHADER},
-      {Shader::Type::Fragment, GL_FRAGMENT_SHADER},
-  };
-
-  return types.at(type);
-}
-
-auto Renderer::set_option(GLenum option, bool state) const -> void {
-  if (state) {
-    glEnable(option);
-  } else {
-    glDisable(option);
-  }
+// FIXME: Move someone more appropriate.
+static auto resize_window_callback([[maybe_unused]] GLFWwindow *window,
+                                   int width, int height) -> void {
+  auto &afk = Engine::get();
+  afk.renderer.set_viewport(0, 0, width, height);
 }
 
 Renderer::Renderer()
   : models(0, PathHash{}, PathEquals{}), textures(0, PathHash{}, PathEquals{}),
     shaders(0, PathHash{}, PathEquals{}),
-    shader_programs(0, PathHash{}, PathEquals{}) {
+    shader_programs(0, PathHash{}, PathEquals{}) {}
+
+Renderer::~Renderer() {
+  glfwDestroyWindow(this->window);
+  glfwTerminate();
+}
+
+auto Renderer::initialize() -> void {
+  afk_assert(!this->is_initialized, "Renderer already initialized");
   afk_assert(glfwInit(), "Failed to initialize GLFW");
 
   // FIXME: Give user an option to change graphics settings.
@@ -111,13 +114,17 @@ Renderer::Renderer()
   glfwMakeContextCurrent(this->window);
   afk_assert(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)),
              "Failed to initialize GLAD");
+  glfwSetFramebufferSizeCallback(this->window, resize_window_callback);
 
-  Afk::status << "Renderer subsystem (OpenGL) initialized.\n";
+  this->is_initialized = true;
 }
 
-Renderer::~Renderer() {
-  glfwDestroyWindow(this->window);
-  glfwTerminate();
+auto Renderer::set_option(GLenum option, bool state) const -> void {
+  if (state) {
+    glEnable(option);
+  } else {
+    glDisable(option);
+  }
 }
 
 auto Renderer::get_window_size() const -> ivec2 {
@@ -129,7 +136,17 @@ auto Renderer::get_window_size() const -> ivec2 {
 }
 
 auto Renderer::clear_screen(vec4 clear_color) const -> void {
-  glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+  afk_assert_debug(clear_color.x >= 0.0f && clear_color.x <= 255.0f,
+                   "Red channel out of range");
+  afk_assert_debug(clear_color.y >= 0.0f && clear_color.y <= 255.0f,
+                   "Green channel out of range");
+  afk_assert_debug(clear_color.z >= 0.0f && clear_color.z <= 255.0f,
+                   "Blue channel out of range");
+  afk_assert_debug(clear_color.w >= 0.0f && clear_color.w <= 1.0f,
+                   "Alpha channel out of range");
+
+  glClearColor(clear_color.x / 255.0f, clear_color.y / 255.0f,
+               clear_color.z / 255.0f, clear_color.w);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   this->set_option(GL_DEPTH_TEST, true);
 }
@@ -192,9 +209,36 @@ auto Renderer::bind_texture(const TextureHandle &texture) const -> void {
   glBindTexture(GL_TEXTURE_2D, texture.id);
 }
 
-auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &shader,
+auto Renderer::draw() -> void {
+  while (!this->draw_queue.empty()) {
+    const auto command  = this->draw_queue.front();
+    const auto &model   = this->get_model(command.model_path);
+    const auto &program = this->get_shader_program(command.shader_program_path);
+
+    this->draw_queue.pop();
+    this->draw_model(model, program, command.transform);
+  }
+}
+
+auto Renderer::queue_draw(DrawCommand command) -> void {
+  this->draw_queue.push(command);
+}
+
+auto Renderer::setup_view(const ShaderProgramHandle &shader_program) -> void {
+  const auto &afk        = Engine::get();
+  const auto window_size = this->get_window_size();
+  const auto projection =
+      afk.camera.get_projection_matrix(window_size.x, window_size.y);
+  const auto view = afk.camera.get_view_matrix();
+
+  this->set_uniform(shader_program, "u_matrices.projection", projection);
+  this->set_uniform(shader_program, "u_matrices.view", view);
+}
+
+auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &shader_program,
                           Transform transform) const -> void {
   glPolygonMode(GL_FRONT_AND_BACK, this->wireframe_enabled ? GL_LINE : GL_FILL);
+  this->use_shader(shader_program);
 
   for (const auto &mesh : model.meshes) {
 
@@ -204,14 +248,14 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
     for (auto i = size_t{0}; i < mesh.textures.size(); i++) {
       this->set_texture_unit(GL_TEXTURE0 + i);
 
-      auto name = get_material_as_string(mesh.textures[i].type);
+      auto name = material_strings.at(mesh.textures[i].type);
 
       const auto index = static_cast<size_t>(mesh.textures[i].type);
 
       afk_assert_debug(!material_bound[index], "Material "s + name + " already bound"s);
       material_bound[index] = true;
 
-      this->set_uniform(shader, "u_textures."s + name, static_cast<int>(i));
+      this->set_uniform(shader_program, "u_textures."s + name, static_cast<int>(i));
       this->bind_texture(mesh.textures[i]);
     }
 
@@ -227,11 +271,11 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
     model_matrix *= glm::mat4_cast(mesh.transform.rotation);
     model_matrix = glm::scale(model_matrix, mesh.transform.scale);
 
-    this->set_uniform(shader, "u_matrices.model", model_matrix);
+    this->set_uniform(shader_program, "u_matrices.model", model_matrix);
 
     // Draw the mesh.
     glBindVertexArray(mesh.vao);
-    glDrawElements(GL_TRIANGLES, mesh.num_indices, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, mesh.num_indices, MeshHandle::INDEX, nullptr);
     glBindVertexArray(0);
 
     this->set_texture_unit(GL_TEXTURE0);
@@ -246,6 +290,10 @@ auto Renderer::use_shader(const ShaderProgramHandle &shader) const -> void {
 auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
   afk_assert(mesh.vertices.size() > 0, "Mesh missing vertices");
   afk_assert(mesh.indices.size() > 0, "Mesh missing indices");
+  afk_assert(mesh.indices.size() < std::numeric_limits<Mesh::Index>::max(),
+             "Mesh contains too many indices; "s +
+                 std::to_string(mesh.indices.size()) + " requested, max "s +
+                 std::to_string(std::numeric_limits<Mesh::Index>::max()));
 
   auto mesh_handle        = MeshHandle{};
   mesh_handle.num_indices = mesh.indices.size();
@@ -366,8 +414,8 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  Afk::status << "Texture '" << texture.file_path.string()
-              << "' loaded with ID " << texture_handle.id << ".\n";
+  Io::log << "Texture '" << texture.file_path.string() << "' loaded with ID "
+          << texture_handle.id << ".\n";
   this->textures[texture.file_path] = std::move(texture_handle);
 
   return this->textures[texture.file_path];
@@ -381,7 +429,7 @@ auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
   auto shader_handle = ShaderHandle{};
 
   const auto *shader_code_ptr = shader.code.c_str();
-  shader_handle.id            = glCreateShader(get_gl_shader_type(shader.type));
+  shader_handle.id            = glCreateShader(gl_shader_types.at(shader.type));
   shader_handle.type          = shader.type;
 
   afk_assert(shader_handle.id > 0, "Shader creation failed");
@@ -404,8 +452,8 @@ auto Renderer::compile_shader(const Shader &shader) -> ShaderHandle {
                           shader.file_path.string() + ": "s + error_msg.data());
   }
 
-  Afk::status << "Shader '" << shader.file_path.string()
-              << "' compiled with ID " << shader_handle.id << ".\n";
+  Io::log << "Shader '" << shader.file_path.string() << "' compiled with ID "
+          << shader_handle.id << ".\n";
   this->shaders[shader.file_path] = std::move(shader_handle);
 
   return this->shaders[shader.file_path];
@@ -445,8 +493,8 @@ auto Renderer::link_shaders(const ShaderProgram &shader_program) -> ShaderProgra
                           "' linking failed: "s + error_msg.data());
   }
 
-  Afk::status << "Shader program '" << shader_program.file_path.string()
-              << "' linked with ID " << shader_program_handle.id << ".\n";
+  Io::log << "Shader program '" << shader_program.file_path.string()
+          << "' linked with ID " << shader_program_handle.id << ".\n";
   this->shader_programs[shader_program.file_path] = std::move(shader_program_handle);
 
   return this->shader_programs[shader_program.file_path];
@@ -470,14 +518,39 @@ auto Renderer::set_uniform(const ShaderProgramHandle &program,
   afk_assert_debug(program.id > 0, "Invalid shader program ID");
   glUniform1f(glGetUniformLocation(program.id, name.c_str()), static_cast<GLfloat>(value));
 }
+
 auto Renderer::set_uniform(const ShaderProgramHandle &program,
                            const string &name, vec3 value) const -> void {
   afk_assert_debug(program.id > 0, "Invalid shader program ID");
   glUniform3fv(glGetUniformLocation(program.id, name.c_str()), 1, glm::value_ptr(value));
 }
+
 auto Renderer::set_uniform(const ShaderProgramHandle &program,
                            const string &name, mat4 value) const -> void {
   afk_assert_debug(program.id > 0, "Invalid shader program ID");
   glUniformMatrix4fv(glGetUniformLocation(program.id, name.c_str()), 1,
                      GL_FALSE, glm::value_ptr(value));
+}
+
+auto Renderer::set_wireframe(bool status) -> void {
+  this->wireframe_enabled = status;
+}
+
+auto Renderer::get_wireframe() const -> bool {
+  return this->wireframe_enabled;
+}
+
+auto Renderer::get_models() const -> const Models & {
+  return this->models;
+}
+
+auto Renderer::get_textures() const -> const Textures & {
+  return this->textures;
+}
+
+auto Renderer::get_shaders() const -> const Shaders & {
+  return this->shaders;
+}
+auto Renderer::get_shader_programs() const -> const ShaderPrograms & {
+  return this->shader_programs;
 }
