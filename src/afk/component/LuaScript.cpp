@@ -40,7 +40,7 @@ auto LuaScript::setup_lua_state(lua_State *lua) -> void {
       .addData("control", &Afk::Event::Key::control, false)
       .addData("shift", &Afk::Event::Key::shift, false)
       .addData("key", &Afk::Event::Key::key, false)
-      .addData("keycode", &Afk::Event::Key::scancode, false)
+      .addData("key_code", &Afk::Event::Key::scancode, false)
       .endClass();
   afk_event_class.addFunction("to_key", &Afk::Event::get<Afk::Event::Key>);
 
