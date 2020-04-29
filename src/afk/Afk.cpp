@@ -10,6 +10,13 @@
 #include "afk/debug/Assert.hpp"
 #include "afk/io/Log.hpp"
 
+#include "afk/io/ModelSource.hpp"
+#include "afk/physics/Collision.hpp"
+#include "afk/renderer/ModelRenderSystem.hpp"
+#include "afk/physics/shape/Box.hpp"
+#include "afk/physics/shape/Sphere.hpp"
+#include "afk/physics/RigidBodyType.hpp"
+
 using namespace std::string_literals;
 
 using glm::vec3;
@@ -95,11 +102,30 @@ Engine::Engine() {
       Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
 
   glfwSetFramebufferSizeCallback(this->renderer.window, resize_window_callback);
+
+  auto city_transform        = Transform{};
+  city_transform.scale       = vec3{0.25f};
+  city_transform.translation = vec3{0.0f, -1.0f, 0.0f};
+
+  const auto city_entity = registry.create();
+  registry.assign<Afk::Transform>(city_entity, city_transform);
+  registry.assign<Afk::ModelSource>(city_entity, std::string("res/model/city/city.fbx"));
+
+  registry.assign<Afk::Collision>(city_entity, &this->physics_system, city_transform, 0, false, Afk::RigidBodyType::STATIC, Afk::Box{100000000.0f, 0.1f, 100000000.0f});
+
+  auto ball_transform = Transform{};
+  ball_transform.scale       = vec3{1.0f};
+  ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
+
+  auto ball_entity = registry.create();
+  registry.assign<Afk::Transform>(ball_entity, ball_transform);
+
+  registry.assign<Afk::Collision>(ball_entity, &this->physics_system, ball_transform, 30.0f, true, Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
+  registry.assign<Afk::ModelSource>(ball_entity, "res/model/basketball/basketball.fbx");
 }
 
 auto Engine::render() -> void {
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  const auto &model  = this->renderer.get_model("res/model/city/city.fbx");
   const auto window_size = this->renderer.get_window_size();
 
   this->renderer.clear_screen();
@@ -112,9 +138,8 @@ auto Engine::render() -> void {
       this->camera.get_projection_matrix(window_size.x, window_size.y));
   this->renderer.set_uniform(shader, "u_matrices.view", this->camera.get_view_matrix());
 
-  auto transform        = Transform{};
-  transform.translation = vec3{0.0f, -1.0f, 0.0f};
-  this->renderer.draw_model(model, shader, transform);
+  Afk::render_models(&this->registry, &this->renderer, &shader);
+
   this->ui.draw();
   this->renderer.swap_buffers();
 }
@@ -133,6 +158,8 @@ auto Engine::update() -> void {
   }
 
   this->update_camera();
+
+  this->physics_system.update(&this->registry, this->get_delta_time());
 
   ++this->frame_count;
   this->last_update = this->get_time();

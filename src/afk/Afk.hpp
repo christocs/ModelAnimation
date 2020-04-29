@@ -1,11 +1,13 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <entt/entt.hpp>
 
 #include "afk/event/EventManager.hpp"
 #include "afk/renderer/Camera.hpp"
 #include "afk/renderer/Renderer.hpp"
 #include "afk/ui/Ui.hpp"
+#include "afk/physics/PhysicsSystem.hpp"
 
 namespace Afk {
   class Engine {
@@ -41,5 +43,9 @@ namespace Afk {
     bool is_running   = true;
     int frame_count   = {};
     float last_update = {};
+
+    entt::registry registry;
+
+    Afk::PhysicsSystem physics_system;
   };
 }
