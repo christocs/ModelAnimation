@@ -40,8 +40,8 @@ namespace Afk {
     /**
      * Allows script to register its functions into the event system
      */
-    auto register_fn(Afk::Event::Type event_type, LuaRef func) -> void;
+    auto register_fn(int event_val, LuaRef func) -> void;
     EventManager *event_manager;
-    std::vector<RegisteredLuaCall> registered_events;
+    std::shared_ptr<std::vector<RegisteredLuaCall>> registered_events;
   };
 }
