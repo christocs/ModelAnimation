@@ -92,9 +92,8 @@ auto LuaScript::register_fn(Afk::Event::Type event_type, LuaRef func) -> void {
 
 auto LuaScript::load(const std::filesystem::path &filename, lua_State *lua) -> void {
   this->unload();
-  const auto abs_path = Afk::get_absolute_path(filename);
-  luabridge::getGlobalNamespace(lua).addVariable("this", this);
-  afk_assert(luaL_dofile(lua, abs_path.string().c_str()) != 0,
+  luabridge::getGlobalNamespace(lua).beginClass<LuaScript>("script").addStaticData("this", this);
+  afk_assert(luaL_dofile(lua, filename.string().c_str()) != 0,
              "Error loading "s + filename.string() + ": "s + lua_tostring(lua, -1));
 }
 
