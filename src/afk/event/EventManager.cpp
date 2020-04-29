@@ -5,6 +5,8 @@
 #include "afk/io/Log.hpp"
 
 // Must be included after GLAD.
+#include <algorithm>
+
 #include <GLFW/glfw3.h>
 
 using Afk::EventManager;
@@ -31,6 +33,11 @@ auto EventManager::pump_events() -> void {
 
 auto EventManager::register_event(Event::Type type, Callback callback) -> void {
   this->callbacks[type].push_back(callback);
+}
+auto EventManager::deregister_event(Event::Type type, Callback callback) -> void {
+  auto &callbacks   = this->callbacks[type];
+  auto callback_pos = std::find(callbacks.begin(), callbacks.end(), callback);
+  callbacks.erase(callback_pos);
 }
 
 auto EventManager::setup_callbacks(GLFWwindow *window) -> void {

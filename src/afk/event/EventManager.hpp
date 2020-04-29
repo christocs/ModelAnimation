@@ -12,13 +12,14 @@ struct GLFWwindow;
 
 namespace Afk {
   class EventManager {
+  public:
     using Callback = std::function<void(Afk::Event)>;
 
-  public:
     EventManager();
 
     auto pump_events() -> void;
     auto register_event(Event::Type type, Callback callback) -> void;
+    auto deregister_event(Event::Type type, Callback callback) -> void;
     auto setup_callbacks(GLFWwindow *window) -> void;
 
     // FIXME: Move to keyboard manager.
