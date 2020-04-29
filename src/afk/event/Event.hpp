@@ -59,7 +59,7 @@ namespace Afk {
 
     template<typename T>
     auto get() -> T {
-      std::get<T>(this->data);
+      return std::get<T>(this->data);
     }
 
     Data data = {};
