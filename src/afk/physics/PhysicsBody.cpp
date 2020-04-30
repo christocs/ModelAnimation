@@ -1,10 +1,10 @@
-#include "afk/physics/Collision.hpp"
+#include "afk/physics/PhysicsBody.hpp"
 
 #include <iostream>
 
-using Afk::Collision;
+using Afk::PhysicsBody;
 
-Collision::Collision(Afk::PhysicsSystem* physics_system, Afk::Transform transform, float mass, bool gravity_enabled, Afk::RigidBodyType body_type, Afk::Box bounding_box) {
+PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem * physics_system, Afk::Transform transform, float mass, bool gravity_enabled, Afk::RigidBodyType body_type, Afk::Box bounding_box) {
   this->collision_shape = std::make_unique<rp3d::BoxShape>(rp3d::Vector3(
     bounding_box.x * transform.scale.x,
     bounding_box.y * transform.scale.y,
@@ -33,7 +33,7 @@ Collision::Collision(Afk::PhysicsSystem* physics_system, Afk::Transform transfor
   this->proxy_shape = this->body->addCollisionShape(this->collision_shape.get(), rp3d::Transform::identity(), mass);
 }
 
-Collision::Collision(Afk::PhysicsSystem* physics_system, Afk::Transform transform, float mass, bool gravity_enabled, Afk::RigidBodyType body_type, Afk::Sphere bounding_sphere) {
+PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem * physics_system, Afk::Transform transform, float mass, bool gravity_enabled, Afk::RigidBodyType body_type, Afk::Sphere bounding_sphere) {
   // Note: have to scale sphere equally on every axis (otherwise it wouldn't be a sphere), so scaling the average of each axis
   const auto scaleFactor = (transform.scale.x + transform.scale.y + transform.scale.z) / 3.0f;
   this->collision_shape = std::make_unique<rp3d::SphereShape>(bounding_sphere * scaleFactor);

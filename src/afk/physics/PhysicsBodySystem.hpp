@@ -1,21 +1,22 @@
 #pragma once
 
-#include "afk/physics/Collision.hpp"
-
-#include "glm/vec3.hpp"
-#include <entt/entt.hpp>
 #include <reactphysics3d.h>
 
+#include <entt/entt.hpp>
+
+#include "afk/physics/PhysicsBody.hpp"
+#include "glm/vec3.hpp"
+
 namespace Afk {
-  class Collision;
+  class PhysicsBody;
 
   using World = rp3d::DynamicsWorld;
 
-  class PhysicsSystem {
+  class PhysicsBodySystem {
     public:
-      PhysicsSystem();
+      PhysicsBodySystem();
 
-      PhysicsSystem(glm::vec3 gravity);
+      PhysicsBodySystem(glm::vec3 gravity);
 
       auto GetGravity();
 
@@ -28,6 +29,6 @@ namespace Afk {
 
       glm::vec3 gravity_;
 
-    friend class Collision;
+    friend class PhysicsBody;
   };
 };

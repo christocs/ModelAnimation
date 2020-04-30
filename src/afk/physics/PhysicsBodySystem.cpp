@@ -1,36 +1,36 @@
-#include "afk/physics/PhysicsSystem.hpp"
+#include "afk/physics/PhysicsBodySystem.hpp"
 
+#include "afk/physics/PhysicsBody.hpp"
 #include "afk/physics/Transform.hpp"
-#include "afk/physics/Collision.hpp"
 
-using Afk::PhysicsSystem;
+using Afk::PhysicsBodySystem;
 
-PhysicsSystem::PhysicsSystem() {
+PhysicsBodySystem::PhysicsBodySystem() {
   this->gravity_ = glm::vec3(0.0f, -9.81f, 0.0f);
   this->world = new rp3d::DynamicsWorld(rp3d::Vector3(this->gravity_.x, this->gravity_.y, this->gravity_.z));
 }
 
-PhysicsSystem::PhysicsSystem(glm::vec3 gravity) {
+PhysicsBodySystem::PhysicsBodySystem(glm::vec3 gravity) {
   this->gravity_ = gravity;
   this->world = new rp3d::DynamicsWorld(rp3d::Vector3(this->gravity_.x, this->gravity_.y, this->gravity_.z));
 }
 
-auto PhysicsSystem::GetGravity() {
+auto PhysicsBodySystem::GetGravity() {
   return this->gravity_;
 }
 
-auto PhysicsSystem::SetGravity(glm::vec3 gravity) {
+auto PhysicsBodySystem::SetGravity(glm::vec3 gravity) {
   this->gravity_ = gravity;
   auto rp3d_gravity = rp3d::Vector3(this->gravity_.x, this->gravity_.y, this->gravity_.z);
   this->world->setGravity(rp3d_gravity);
 }
 
-auto PhysicsSystem::update(entt::registry* registry, float dt) -> void {
+auto PhysicsBodySystem::update(entt::registry* registry, float dt) -> void {
   this->world->update(dt);
 
   // TODO: Scale shapes of rigid bodies on the fly
   // @see https://github.com/DanielChappuis/reactphysics3d/issues/103
-  registry->view<Afk::Transform, Afk::Collision>().each([](Afk::Transform& transform, Afk::Collision& collision) {
+  registry->view<Afk::Transform, Afk::PhysicsBody>().each([](Afk::Transform& transform, Afk::PhysicsBody & collision) {
       const auto rp3dPosition = collision.body->getTransform().getPosition();
       const auto rp3dOreientation = collision.body->getTransform().getOrientation();
 
