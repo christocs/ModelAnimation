@@ -1,3 +1,4 @@
 target_sources(${PROJECT_NAME} PRIVATE
-    ScriptComponent.cpp
+    ScriptsComponent.cpp
+    LuaScript.cpp
 )

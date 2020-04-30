@@ -1,23 +1,27 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <entt/entt.hpp>
 
 #include "afk/event/EventManager.hpp"
 #include "afk/renderer/Camera.hpp"
 #include "afk/renderer/Renderer.hpp"
+#include "afk/terrain/TerrainManager.hpp"
 #include "afk/ui/Ui.hpp"
+#include "afk/physics/PhysicsSystem.hpp"
 
 namespace Afk {
   class Engine {
   public:
     static constexpr const char *GAME_NAME = "ICT397";
 
-    Renderer renderer          = {};
-    Ui ui                      = {this->renderer.window};
-    Camera camera              = {};
-    EventManager event_manager = {};
+    Renderer renderer              = {};
+    EventManager event_manager     = {};
+    Ui ui                          = {};
+    Camera camera                  = {};
+    TerrainManager terrain_manager = {};
 
-    Engine();
+    Engine()               = default;
     Engine(Engine &&)      = delete;
     Engine(const Engine &) = delete;
     auto operator=(const Engine &) -> Engine & = delete;
@@ -25,6 +29,8 @@ namespace Afk {
 
     static auto get() -> Engine &;
 
+    auto exit() -> void;
+    auto initialize() -> void;
     auto render() -> void;
     auto update() -> void;
 
@@ -38,8 +44,13 @@ namespace Afk {
     auto move_mouse(Event e) -> void;
     auto handle_mouse() -> void;
 
-    bool is_running   = true;
-    int frame_count   = {};
-    float last_update = {};
+    bool is_initialized = false;
+    bool is_running     = true;
+    int frame_count     = {};
+    float last_update   = {};
+
+    entt::registry registry;
+
+    Afk::PhysicsSystem physics_system;
   };
 }

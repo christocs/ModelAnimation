@@ -1,17 +1,32 @@
 #include "afk/event/EventManager.hpp"
 
 #include "afk/Afk.hpp"
+#include "afk/debug/Assert.hpp"
 #include "afk/event/Event.hpp"
 #include "afk/io/Log.hpp"
 
 // Must be included after GLAD.
+#include <algorithm>
+
 #include <GLFW/glfw3.h>
 
 using Afk::EventManager;
 using Action = Afk::Event::Action;
 
-EventManager::EventManager() {
-  Afk::status << "Event manager subsystem initialized.\n";
+std::size_t EventManager::Callback::index = 0;
+EventManager::Callback::Callback(std::function<void(Afk::Event)> fn)
+  : func(fn), id(index++) {}
+auto EventManager::Callback::operator==(const EventManager::Callback &rhs) const -> bool {
+  return this->id == rhs.id;
+}
+auto EventManager::Callback::operator()(const Afk::Event &arg) const -> void {
+  this->func(arg);
+}
+
+auto EventManager::initialize(Renderer::Window window) -> void {
+  afk_assert(!this->is_initialized, "Event manager already initialized");
+  this->setup_callbacks(window);
+  this->is_initialized = true;
 }
 
 auto EventManager::pump_events() -> void {
@@ -32,13 +47,19 @@ auto EventManager::pump_events() -> void {
 auto EventManager::register_event(Event::Type type, Callback callback) -> void {
   this->callbacks[type].push_back(callback);
 }
+auto EventManager::deregister_event(Event::Type type, Callback callback) -> void {
+  auto &typ_callbacks = this->callbacks[type];
+  auto callback_pos = std::find(typ_callbacks.begin(), typ_callbacks.end(), callback);
+  typ_callbacks.erase(callback_pos);
+}
 
-auto EventManager::setup_callbacks(GLFWwindow *window) -> void {
-  glfwSetKeyCallback(window, key_callback);
-  glfwSetCharCallback(window, char_callback);
-  glfwSetCursorPosCallback(window, mouse_pos_callback);
-  glfwSetMouseButtonCallback(window, mouse_press_callback);
-  glfwSetScrollCallback(window, mouse_scroll_callback);
+auto EventManager::setup_callbacks(Renderer::Window window) -> void {
+  glfwSetMouseButtonCallback(window, EventManager::mouse_press_callback);
+  glfwSetScrollCallback(window, EventManager::mouse_scroll_callback);
+  glfwSetKeyCallback(window, EventManager::key_callback);
+  glfwSetCharCallback(window, EventManager::char_callback);
+  glfwSetCursorPosCallback(window, EventManager::mouse_pos_callback);
+  glfwSetErrorCallback(EventManager::error_callback);
 }
 
 auto EventManager::key_callback([[maybe_unused]] GLFWwindow *window, int key,
@@ -110,4 +131,8 @@ auto EventManager::mouse_scroll_callback([[maybe_unused]] GLFWwindow *window,
                                          double dx, double dy) -> void {
   Afk::Engine::get().event_manager.events.push(
       {Event::MouseScroll{dx, dy}, Event::Type::MouseScroll});
+}
+
+auto EventManager::error_callback([[maybe_unused]] int error, const char *msg) -> void {
+  std::cerr << "glfw error: " << msg << '\n';
 }

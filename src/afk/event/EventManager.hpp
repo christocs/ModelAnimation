@@ -7,19 +7,37 @@
 #include <vector>
 
 #include "afk/event/Event.hpp"
+#include "afk/renderer/Renderer.hpp"
 
 struct GLFWwindow;
 
 namespace Afk {
   class EventManager {
-    using Callback = std::function<void(Afk::Event)>;
-
   public:
-    EventManager();
+    class Callback {
+    public:
+      Callback(std::function<void(Afk::Event)>);
+      auto operator==(const Callback &rhs) const -> bool;
+      auto operator()(const Afk::Event &arg) const -> void;
 
+    private:
+      std::function<void(Afk::Event)> func;
+      std::size_t id;
+      static std::size_t index;
+    };
+    // using Callback = std::function<void(Afk::Event)>;
+
+    EventManager()                     = default;
+    EventManager(EventManager &&)      = delete;
+    EventManager(const EventManager &) = delete;
+    auto operator=(const EventManager &) -> EventManager & = delete;
+    auto operator=(EventManager &&) -> EventManager & = delete;
+
+    auto initialize(Renderer::Window window) -> void;
     auto pump_events() -> void;
     auto register_event(Event::Type type, Callback callback) -> void;
-    auto setup_callbacks(GLFWwindow *window) -> void;
+    auto deregister_event(Event::Type type, Callback callback) -> void;
+    auto setup_callbacks(Renderer::Window window) -> void;
 
     // FIXME: Move to keyboard manager.
     std::unordered_map<Event::Action, bool> key_state = {
@@ -37,7 +55,9 @@ namespace Afk {
     static auto mouse_press_callback(GLFWwindow *window, int button, int action,
                                      int mods) -> void;
     static auto mouse_scroll_callback(GLFWwindow *window, double dx, double dy) -> void;
+    static auto error_callback(int error, const char *msg) -> void;
 
+    bool is_initialized      = false;
     std::queue<Event> events = {};
 
     std::unordered_map<Event::Type, std::vector<Callback>> callbacks = {

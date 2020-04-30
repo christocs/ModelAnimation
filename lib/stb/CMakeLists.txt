@@ -1,5 +1,6 @@
-project(stb)
+cmake_minimum_required(VERSION 3.14)
 
+project(stb)
 add_library(stb)
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/stb_image.cpp
