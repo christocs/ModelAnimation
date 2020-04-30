@@ -8,30 +8,50 @@
 
 #include "afk/debug/Assert.hpp"
 #include "afk/io/Path.hpp"
+#include "afk/physics/Transform.hpp"
 
 // nomove
 #include "afk/script/LuaInclude.hpp"
 // nomove
 #include <LuaBridge/LuaBridge.h>
 
+#include "afk/component/ScriptsComponent.hpp"
+
 using Afk::Asset::Asset;
 using namespace std::string_literals;
 
-struct RawAsset {
-  using Values = std::vector<std::string>;
-  std::filesystem::path asset_path;
-  std::map<std::string, Values> kv_pairs;
-};
+auto load_script(lua_State *lua, LuaRef tbl) -> Afk::ScriptsComponent {
+  auto script = Afk::ScriptsComponent{};
+  for (int i = 0; i < tbl.length; i++) {
+    script.add_script(tbl[i], lua, &Afk::Engine::get().event_manager);
+  }
+  return script;
+}
 
 auto load_object_asset(lua_State *lua) -> Asset {
   auto obj        = Asset::Object{};
-  obj.ent         = Afk::Engine::get().registry.create();
+  auto &reg       = Afk::Engine::get().registry;
+  obj.ent         = reg.create();
   auto components = luabridge::getGlobal(lua, "components");
   afk_assert(components.isTable(), "components must be a table");
-  for (int i = 0; i < components.length(); i++) {
-    auto str = components[i].cast<std::string>();
-    if (str == "script") {
-    }
+  auto tf = components["transform"];
+  if (!tf.isNil()) {
+    auto transform          = Afk::Transform{};
+    transform.translation.x = tf["x"];
+    transform.translation.y = tf["y"];
+    transform.translation.z = tf["z"];
+    reg.assign<Afk::Transform>(obj.ent, transform);
+  } else {
+    auto transform = Afk::Transform{};
+    reg.assign<Afk::Transform>(obj.ent, transform);
+  }
+  auto script = components["script"];
+  if (!script.isNil()) {
+    reg.assign<Afk::ScriptsComponent>(obj.ent, load_script(lua, script));
+  }
+  auto phys = components["phys"];
+  if (!phys.isNil()) {
+    // reg.assign<Afk::ScriptsComponent>(obj.ent, load_script(lua, script));
   }
 }
 auto load_terrain_asset(lua_State *lua) -> Asset {}
@@ -48,9 +68,21 @@ auto Afk::Asset::game_asset_factory(const std::filesystem::path &path) -> Asset 
   asset_namespace.addVariable("object", const_cast<int *>(&OBJECT), false);
   asset_namespace.addVariable("terrain", const_cast<int *>(&TERRAIN), false);
   asset_namespace.endNamespace();
-  auto abs_path = Afk::get_absolute_path(path);
-  afk_assert(luaL_dofile(lua, abs_path.c_str()) != 0,
-             "Error loading "s + path.string() + ": "s + lua_tostring(lua, -1));
+  auto rigidbody_enum =
+      luabridge::getGlobalNamespace(lua).beginNamespace("rigidbody");
+  constexpr auto DYNAMIC   = static_cast<int>(RigidBodyType::DYNAMIC);
+  constexpr auto KINEMATIC = static_cast<int>(RigidBodyType::KINEMATIC);
+  constexpr auto STATIC    = static_cast<int>(RigidBodyType::STATIC);
+  asset_namespace.addVariable("dynamic", const_cast<int *>(&DYNAMIC), false);
+  asset_namespace.addVariable("kinematic", const_cast<int *>(&KINEMATIC), false);
+  asset_namespace.addVariable("static", const_cast<int *>(&STATIC), false);
+  asset_namespace.endNamespace();
+  auto abs_path   = Afk::get_absolute_path(path);
+  auto error_code = luaL_dofile(lua, abs_path.c_str());
+  if (error_code != 0) {
+    throw std::runtime_error{"Error loading "s + path.string() + ": "s +
+                             lua_tostring(lua, -1)};
+  }
   const int asset_val   = luabridge::getGlobal(lua, "type");
   const auto asset_type = static_cast<AssetType>(asset_val);
   Asset a;
