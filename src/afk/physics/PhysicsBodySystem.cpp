@@ -35,8 +35,6 @@ auto PhysicsBodySystem::update(entt::registry* registry, float dt) -> void {
       const auto rp3dOreientation = collision.body->getTransform().getOrientation();
 
       transform.translation = glm::vec3{rp3dPosition.x, rp3dPosition.y, rp3dPosition.z};
-
-      // TODO: Fix rotation flipping the city upside down
-      //transform.rotation = glm::quat{rp3dOreientation.x, rp3dOreientation.y, rp3dOreientation.z, rp3dOreientation.w};
+      transform.rotation = glm::quat{rp3dOreientation.w, rp3dOreientation.x, rp3dOreientation.y, rp3dOreientation.z};
   });
 }
