@@ -37,10 +37,14 @@ auto Engine::initialize() -> void {
   this->terrain_manager.initialize();
 
   // FIXME: Move to key manager
-  this->event_manager.register_event(
-      Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
-  this->event_manager.register_event(
-      Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
+  this->event_manager.register_event(Event::Type::MouseMove,
+                                     Afk::EventManager::Callback{[this](Event event) {
+                                       this->move_mouse(event);
+                                     }});
+  this->event_manager.register_event(Event::Type::KeyDown,
+                                     Afk::EventManager::Callback{[this](Event event) {
+                                       this->move_keyboard(event);
+                                     }});
 
   this->renderer.set_wireframe(true);
 
