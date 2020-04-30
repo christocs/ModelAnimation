@@ -25,12 +25,14 @@ namespace Afk {
   public:
     PhysicsBody() = delete;
 
-    PhysicsBody(Afk::PhysicsBodySystem *physics_system,
-                Afk::Transform transform, float mass, bool gravity_enabled,
+    PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
+                float bounciness, float linear_dampening,
+                float angular_dampening, float mass, bool gravity_enabled,
                 Afk::RigidBodyType body_type, Afk::Box bounding_box);
 
-    PhysicsBody(Afk::PhysicsBodySystem *physics_system,
-                Afk::Transform transform, float mass, bool gravity_enabled,
+    PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
+                float bounciness, float linear_dampening,
+                float angular_dampening, float mass, bool gravity_enabled,
                 Afk::RigidBodyType body_type, Afk::Sphere bounding_sphere);
 
     // todo add rotate method

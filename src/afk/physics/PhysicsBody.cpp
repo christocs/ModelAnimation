@@ -2,10 +2,13 @@
 
 #include <iostream>
 
+#include "afk/debug/Assert.hpp"
+
 using Afk::PhysicsBody;
 
-PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system,
-                         Afk::Transform transform, float mass, bool gravity_enabled,
+PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
+                         float bounciness, float linear_dampening,
+                         float angular_dampening, float mass, bool gravity_enabled,
                          Afk::RigidBodyType body_type, Afk::Box bounding_box) {
   this->collision_shape = std::make_unique<rp3d::BoxShape>(rp3d::Vector3(
       bounding_box.x * transform.scale.x, bounding_box.y * transform.scale.y,
@@ -31,12 +34,22 @@ PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system,
       break;
   }
 
+  afk_assert(linear_dampening >= 0, "Linear dampening cannot be negative");
+  this->body->setLinearDamping(static_cast<rp3d::decimal>(linear_dampening));
+  afk_assert(angular_dampening >= 0, "Angular dampening cannot be negative");
+  this->body->setAngularDamping(static_cast<rp3d::decimal>(angular_dampening));
+
+  afk_assert(bounciness >= 0 && bounciness <= 1,
+             "Bounciness must be between 0 and 1");
+  this->body->getMaterial().setBounciness(static_cast<rp3d::decimal>(bounciness));
+
   this->proxy_shape = this->body->addCollisionShape(this->collision_shape.get(),
                                                     rp3d::Transform::identity(), mass);
 }
 
-PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system,
-                         Afk::Transform transform, float mass, bool gravity_enabled,
+PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
+                         float bounciness, float linear_dampening,
+                         float angular_dampening, float mass, bool gravity_enabled,
                          Afk::RigidBodyType body_type, Afk::Sphere bounding_sphere) {
   // Note: have to scale sphere equally on every axis (otherwise it wouldn't be a sphere), so scaling the average of each axis
   const auto scaleFactor =
@@ -63,8 +76,18 @@ PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system,
       break;
   }
 
+  afk_assert(linear_dampening >= 0, "Linear dampening cannot be negative");
+  this->body->setLinearDamping(static_cast<rp3d::decimal>(linear_dampening));
+  afk_assert(angular_dampening >= 0, "Angular dampening cannot be negative");
+  this->body->setAngularDamping(static_cast<rp3d::decimal>(angular_dampening));
+
+  afk_assert(bounciness >= 0 && bounciness <= 1,
+             "Bounciness must be between 0 and 1");
+  this->body->getMaterial().setBounciness(static_cast<rp3d::decimal>(bounciness));
+
   this->proxy_shape = this->body->addCollisionShape(this->collision_shape.get(),
                                                     rp3d::Transform::identity(), mass);
+  this->apply_force({0, 0, 300});
 }
 
 void PhysicsBody::translate(glm::vec3 translate) {
