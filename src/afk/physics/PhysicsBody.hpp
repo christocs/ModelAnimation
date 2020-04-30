@@ -22,17 +22,32 @@ namespace Afk {
   using CollisionShape = rp3d::CollisionShape;
 
   class PhysicsBody {
-    public:
-      PhysicsBody() = delete;
+  public:
+    PhysicsBody() = delete;
 
-      PhysicsBody(Afk::PhysicsBodySystem * physics_system, Afk::Transform transform, float mass, bool gravity_enabled, Afk::RigidBodyType body_type, Afk::Box bounding_box);
+    PhysicsBody(Afk::PhysicsBodySystem *physics_system,
+                Afk::Transform transform, float mass, bool gravity_enabled,
+                Afk::RigidBodyType body_type, Afk::Box bounding_box);
 
-      PhysicsBody(Afk::PhysicsBodySystem * physics_system, Afk::Transform transform, float mass, bool gravity_enabled, Afk::RigidBodyType body_type, Afk::Sphere bounding_sphere);
+    PhysicsBody(Afk::PhysicsBodySystem *physics_system,
+                Afk::Transform transform, float mass, bool gravity_enabled,
+                Afk::RigidBodyType body_type, Afk::Sphere bounding_sphere);
 
-    private:
-      RigidBody* body;
-      ProxyShape* proxy_shape;
-      std::unique_ptr<CollisionShape> collision_shape;
+    // todo add rotate method
+
+    // translate the position of the physics body
+    void translate(glm::vec3 translate);
+
+    // apply force to the centre of mass of the body for the next physics update
+    void apply_force(glm::vec3 force);
+
+    // apply torque for the next physics update
+    void apply_torque(glm::vec3 force);
+
+  private:
+    RigidBody *body;
+    ProxyShape *proxy_shape;
+    std::unique_ptr<CollisionShape> collision_shape;
 
     friend class PhysicsBodySystem;
   };
