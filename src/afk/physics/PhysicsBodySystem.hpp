@@ -18,9 +18,9 @@ namespace Afk {
 
       PhysicsBodySystem(glm::vec3 gravity);
 
-      auto GetGravity();
+      auto get_gravity();
 
-      auto SetGravity(glm::vec3 gravity);
+      auto set_gravity(glm::vec3 gravity);
 
       auto update(entt::registry* registry, float dt) -> void;
 

@@ -14,12 +14,12 @@ PhysicsBodySystem::PhysicsBodySystem(glm::vec3 gravity) {
       new rp3d::DynamicsWorld(rp3d::Vector3(gravity.x, gravity.y, gravity.z));
 }
 
-auto PhysicsBodySystem::GetGravity() {
+auto PhysicsBodySystem::get_gravity() {
   return glm::vec3{this->world->getGravity().x, this->world->getGravity().y,
                    this->world->getGravity().z};
 }
 
-auto PhysicsBodySystem::SetGravity(glm::vec3 gravity) {
+auto PhysicsBodySystem::set_gravity(glm::vec3 gravity) {
   // TODO: remove temporary variable
   auto gravity_rp3d = rp3d::Vector3{gravity.x, gravity.y, gravity.z};
   this->world->setGravity(gravity_rp3d);
