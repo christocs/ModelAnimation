@@ -16,7 +16,7 @@ namespace Afk {
     public:
       PhysicsBodySystem();
 
-      PhysicsBodySystem(glm::vec3 gravity);
+      explicit PhysicsBodySystem(glm::vec3 gravity);
 
       auto get_gravity();
 
