@@ -10,13 +10,12 @@
 
 #include "afk/debug/Assert.hpp"
 #include "afk/io/Log.hpp"
-
 #include "afk/io/ModelSource.hpp"
 #include "afk/physics/Collision.hpp"
-#include "afk/renderer/ModelRenderSystem.hpp"
+#include "afk/physics/RigidBodyType.hpp"
 #include "afk/physics/shape/Box.hpp"
 #include "afk/physics/shape/Sphere.hpp"
-#include "afk/physics/RigidBodyType.hpp"
+#include "afk/renderer/ModelRenderSystem.hpp"
 
 using namespace std::string_literals;
 
@@ -38,10 +37,14 @@ auto Engine::initialize() -> void {
   this->terrain_manager.initialize();
 
   // FIXME: Move to key manager
-  this->event_manager.register_event(
-      Event::Type::MouseMove, [this](Event event) { this->move_mouse(event); });
-  this->event_manager.register_event(
-      Event::Type::KeyDown, [this](Event event) { this->move_keyboard(event); });
+  this->event_manager.register_event(Event::Type::MouseMove,
+                                     Afk::EventManager::Callback{[this](Event event) {
+                                       this->move_mouse(event);
+                                     }});
+  this->event_manager.register_event(Event::Type::KeyDown,
+                                     Afk::EventManager::Callback{[this](Event event) {
+                                       this->move_keyboard(event);
+                                     }});
 
   this->renderer.set_wireframe(true);
 
@@ -51,14 +54,19 @@ auto Engine::initialize() -> void {
   const auto city_entity     = registry.create();
   registry.assign<Afk::Transform>(city_entity, city_transform);
   registry.assign<Afk::ModelSource>(city_entity, "res/model/city/city.fbx");
-  registry.assign<Afk::Collision>(city_entity, &this->physics_system, city_transform, 0, false, Afk::RigidBodyType::STATIC, Afk::Box{100000000.0f, 0.1f, 100000000.0f});
+  registry.assign<Afk::Collision>(city_entity, &this->physics_system, city_transform,
+                                  0, false, Afk::RigidBodyType::STATIC,
+                                  Afk::Box{100000000.0f, 0.1f, 100000000.0f});
 
   auto ball_transform        = Transform{};
   ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
   auto ball_entity           = registry.create();
   registry.assign<Afk::Transform>(ball_entity, ball_transform);
-  registry.assign<Afk::Collision>(ball_entity, &this->physics_system, ball_transform, 30.0f, true, Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
-  registry.assign<Afk::ModelSource>(ball_entity, "res/model/basketball/basketball.fbx");
+  registry.assign<Afk::Collision>(ball_entity, &this->physics_system,
+                                  ball_transform, 30.0f, true,
+                                  Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
+  registry.assign<Afk::ModelSource>(ball_entity,
+                                    "res/model/basketball/basketball.fbx");
 
   this->is_initialized = true;
 }
