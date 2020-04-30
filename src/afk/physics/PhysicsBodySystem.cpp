@@ -34,11 +34,11 @@ auto PhysicsBodySystem::update(entt::registry *registry, float dt) -> void {
   registry->view<Afk::Transform, Afk::PhysicsBody>().each(
       [](Afk::Transform &transform, Afk::PhysicsBody &collision) {
         const auto rp3d_position = collision.body->getTransform().getPosition();
-        const auto rp3d_oreientation = collision.body->getTransform().getOrientation();
+        const auto rp3d_orientation = collision.body->getTransform().getOrientation();
 
         transform.translation =
             glm::vec3{rp3d_position.x, rp3d_position.y, rp3d_position.z};
-        transform.rotation = glm::quat{rp3d_oreientation.w, rp3d_oreientation.x,
-                                       rp3d_oreientation.y, rp3d_oreientation.z};
+        transform.rotation = glm::quat{rp3d_orientation.w, rp3d_orientation.x,
+                                       rp3d_orientation.y, rp3d_orientation.z};
       });
 }
