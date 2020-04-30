@@ -5,12 +5,9 @@
 
 #include <imgui/imgui.h>
 
-namespace Afk {
-  template<typename V, typename... T>
-  constexpr auto array_of(T &&... t) -> std::array<V, sizeof...(T)> {
-    return {{std::forward<T>(t)...}};
-  }
+#include "afk/utility/ArrayOf.hpp"
 
+namespace Afk {
   // clang-format off
   constexpr auto unicode_ranges = array_of<ImWchar>(
     static_cast<ImWchar>(0x0020), static_cast<ImWchar>(0x007F), // Basic Latin

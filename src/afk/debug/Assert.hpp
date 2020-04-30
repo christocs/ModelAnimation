@@ -2,7 +2,10 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <stdexcept>
 #include <string>
+
+#include "afk/io/Log.hpp"
 
 #if defined(__GNUC__) || defined(__clang__)
   #define AFK_FUNCTION __PRETTY_FUNCTION__
@@ -43,16 +46,20 @@ inline auto Afk::assertion(bool condition, const std::string &msg,
                            const std::string &expression, const std::string &file_path,
                            size_t line_num, const std::string &function_name) -> void {
   if (!condition) {
-    std::cerr << "\nAssertion '" + expression + "' failed: " + msg + "\n  in " +
-                     function_name + "\n  at " + file_path + ":" +
-                     std::to_string(line_num) + "\n  ";
-    std::abort();
+    const auto error = "\nAssertion '" + expression + "' failed: " + msg +
+                       "\n  in " + function_name + "\n  at " + file_path + ":" +
+                       std::to_string(line_num) + "\n  ";
+    Afk::Io::log << msg << '\n';
+    throw std::runtime_error{error};
   }
 }
 
 inline auto Afk::unreachable(const std::string &file_path, size_t line_num,
                              const std::string &function_name) -> void {
-  std::cerr << "\nUnreachable statement hit\n  in " + function_name + "\n  at " +
-                   file_path + ":" + std::to_string(line_num) + "\n  ";
-  std::abort();
+
+  const auto error = "\nUnreachable statement hit\n  in " + function_name +
+                     "\n  at " + file_path + ":" + std::to_string(line_num) + "\n  ";
+
+  Afk::Io::log << error << '\n';
+  throw std::runtime_error{error};
 }

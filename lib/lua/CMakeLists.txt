@@ -1,7 +1,7 @@
+cmake_minimum_required(VERSION 3.14)
+
 project(lua)
-
 add_library(lua STATIC)
-
 target_sources(lua PRIVATE
     lua/lauxlib.c
     lua/liolib.c

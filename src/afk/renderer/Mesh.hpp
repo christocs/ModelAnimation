@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -20,7 +21,7 @@ namespace Afk {
 
   struct Mesh {
     using Vertices = std::vector<Vertex>;
-    using Index    = unsigned;
+    using Index    = uint32_t;
     using Indices  = std::vector<Index>;
     using Textures = std::vector<Texture>;
 
