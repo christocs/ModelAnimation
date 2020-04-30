@@ -27,8 +27,6 @@ namespace Afk {
     private:
       World* world;
 
-      glm::vec3 gravity_;
-
     friend class PhysicsBody;
   };
 };
