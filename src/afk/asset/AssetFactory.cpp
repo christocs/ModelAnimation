@@ -22,7 +22,7 @@ using namespace std::string_literals;
 
 auto load_script(lua_State *lua, LuaRef tbl) -> Afk::ScriptsComponent {
   auto script = Afk::ScriptsComponent{};
-  for (int i = 0; i < tbl.length; i++) {
+  for (int i = 0; i < tbl.length(); i++) {
     script.add_script(tbl[i], lua, &Afk::Engine::get().event_manager);
   }
   return script;
