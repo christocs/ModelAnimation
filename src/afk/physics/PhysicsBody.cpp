@@ -87,7 +87,6 @@ PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform 
 
   this->proxy_shape = this->body->addCollisionShape(this->collision_shape.get(),
                                                     rp3d::Transform::identity(), mass);
-  this->apply_force({0, 0, 300});
 }
 
 void PhysicsBody::translate(glm::vec3 translate) {
