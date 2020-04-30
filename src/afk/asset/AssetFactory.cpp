@@ -24,11 +24,15 @@ struct RawAsset {
 };
 
 auto load_object_asset(lua_State *lua) -> Asset {
-  auto obj = Asset::Object{};
-  // obj.ent = < CREATE ENTITY WITH ECS HERE >
+  auto obj        = Asset::Object{};
+  obj.ent         = Afk::Engine::get().registry.create();
   auto components = luabridge::getGlobal(lua, "components");
   afk_assert(components.isTable(), "components must be a table");
-  // todo: write more when ECS is here.
+  for (int i = 0; i < components.length(); i++) {
+    auto str = components[i].cast<std::string>();
+    if (str == "script") {
+    }
+  }
 }
 auto load_terrain_asset(lua_State *lua) -> Asset {}
 
