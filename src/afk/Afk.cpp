@@ -9,6 +9,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "afk/debug/Assert.hpp"
+#include "afk/ecs/GameObject.hpp"
 #include "afk/io/Log.hpp"
 #include "afk/io/ModelSource.hpp"
 #include "afk/physics/PhysicsBody.hpp"
@@ -101,6 +102,7 @@ auto Engine::exit() -> void {
 }
 
 // FIXME: Move to key handler.
+// TODO: Assign these keys in Lua
 auto Engine::move_keyboard(Event event) -> void {
   const auto key = std::get<Event::Key>(event.data).key;
 
