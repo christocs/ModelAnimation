@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <utility>
 
 #include "afk/debug/Assert.hpp"
 #include "afk/ecs/GameObject.hpp"
@@ -40,11 +41,11 @@ auto Engine::initialize() -> void {
   // FIXME: Move to key manager
   this->event_manager.register_event(Event::Type::MouseMove,
                                      Afk::EventManager::Callback{[this](Event event) {
-                                       this->move_mouse(event);
+                                       this->move_mouse(std::move(event));
                                      }});
   this->event_manager.register_event(Event::Type::KeyDown,
                                      Afk::EventManager::Callback{[this](Event event) {
-                                       this->move_keyboard(event);
+                                       this->move_keyboard(std::move(event));
                                      }});
 
   auto city_transform        = Transform{};
