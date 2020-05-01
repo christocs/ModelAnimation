@@ -24,7 +24,7 @@ using Afk::Asset::Asset;
 using namespace std::string_literals;
 enum class Shape { Box, Sphere };
 
-auto load_script(lua_State *lua, LuaRef tbl) -> Afk::ScriptsComponent {
+static auto load_script(lua_State *lua, LuaRef tbl) -> Afk::ScriptsComponent {
   auto script = Afk::ScriptsComponent{};
   for (int i = 1; i <= tbl.length(); i++) {
     script.add_script(tbl[i], lua, &Afk::Engine::get().event_manager);
@@ -32,7 +32,7 @@ auto load_script(lua_State *lua, LuaRef tbl) -> Afk::ScriptsComponent {
   return script;
 }
 
-auto load_object_asset(lua_State *lua) -> Asset {
+static auto load_object_asset(lua_State *lua) -> Asset {
   auto obj        = Asset::Object{};
   auto &reg       = Afk::Engine::get().registry;
   obj.ent         = reg.create();
@@ -62,7 +62,7 @@ auto load_object_asset(lua_State *lua) -> Asset {
     auto shape      = LuaRef{phys["shape"]};
     auto shape_type = shape["type"].cast<Shape>();
     switch (shape_type) {
-      case Shape::Box:
+      case Shape::Box: {
         auto box = Afk::Box{shape["x"].cast<float>(), shape["y"].cast<float>(),
                             shape["z"].cast<float>()};
         reg.assign<Afk::PhysicsBody>(
@@ -75,7 +75,9 @@ auto load_object_asset(lua_State *lua) -> Asset {
                              phys["mass"].cast<float>(), phys["gravity"].cast<bool>(),
                              phys["body_type"].cast<Afk::RigidBodyType>(), box});
         break;
-      case Shape::Sphere:
+      }
+      case Shape::Sphere: {
+
         auto sphere = Afk::Sphere{shape["r"].cast<float>()};
         reg.assign<Afk::PhysicsBody>(
             obj.ent,
@@ -87,6 +89,7 @@ auto load_object_asset(lua_State *lua) -> Asset {
                              phys["mass"].cast<float>(), phys["gravity"].cast<bool>(),
                              phys["body_type"].cast<Afk::RigidBodyType>(), sphere});
         break;
+      }
     }
   } // phys
   auto mdl = LuaRef{components["model"]};
@@ -94,8 +97,13 @@ auto load_object_asset(lua_State *lua) -> Asset {
     reg.assign<Afk::ModelSource>(obj.ent,
                                  Afk::ModelSource{mdl["path"].cast<std::string>()});
   }
+
+  return Afk::Asset::Asset{Afk::Asset::Asset::AssetData{obj}, Afk::Asset::AssetType::Object};
 }
-auto load_terrain_asset(lua_State *lua) -> Asset {}
+static auto load_terrain_asset([[maybe_unused]] lua_State *lua) -> Asset {
+  // todo: implement
+  throw std::runtime_error{"unimplemented"};
+}
 
 auto Afk::Asset::game_asset_factory(const std::filesystem::path &path) -> Asset {
   // For the purpose of simplicity and not having to write a new parser, we will simply
@@ -133,8 +141,9 @@ auto Afk::Asset::game_asset_factory(const std::filesystem::path &path) -> Asset 
   const auto asset_type = static_cast<AssetType>(asset_val);
   Asset a;
   switch (asset_type) {
-    case AssetType::Object: a = load_object_asset(lua);
-    case AssetType::Terrain: a = load_terrain_asset(lua);
+    case AssetType::Object: a = load_object_asset(lua); break;
+    case AssetType::Terrain: a = load_terrain_asset(lua); break;
   }
   lua_close(lua);
+  return a;
 }

@@ -11,7 +11,8 @@ namespace Afk::Asset {
       entt::entity ent;
     };
     struct Terrain {};
-    std::variant<Object, Terrain> data;
+    typedef std::variant<std::monostate, Asset::Object, Asset::Terrain> AssetData;
+    AssetData data;
     AssetType asset_type;
   };
 }
