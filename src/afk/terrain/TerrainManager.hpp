@@ -11,7 +11,7 @@ namespace Afk {
     HeightMap height_map = {};
     Mesh mesh            = {};
 
-    TerrainManager(std::string filename);
+    TerrainManager(const std::string& filename);
     TerrainManager() = delete;
 
     auto initialize() -> void;

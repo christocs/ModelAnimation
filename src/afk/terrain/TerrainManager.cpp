@@ -24,8 +24,8 @@ using Afk::TerrainManager;
 using Afk::Texture;
 using Index = Mesh::Index;
 
-TerrainManager::TerrainManager(std::string filename) {
-  this->filename_ = std::move(filename);
+TerrainManager::TerrainManager(const std::string& filename) {
+  this->filename_ = filename;
 }
 
 auto TerrainManager::generate_height_map(int width, int length, float roughness,
