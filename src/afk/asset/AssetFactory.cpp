@@ -86,7 +86,7 @@ static auto load_object_asset(lua_State *lua) -> Asset {
   auto mdl = LuaRef{components["model"]};
   if (!mdl.isNil()) {
     reg.assign<Afk::ModelSource>(
-        obj.ent, Afk::ModelSource{obj.ent, mdl["path"].cast<std::string>()});
+        obj.ent, Afk::ModelSource{obj.ent, mdl["path"].cast<std::string>(), "shader/default.prog"});
   }
   auto script = LuaRef{components["script"]};
   if (!script.isNil()) {

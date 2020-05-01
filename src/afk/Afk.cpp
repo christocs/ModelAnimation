@@ -38,7 +38,7 @@ auto Engine::initialize() -> void {
 
   this->renderer.initialize();
   this->event_manager.initialize(this->renderer.window);
-  this->renderer.set_wireframe(true);
+//  this->renderer.set_wireframe(true);
 
   this->ui.initialize(this->renderer.window);
   this->lua = luaL_newstate();
@@ -64,7 +64,7 @@ auto Engine::initialize() -> void {
   auto terrain_entity           = registry.create();
   auto terrain_transform        = Transform{terrain_entity};
   terrain_transform.translation = glm::vec3{0.0f, -10.0f, 0.0f};
-  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity, terrain_manager.get_model().file_path);
+  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity, terrain_manager.get_model().file_path, "shader/terrain.prog");
   registry.assign<Afk::Transform>(terrain_entity, terrain_entity);
   registry.assign<Afk::PhysicsBody>(terrain_entity, terrain_entity, &this->physics_body_system,
                                     terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f,
@@ -144,7 +144,7 @@ auto Engine::update_camera() -> void {
 auto Engine::render() -> void {
   // FIXME: Support multiple shader programs properly
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  Afk::queue_models(&this->registry, &this->renderer, "shader/default.prog");
+  Afk::queue_models(&this->registry, &this->renderer);
 
   this->renderer.clear_screen({135.0f, 206.0f, 235.0f, 1.0f});
   this->ui.prepare();
