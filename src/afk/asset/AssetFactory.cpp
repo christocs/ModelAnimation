@@ -110,6 +110,9 @@ auto Afk::Asset::game_asset_factory(const std::filesystem::path &path) -> Asset 
   // use a stripped down lua state (no opening libraries)
   // to load our game assets.
   lua_State *lua = luaL_newstate();
+  // required for luabridge if not using openlibs
+  luaL_requiref(lua, "_G", &luaopen_base, 1);
+  lua_pop(lua, 1);
   auto asset_namespace =
       luabridge::getGlobalNamespace(lua).beginNamespace("asset");
   constexpr auto OBJECT  = static_cast<int>(AssetType::Object);
@@ -129,9 +132,9 @@ auto Afk::Asset::game_asset_factory(const std::filesystem::path &path) -> Asset 
   auto shape_enum = luabridge::getGlobalNamespace(lua).beginNamespace("shape");
   constexpr auto BOX    = static_cast<int>(Shape::Box);
   constexpr auto SPHERE = static_cast<int>(Shape::Sphere);
-  asset_namespace.addVariable("box", const_cast<int *>(&BOX), false);
-  asset_namespace.addVariable("sphere", const_cast<int *>(&SPHERE), false);
-  asset_namespace.endNamespace();
+  shape_enum.addVariable("box", const_cast<int *>(&BOX), false);
+  shape_enum.addVariable("sphere", const_cast<int *>(&SPHERE), false);
+  shape_enum.endNamespace();
 
   auto abs_path   = Afk::get_absolute_path(path);
   auto error_code = luaL_dofile(lua, abs_path.c_str());
