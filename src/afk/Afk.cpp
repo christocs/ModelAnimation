@@ -43,6 +43,8 @@ auto Engine::initialize() -> void {
   this->lua = luaL_newstate();
   luaL_openlibs(this->lua);
   Afk::LuaScript::setup_lua_state(this->lua);
+  this->terrain_manager.generate_terrain(100, 100, 0.05f, 7.5f);
+  this->renderer.load_model(this->terrain_manager.get_model());
 
   // FIXME: Move to key manager
   this->event_manager.register_event(Event::Type::MouseMove,
@@ -147,7 +149,7 @@ auto Engine::update_camera() -> void {
 auto Engine::render() -> void {
   // FIXME: Support multiple shader programs properly
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-
+  this->renderer.queue_draw({"gen/terrain", "shader/default.prog", Transform{}});
   Afk::queue_models(&this->registry, &this->renderer, "shader/default.prog");
 
   this->renderer.clear_screen({135.0f, 206.0f, 235.0f, 1.0f});

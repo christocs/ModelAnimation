@@ -1,17 +1,19 @@
 #include "afk/physics/PhysicsBodySystem.hpp"
 
+#include <memory>
+
 #include "afk/physics/PhysicsBody.hpp"
 #include "afk/physics/Transform.hpp"
 
 using Afk::PhysicsBodySystem;
 
 PhysicsBodySystem::PhysicsBodySystem() {
-  this->world = new rp3d::DynamicsWorld(rp3d::Vector3(0.0f, -9.81f, 0.0f));
+  this->world = std::make_unique<rp3d::DynamicsWorld>(rp3d::Vector3{0.0f, -9.81f, 0.0f});
 }
 
 PhysicsBodySystem::PhysicsBodySystem(glm::vec3 gravity) {
-  this->world =
-      new rp3d::DynamicsWorld(rp3d::Vector3(gravity.x, gravity.y, gravity.z));
+  this->world = std::make_unique<rp3d::DynamicsWorld>(
+      rp3d::Vector3{gravity.x, gravity.y, gravity.z});
 }
 
 auto PhysicsBodySystem::get_gravity() {

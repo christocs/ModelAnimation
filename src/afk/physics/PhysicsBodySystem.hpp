@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <reactphysics3d.h>
 
 #include <entt/entt.hpp>
@@ -10,22 +11,22 @@
 namespace Afk {
   class PhysicsBody;
 
-  using World = rp3d::DynamicsWorld;
+  using World = std::unique_ptr<rp3d::DynamicsWorld>;
 
   class PhysicsBodySystem {
-    public:
-      PhysicsBodySystem();
+  public:
+    PhysicsBodySystem();
 
-      explicit PhysicsBodySystem(glm::vec3 gravity);
+    explicit PhysicsBodySystem(glm::vec3 gravity);
 
-      auto get_gravity();
+    auto get_gravity();
 
-      auto set_gravity(glm::vec3 gravity);
+    auto set_gravity(glm::vec3 gravity);
 
-      auto update(entt::registry* registry, float dt) -> void;
+    auto update(entt::registry *registry, float dt) -> void;
 
-    private:
-      World* world;
+  private:
+    World world = nullptr;
 
     friend class PhysicsBody;
   };
