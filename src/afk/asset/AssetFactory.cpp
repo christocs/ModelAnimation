@@ -49,10 +49,6 @@ static auto load_object_asset(lua_State *lua) -> Asset {
     auto transform = Afk::Transform{};
     reg.assign<Afk::Transform>(obj.ent, transform);
   }
-  auto script = LuaRef{components["script"]};
-  if (!script.isNil()) {
-    reg.assign<Afk::ScriptsComponent>(obj.ent, load_script(lua, script));
-  }
   auto phys = LuaRef{components["phys"]};
   if (!phys.isNil()) {
 
@@ -96,6 +92,10 @@ static auto load_object_asset(lua_State *lua) -> Asset {
   if (!mdl.isNil()) {
     reg.assign<Afk::ModelSource>(obj.ent,
                                  Afk::ModelSource{mdl["path"].cast<std::string>()});
+  }
+  auto script = LuaRef{components["script"]};
+  if (!script.isNil()) {
+    reg.assign<Afk::ScriptsComponent>(obj.ent, load_script(lua, script));
   }
 
   return Afk::Asset::Asset{Afk::Asset::Asset::AssetData{obj}, Afk::Asset::AssetType::Object};
