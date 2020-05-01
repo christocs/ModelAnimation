@@ -35,11 +35,9 @@ auto LuaScript::setup_lua_state(lua_State *lua) -> void {
       .addData("key", &Afk::Event::Key::key, false)
       .addData("key_code", &Afk::Event::Key::scancode, false)
       .endClass()
-      .beginClass<Afk::Event::MouseButton>("mouse_button")
-      .addData("alt", &Afk::Event::MouseButton::alt, false)
-      .addData("control", &Afk::Event::MouseButton::control, false)
-      .addData("shift", &Afk::Event::MouseButton::shift, false)
-      .addData("button", &Afk::Event::MouseButton::button, false)
+      .beginClass<Afk::Event::MouseMove>("mouse_move")
+      .addData("x", &Afk::Event::MouseMove::x, false)
+      .addData("y", &Afk::Event::MouseMove::y, false)
       .endClass()
       .beginClass<Afk::Event::MouseButton>("mouse_button")
       .addData("alt", &Afk::Event::MouseButton::alt, false)
@@ -66,7 +64,7 @@ auto LuaScript::setup_lua_state(lua_State *lua) -> void {
                                        const_cast<int *>(&event.type), false);
   }
   afk_event_class.addFunction("to_key", &Afk::Event::get<Afk::Event::Key>);
-  afk_event_class.addFunction("to_mouse_button", &Afk::Event::get<Afk::Event::MouseButton>);
+  afk_event_class.addFunction("to_mouse_move", &Afk::Event::get<Afk::Event::MouseMove>);
   afk_event_class.addFunction("to_mouse_button", &Afk::Event::get<Afk::Event::MouseButton>);
   afk_event_class.addFunction("to_mouse_scroll", &Afk::Event::get<Afk::Event::MouseScroll>);
   afk_event_class.addFunction("to_text", &Afk::Event::get<Afk::Event::Text>);
