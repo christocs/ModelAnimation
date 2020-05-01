@@ -121,9 +121,6 @@ auto TerrainManager::get_model() -> Model {
   model.meshes.push_back(this->mesh);
   model.file_path = "gen/terrain/terrain";
   model.file_dir  = "gen/terrain";
-  // FIXME
-  model.meshes[0].textures.push_back(
-      Texture{"res/gen/terrain/textures/grass.jpg"});
 
   return model;
 }
