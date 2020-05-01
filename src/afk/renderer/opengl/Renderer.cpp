@@ -244,8 +244,6 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
   for (const auto &mesh : model.meshes) {
     auto material_bound = vector<bool>(static_cast<size_t>(Texture::Type::Count));
 
-    Io::log << "Num textures: " << mesh.textures.size() << '\n';
-
     // Bind all of the textures to shader uniforms.
     for (auto i = size_t{0}; i < mesh.textures.size(); ++i) {
       this->set_texture_unit(GL_TEXTURE0 + i);
