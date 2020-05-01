@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "afk/debug/Assert.hpp"
+#include "afk/io/ModelSource.hpp"
 #include "afk/io/Path.hpp"
 #include "afk/physics/PhysicsBody.hpp"
 #include "afk/physics/RigidBodyType.hpp"
@@ -87,6 +88,11 @@ auto load_object_asset(lua_State *lua) -> Asset {
                              phys["body_type"].cast<Afk::RigidBodyType>(), sphere});
         break;
     }
+  } // phys
+  auto mdl = LuaRef{components["model"]};
+  if (!mdl.isNil()) {
+    reg.assign<Afk::ModelSource>(obj.ent,
+                                 Afk::ModelSource{mdl["path"].cast<std::string>()});
   }
 }
 auto load_terrain_asset(lua_State *lua) -> Asset {}
