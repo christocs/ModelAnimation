@@ -1,12 +1,27 @@
 #pragma once
 
+#include <vector>
+
 #include "afk/renderer/Model.hpp"
 
 namespace Afk {
+  struct HeightMap {
+    struct Point {
+      int x = {};
+      int y = {};
+    };
+
+    std::vector<float> heights = {};
+    int width                  = {};
+
+    auto at(Point p) const -> float;
+    auto operator[](Point p) -> float &;
+  };
+
   class TerrainManager {
   public:
-    Mesh height = {};
-    Mesh mesh   = {};
+    HeightMap heightMap = {};
+    Mesh mesh           = {};
 
     TerrainManager()                       = default;
     TerrainManager(TerrainManager &&)      = delete;

@@ -9,6 +9,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include "afk/asset/AssetFactory.hpp"
+#include "afk/component/LuaScript.hpp"
 #include "afk/debug/Assert.hpp"
 #include "afk/ecs/GameObject.hpp"
 #include "afk/io/Log.hpp"
@@ -18,6 +20,7 @@
 #include "afk/physics/shape/Box.hpp"
 #include "afk/physics/shape/Sphere.hpp"
 #include "afk/renderer/ModelRenderSystem.hpp"
+#include "afk/script/LuaInclude.hpp"
 
 using namespace std::string_literals;
 
@@ -37,7 +40,11 @@ auto Engine::initialize() -> void {
   this->event_manager.initialize(this->renderer.window);
   this->ui.initialize(this->renderer.window);
   this->terrain_manager.initialize();
-  this->terrain_manager.generate_terrain(100, 100, 0.05f, 7.5f);
+  this->lua = luaL_newstate();
+  luaL_openlibs(this->lua);
+  Afk::LuaScript::setup_lua_state(this->lua);
+  this->terrain_manager.generate_terrain(500, 500, 0.05f, 7.5f);
+  
   this->renderer.load_model(this->terrain_manager.get_model());
 
   // FIXME: Move to key manager
@@ -50,15 +57,18 @@ auto Engine::initialize() -> void {
                                        this->move_keyboard(std::move(event));
                                      }});
 
-  auto ball_entity           = registry.create();
-  auto ball_transform        = Transform{ball_entity};
-  ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
-  registry.assign<Afk::Transform>(ball_entity, ball_transform);
-  registry.assign<Afk::PhysicsBody>(ball_entity, ball_entity, &this->physics_body_system,
-                                    ball_transform, 0.3f, 0.2f, 0.0f, 30.0f, true,
-                                    Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
-  registry.assign<Afk::ModelSource>(ball_entity, ball_entity,
-                                    "res/model/basketball/basketball.fbx");
+  const auto city_entity     = registry.create();
+  auto city_transform        = Transform{city_entity};
+  city_transform.scale       = vec3{0.25f};
+  city_transform.translation = vec3{0.0f, -1.0f, 0.0f};
+  registry.assign<Afk::Transform>(city_entity, city_transform);
+  registry.assign<Afk::ModelSource>(city_entity, city_entity, "res/model/city/city.fbx");
+  registry.assign<Afk::PhysicsBody>(city_entity, city_entity, &this->physics_body_system,
+                                    city_transform, 0.0f, 0.0f, 0.0f, 0.0f,
+                                    false, Afk::RigidBodyType::STATIC,
+                                    Afk::Box{100000000.0f, 0.1f, 100000000.0f});
+
+  Afk::Asset::game_asset_factory("asset/basketball.lua");
 
   this->is_initialized = true;
 }
@@ -129,14 +139,13 @@ auto Engine::update_camera() -> void {
 }
 
 auto Engine::render() -> void {
-  // FIXME: Support multiple shader programs properly
-  const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  this->renderer.queue_draw({"gen/terrain", "shader/default.prog", Transform{}});
+  auto terrain_transform        = Transform{};
+  terrain_transform.translation = vec3{-250.0f, -20.0f, -250.0f};
+  this->renderer.queue_draw({"gen/terrain/terrain", "shader/terrain.prog", terrain_transform});
   Afk::queue_models(&this->registry, &this->renderer, "shader/default.prog");
 
   this->renderer.clear_screen({135.0f, 206.0f, 235.0f, 1.0f});
   this->ui.prepare();
-  this->renderer.setup_view(shader);
   this->renderer.draw();
   this->ui.draw();
   this->renderer.swap_buffers();

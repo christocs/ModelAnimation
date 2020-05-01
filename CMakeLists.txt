@@ -123,6 +123,10 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
     ${CMAKE_SOURCE_DIR}/cfg $<TARGET_FILE_DIR:${PROJECT_NAME}>/cfg)
 
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${CMAKE_SOURCE_DIR}/asset $<TARGET_FILE_DIR:${PROJECT_NAME}>/asset)
+
 # Setup git header.
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/cmake-git-version-tracking)
 set(PRE_CONFIGURE_FILE cmake/Git.hpp.in)
