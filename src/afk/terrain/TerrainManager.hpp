@@ -1,13 +1,15 @@
 #pragma once
 
-#include "afk/renderer/Model.hpp"
+#include <vector>
+
 #include "afk/physics/shape/HeightMap.hpp"
+#include "afk/renderer/Model.hpp"
 
 namespace Afk {
   class TerrainManager {
   public:
-    Mesh height = {};
-    Mesh mesh   = {};
+    HeightMap height_map = {};
+    Mesh mesh           = {};
 
     TerrainManager()                       = default;
     TerrainManager(TerrainManager &&)      = delete;
@@ -19,7 +21,6 @@ namespace Afk {
     auto get_model() -> Afk::Model;
     auto generate_terrain(int width, int length, float roughness, float scaling) -> void;
 
-    [[nodiscard]] auto get_height_map(int width, int length) const -> HeightMap;
   private:
     bool is_initialized = false;
 

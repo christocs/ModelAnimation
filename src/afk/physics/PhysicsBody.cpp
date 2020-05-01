@@ -6,10 +6,11 @@
 
 using Afk::PhysicsBody;
 
-PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
-                         float bounciness, float linear_dampening,
+PhysicsBody::PhysicsBody(GameObject e, Afk::PhysicsBodySystem *physics_system,
+                         Afk::Transform transform, float bounciness, float linear_dampening,
                          float angular_dampening, float mass, bool gravity_enabled,
                          Afk::RigidBodyType body_type, Afk::Box bounding_box) {
+  this->owning_entity   = e;
   this->collision_shape = std::make_unique<rp3d::BoxShape>(rp3d::Vector3(
       bounding_box.x * transform.scale.x, bounding_box.y * transform.scale.y,
       bounding_box.z * transform.scale.z));
@@ -47,10 +48,11 @@ PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform 
                                                     rp3d::Transform::identity(), mass);
 }
 
-PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
-                         float bounciness, float linear_dampening,
+PhysicsBody::PhysicsBody(GameObject e, Afk::PhysicsBodySystem *physics_system,
+                         Afk::Transform transform, float bounciness, float linear_dampening,
                          float angular_dampening, float mass, bool gravity_enabled,
                          Afk::RigidBodyType body_type, Afk::Sphere bounding_sphere) {
+  this->owning_entity = e;
   // Note: have to scale sphere equally on every axis (otherwise it wouldn't be a sphere), so scaling the average of each axis
   const auto scaleFactor =
       (transform.scale.x + transform.scale.y + transform.scale.z) / 3.0f;
@@ -89,24 +91,25 @@ PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform 
                                                     rp3d::Transform::identity(), mass);
 }
 
-PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
+PhysicsBody::PhysicsBody(GameObject e, Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
                          float bounciness, float linear_dampening,
                          float angular_dampening, float mass, bool gravity_enabled,
                          Afk::RigidBodyType body_type, const Afk::HeightMap &height_map) {
+  this->owning_entity = e;
 
   auto max_height = 0.0f;
   auto min_height = 0.0f;
-  for (auto i = 0; i < (height_map.width * height_map.length); i++) {
-    if (height_map.height[i] > max_height) {
-      max_height = height_map.height[i];
-    } else if (height_map.height[i] < min_height) {
-      min_height = height_map.height[i];
+  for (auto i = 0; i < (height_map.heights.size()); i++) {
+    if (height_map.heights[i] > max_height) {
+      max_height = height_map.heights[i];
+    } else if (height_map.heights[i] < min_height) {
+      min_height = height_map.heights[i];
     }
   }
 
   this->collision_shape = std::make_unique<rp3d::HeightFieldShape>(
-      height_map.length, height_map.width, min_height, max_height,
-      height_map.height, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
+      static_cast<int>(height_map.heights.size() / height_map.width), height_map.width, min_height, max_height,
+      height_map.heights.data(), rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
   auto temp1 = rp3d::Vector3{-9999, -9999, -9999};
   auto temp2 = rp3d::Vector3{0, 0, 0};
   this->collision_shape->getLocalBounds(temp1, temp2);

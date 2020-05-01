@@ -11,15 +11,26 @@
 #include "afk/debug/Assert.hpp"
 #include "afk/renderer/Mesh.hpp"
 
+using std::size_t;
 using std::vector;
 
 using glm::vec2;
 using glm::vec3;
 
+using Afk::HeightMap;
 using Afk::Mesh;
 using Afk::Model;
 using Afk::TerrainManager;
+using Afk::Texture;
 using Index = Mesh::Index;
+
+auto HeightMap::at(Point p) const -> float {
+  return this->heights.at(static_cast<size_t>(p.x * this->width + p.y));
+}
+
+auto HeightMap::operator[](Point p) -> float & {
+  return this->heights[static_cast<size_t>(p.x * this->width + p.y)];
+}
 
 auto TerrainManager::generate_height_map(int width, int length, float roughness,
                                          float scaling) -> void {
@@ -36,13 +47,12 @@ auto TerrainManager::generate_height_map(int width, int length, float roughness,
   auto *noise_set = noise->GetSimplexFractalSet(0, 0, 0, w, 1, l);
   auto index      = size_t{0};
 
-  this->height.vertices.resize(num_vertices);
+  this->height_map.width = width;
+  this->height_map.heights.resize(num_vertices);
 
-  auto vertexIndex = size_t{0};
   for (auto y = 0; y < l; ++y) {
     for (auto x = 0; x < w; ++x) {
-      this->mesh.vertices[vertexIndex++].position =
-          vec3{static_cast<float>(x), noise_set[index] * scaling, static_cast<float>(y)};
+      this->height_map[{x, y}] = noise_set[index] * scaling;
       ++index;
     }
   }
@@ -66,8 +76,14 @@ auto TerrainManager::generate_flat_plane(int width, int length) -> void {
   auto vertexIndex = size_t{0};
   for (auto y = 0; y < l; ++y) {
     for (auto x = 0; x < w; ++x) {
-      this->mesh.vertices[vertexIndex++].position =
+      this->mesh.vertices[vertexIndex].position =
           vec3{static_cast<float>(x), 0.0f, static_cast<float>(y)};
+
+      // FIXME
+      this->mesh.vertices[vertexIndex].uvs =
+          vec2{static_cast<float>(x) / 2.0f, static_cast<float>(y) / 2.0f};
+
+      ++vertexIndex;
     }
   }
 
@@ -96,16 +112,19 @@ auto TerrainManager::generate_terrain(int width, int length, float roughness,
   this->generate_height_map(width, length, roughness, scaling);
 //  this->centre_terrain();
 
-  for (auto i = std::size_t{0}; i < this->height.vertices.size(); ++i) {
-    this->mesh.vertices[i].position.y += this->height.vertices[i].position.y;
+  for (auto i = std::size_t{0}; i < this->height_map.heights.size(); ++i) {
+    this->mesh.vertices[i].position.y += this->height_map.heights[i];
   }
 }
 
 auto TerrainManager::get_model() -> Model {
   auto model = Model{};
   model.meshes.push_back(this->mesh);
-  model.file_path = "gen/terrain";
-  model.file_dir  = "gen";
+  model.file_path = "gen/terrain/terrain";
+  model.file_dir  = "gen/terrain";
+  // FIXME
+  model.meshes[0].textures.push_back(
+      Texture{"res/gen/terrain/textures/grass.jpg"});
 
   return model;
 }
@@ -114,15 +133,4 @@ auto TerrainManager::initialize() -> void {
   afk_assert(!this->is_initialized, "Terrain manager already initialized");
 
   this->is_initialized = true;
-}
-
-auto TerrainManager::get_height_map(int width, int length) const -> HeightMap {
-  HeightMap height_map{width, length, nullptr};
-  height_map.height = new float[this->mesh.vertices.size()];
-
-  for (auto i = std::size_t{0}; i < this->mesh.vertices.size(); i++) {
-    height_map.height[i] = this->mesh.vertices[i].position.y;
-  }
-
-  return height_map;
 }

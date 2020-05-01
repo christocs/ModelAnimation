@@ -8,7 +8,10 @@
 
 using Afk::ScriptsComponent;
 
-ScriptsComponent::ScriptsComponent() : loaded_files(), last_write() {}
+ScriptsComponent::ScriptsComponent(GameObject e)
+  : loaded_files(), last_write() {
+  this->owning_entity = e;
+}
 
 auto ScriptsComponent::add_script(const path &script_path, lua_State *lua,
                                   EventManager *evt_mgr) -> void {

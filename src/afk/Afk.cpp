@@ -37,9 +37,10 @@ auto Engine::initialize() -> void {
   this->event_manager.initialize(this->renderer.window);
   this->ui.initialize(this->renderer.window);
   this->terrain_manager.initialize();
-  const int terrain_width = 64;
+  const int terrain_width  = 64;
   const int terrain_length = 64;
   this->terrain_manager.generate_terrain(terrain_width, terrain_length, 0.05f, 7.5f);
+  this->terrain_manager.generate_terrain(500, 500, 0.05f, 7.5f);
   this->renderer.load_model(this->terrain_manager.get_model());
 
   // FIXME: Move to key manager
@@ -52,25 +53,26 @@ auto Engine::initialize() -> void {
                                        this->move_keyboard(event);
                                      }});
 
-  auto ball_transform        = Transform{};
-  ball_transform.translation = vec3{10.0f, 5.0f, 10.0f};
   auto ball_entity           = registry.create();
-  registry.assign<Afk::ModelSource>(ball_entity,
+  auto ball_transform        = Transform{ball_entity};
+  ball_transform.translation = vec3{10.0f, 5.0f, 10.0f};
+  registry.assign<Afk::ModelSource>(ball_entity, ball_entity,
                                     "res/model/basketball/basketball.fbx");
   registry.assign<Afk::Transform>(ball_entity, ball_transform);
-  registry.assign<Afk::PhysicsBody>(ball_entity, &this->physics_body_system,
+  registry.assign<Afk::PhysicsBody>(ball_entity, ball_entity, &this->physics_body_system,
                                     ball_transform, 0.3f, 0.0f, 0.0f, 30.0f, true,
                                     Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
 
-  auto terrain_transform = Transform{};
+  auto terrain_entity           = registry.create();
+  auto terrain_transform        = Transform{terrain_entity};
   terrain_transform.translation = glm::vec3{0, 0, 0};
-  auto terrain_entity = registry.create();
-  registry.assign<Afk::ModelSource>(terrain_entity, "gen/terrain");
-  registry.assign<Afk::Transform>(terrain_entity, terrain_transform);
-//  const auto a = this->terrain_manager.get_height_map(terrain_width, terrain_length);
-  registry.assign<Afk::PhysicsBody>(terrain_entity, &this->physics_body_system,
-                                    terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f, true,
-                                    Afk::RigidBodyType::STATIC, this->terrain_manager.get_height_map(terrain_width, terrain_length));
+  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity, "gen/terrain");
+  registry.assign<Afk::Transform>(terrain_entity, terrain_entity);
+  //  const auto a = this->terrain_manager.get_height_map(terrain_width, terrain_length);
+  registry.assign<Afk::PhysicsBody>(terrain_entity, terrain_entity, &this->physics_body_system,
+                                    terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f,
+                                    true, Afk::RigidBodyType::STATIC,
+                                    this->terrain_manager.height_map);
 
   this->is_initialized = true;
 }
@@ -147,7 +149,6 @@ auto Engine::render() -> void {
 
   this->renderer.clear_screen({135.0f, 206.0f, 235.0f, 1.0f});
   this->ui.prepare();
-  this->renderer.setup_view(shader);
   this->renderer.draw();
   this->ui.draw();
   this->renderer.swap_buffers();
