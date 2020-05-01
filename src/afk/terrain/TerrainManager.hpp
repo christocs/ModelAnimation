@@ -1,6 +1,7 @@
 #pragma once
 
 #include "afk/renderer/Model.hpp"
+#include "afk/physics/shape/HeightMap.hpp"
 
 namespace Afk {
   class TerrainManager {
@@ -18,10 +19,12 @@ namespace Afk {
     auto get_model() -> Afk::Model;
     auto generate_terrain(int width, int length, float roughness, float scaling) -> void;
 
+    [[nodiscard]] auto get_height_map(int width, int length) const -> HeightMap;
   private:
     bool is_initialized = false;
 
     auto generate_flat_plane(int width, int length) -> void;
     auto generate_height_map(int width, int length, float roughness, float scaling) -> void;
+    auto centre_terrain() -> void;
   };
 }

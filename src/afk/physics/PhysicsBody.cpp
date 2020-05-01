@@ -89,6 +89,61 @@ PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform 
                                                     rp3d::Transform::identity(), mass);
 }
 
+PhysicsBody::PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
+                         float bounciness, float linear_dampening,
+                         float angular_dampening, float mass, bool gravity_enabled,
+                         Afk::RigidBodyType body_type, const Afk::HeightMap &height_map) {
+
+  auto max_height = 0.0f;
+  auto min_height = 0.0f;
+  for (auto i = 0; i < (height_map.width * height_map.length); i++) {
+    if (height_map.height[i] > max_height) {
+      max_height = height_map.height[i];
+    } else if (height_map.height[i] < min_height) {
+      min_height = height_map.height[i];
+    }
+  }
+
+  this->collision_shape = std::make_unique<rp3d::HeightFieldShape>(
+      height_map.length, height_map.width, min_height, max_height,
+      height_map.height, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
+  auto temp1 = rp3d::Vector3{-9999, -9999, -9999};
+  auto temp2 = rp3d::Vector3{0, 0, 0};
+  this->collision_shape->getLocalBounds(temp1, temp2);
+
+  this->body = physics_system->world->createRigidBody(rp3d::Transform(
+      rp3d::Vector3(transform.translation[0], transform.translation[1],
+                    transform.translation[2]),
+      rp3d::Quaternion(transform.rotation[0], transform.rotation[1],
+                       transform.rotation[2], transform.rotation[3])));
+
+  this->body->enableGravity(gravity_enabled);
+
+  switch (body_type) {
+    case Afk::RigidBodyType::STATIC:
+      this->body->setType(rp3d::BodyType::STATIC);
+      break;
+    case Afk::RigidBodyType::KINEMATIC:
+      this->body->setType(rp3d::BodyType::KINEMATIC);
+      break;
+    case Afk::RigidBodyType::DYNAMIC:
+      this->body->setType(rp3d::BodyType::DYNAMIC);
+      break;
+  }
+
+  afk_assert(linear_dampening >= 0, "Linear dampening cannot be negative");
+  this->body->setLinearDamping(static_cast<rp3d::decimal>(linear_dampening));
+  afk_assert(angular_dampening >= 0, "Angular dampening cannot be negative");
+  this->body->setAngularDamping(static_cast<rp3d::decimal>(angular_dampening));
+
+  afk_assert(bounciness >= 0 && bounciness <= 1,
+             "Bounciness must be between 0 and 1");
+  this->body->getMaterial().setBounciness(static_cast<rp3d::decimal>(bounciness));
+
+  this->proxy_shape = this->body->addCollisionShape(this->collision_shape.get(),
+                                                    rp3d::Transform::identity(), mass);
+}
+
 void PhysicsBody::translate(glm::vec3 translate) {
   this->body->setTransform(rp3d::Transform{
       rp3d::Vector3{this->body->getTransform().getPosition().x + translate.x,

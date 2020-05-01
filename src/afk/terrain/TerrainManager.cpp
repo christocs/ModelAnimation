@@ -94,6 +94,7 @@ auto TerrainManager::generate_terrain(int width, int length, float roughness,
 
   this->generate_flat_plane(width, length);
   this->generate_height_map(width, length, roughness, scaling);
+//  this->centre_terrain();
 
   for (auto i = std::size_t{0}; i < this->height.vertices.size(); ++i) {
     this->mesh.vertices[i].position.y += this->height.vertices[i].position.y;
@@ -113,4 +114,15 @@ auto TerrainManager::initialize() -> void {
   afk_assert(!this->is_initialized, "Terrain manager already initialized");
 
   this->is_initialized = true;
+}
+
+auto TerrainManager::get_height_map(int width, int length) const -> HeightMap {
+  HeightMap height_map{width, length, nullptr};
+  height_map.height = new float[this->mesh.vertices.size()];
+
+  for (auto i = std::size_t{0}; i < this->mesh.vertices.size(); i++) {
+    height_map.height[i] = this->mesh.vertices[i].position.y;
+  }
+
+  return height_map;
 }

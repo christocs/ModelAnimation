@@ -37,28 +37,40 @@ auto Engine::initialize() -> void {
   this->event_manager.initialize(this->renderer.window);
   this->ui.initialize(this->renderer.window);
   this->terrain_manager.initialize();
-  this->terrain_manager.generate_terrain(100, 100, 0.05f, 7.5f);
+  const int terrain_width = 64;
+  const int terrain_length = 64;
+  this->terrain_manager.generate_terrain(terrain_width, terrain_length, 0.05f, 7.5f);
   this->renderer.load_model(this->terrain_manager.get_model());
 
   // FIXME: Move to key manager
   this->event_manager.register_event(Event::Type::MouseMove,
                                      Afk::EventManager::Callback{[this](Event event) {
-                                       this->move_mouse(std::move(event));
+                                       this->move_mouse(event);
                                      }});
   this->event_manager.register_event(Event::Type::KeyDown,
                                      Afk::EventManager::Callback{[this](Event event) {
-                                       this->move_keyboard(std::move(event));
+                                       this->move_keyboard(event);
                                      }});
 
   auto ball_transform        = Transform{};
-  ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
+  ball_transform.translation = vec3{10.0f, 5.0f, 10.0f};
   auto ball_entity           = registry.create();
-  registry.assign<Afk::Transform>(ball_entity, ball_transform);
-  registry.assign<Afk::PhysicsBody>(ball_entity, &this->physics_body_system,
-                                    ball_transform, 0.3f, 0.2f, 0.0f, 30.0f, true,
-                                    Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
   registry.assign<Afk::ModelSource>(ball_entity,
                                     "res/model/basketball/basketball.fbx");
+  registry.assign<Afk::Transform>(ball_entity, ball_transform);
+  registry.assign<Afk::PhysicsBody>(ball_entity, &this->physics_body_system,
+                                    ball_transform, 0.3f, 0.0f, 0.0f, 30.0f, true,
+                                    Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
+
+  auto terrain_transform = Transform{};
+  terrain_transform.translation = glm::vec3{0, 0, 0};
+  auto terrain_entity = registry.create();
+  registry.assign<Afk::ModelSource>(terrain_entity, "gen/terrain");
+  registry.assign<Afk::Transform>(terrain_entity, terrain_transform);
+//  const auto a = this->terrain_manager.get_height_map(terrain_width, terrain_length);
+  registry.assign<Afk::PhysicsBody>(terrain_entity, &this->physics_body_system,
+                                    terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f, true,
+                                    Afk::RigidBodyType::STATIC, this->terrain_manager.get_height_map(terrain_width, terrain_length));
 
   this->is_initialized = true;
 }
@@ -131,7 +143,6 @@ auto Engine::update_camera() -> void {
 auto Engine::render() -> void {
   // FIXME: Support multiple shader programs properly
   const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  this->renderer.queue_draw({"gen/terrain", "shader/default.prog", Transform{}});
   Afk::queue_models(&this->registry, &this->renderer, "shader/default.prog");
 
   this->renderer.clear_screen({135.0f, 206.0f, 235.0f, 1.0f});
