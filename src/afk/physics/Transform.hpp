@@ -12,6 +12,7 @@ namespace Afk {
     glm::quat rotation    = glm::quat{1.0f, 0.0f, 0.0f, 0.0f};
 
     Transform() = default;
+    Transform(GameObject e);
     Transform(glm::mat4 transform);
     Transform(GameObject e, glm::mat4 transform);
   };

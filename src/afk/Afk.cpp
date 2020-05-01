@@ -50,14 +50,14 @@ auto Engine::initialize() -> void {
                                        this->move_keyboard(std::move(event));
                                      }});
 
-  auto ball_transform        = Transform{};
-  ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
   auto ball_entity           = registry.create();
+  auto ball_transform        = Transform{ball_entity};
+  ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
   registry.assign<Afk::Transform>(ball_entity, ball_transform);
-  registry.assign<Afk::PhysicsBody>(ball_entity, &this->physics_body_system,
+  registry.assign<Afk::PhysicsBody>(ball_entity, ball_entity, &this->physics_body_system,
                                     ball_transform, 0.3f, 0.2f, 0.0f, 30.0f, true,
                                     Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
-  registry.assign<Afk::ModelSource>(ball_entity,
+  registry.assign<Afk::ModelSource>(ball_entity, ball_entity,
                                     "res/model/basketball/basketball.fbx");
 
   this->is_initialized = true;

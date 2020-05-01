@@ -6,6 +6,9 @@
 using Afk::Transform;
 using glm::mat4;
 
+Transform::Transform(GameObject e) {
+  this->owning_entity = e;
+}
 Transform::Transform(mat4 transform) {
   auto _scale       = glm::vec3{};
   auto _rotation    = glm::quat{};
