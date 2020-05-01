@@ -44,7 +44,6 @@ auto Engine::initialize() -> void {
   this->terrain_manager.initialize();
   this->lua = luaL_newstate();
   luaL_openlibs(this->lua);
-  Afk::LuaScript::setup_lua_state(this->lua);
   Afk::add_engine_bindings(this->lua);
   this->terrain_manager.generate_terrain(500, 500, 0.05f, 7.5f);
 
