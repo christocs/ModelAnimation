@@ -3,5 +3,7 @@
 #include <string>
 
 namespace Afk {
-  using ModelSource = std::string;
+  struct ModelSource {
+    std::string name;
+  };
 }
