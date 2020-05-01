@@ -24,14 +24,6 @@ using Afk::TerrainManager;
 using Afk::Texture;
 using Index = Mesh::Index;
 
-auto HeightMap::at(Point p) const -> float {
-  return this->heights.at(static_cast<size_t>(p.x * this->width + p.y));
-}
-
-auto HeightMap::operator[](Point p) -> float & {
-  return this->heights[static_cast<size_t>(p.x * this->width + p.y)];
-}
-
 auto TerrainManager::generate_height_map(int width, int length, float roughness,
                                          float scaling) -> void {
   afk_assert(width >= 1, "Invalid width");
@@ -77,7 +69,8 @@ auto TerrainManager::generate_flat_plane(int width, int length) -> void {
   for (auto y = 0; y < l; ++y) {
     for (auto x = 0; x < w; ++x) {
       this->mesh.vertices[vertexIndex].position =
-          vec3{static_cast<float>(x) - static_cast<float>(width) / 2.0f, 0.0f, static_cast<float>(y) - static_cast<float>(length) / 2.0f};
+          vec3{static_cast<float>(x) - static_cast<float>(width) / 2.0f, 0.0f,
+               static_cast<float>(y) - static_cast<float>(length) / 2.0f};
 
       // FIXME
       this->mesh.vertices[vertexIndex].uvs =
