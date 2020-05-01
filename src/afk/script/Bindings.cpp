@@ -15,6 +15,9 @@ extern "C" {
 #include "afk/physics/Transform.hpp"
 #include "afk/renderer/Camera.hpp"
 
+// todo move to keyboard mgmt
+#include <GLFW/glfw3.h>
+
 static auto get_camera() -> Afk::Camera & {
   return Afk::Engine::get().camera;
 }
@@ -61,8 +64,13 @@ static auto v3_mul(glm::vec3 *a, float f) -> glm::vec3 {
   return n;
 }
 
+// todo move to keyboard mgmt
+static auto key_pressed(int key_code) -> bool {
+  return glfwGetKey(Afk::Engine::get().renderer.window, key_code) == GLFW_PRESS;
+}
+
 using namespace luabridge;
-auto Afk::add_engine_bindings(lua_State *lua) {
+auto Afk::add_engine_bindings(lua_State *lua) -> void {
   getGlobalNamespace(lua)
       .beginClass<glm::vec3>("vector3")
       .addStaticFunction("new", &new_vec3)
@@ -71,7 +79,7 @@ auto Afk::add_engine_bindings(lua_State *lua) {
       .addData("z", &glm::vec3::z)
       .addFunction("vec_add", &v3_add)
       .addFunction("vec_sub", &v3_sub)
-      .addFunction("sc_mul", &v3_mul)
+      .addFunction("scalar_mul", &v3_mul)
       .endClass()
 
       .beginClass<glm::vec2>("vector2")
@@ -128,6 +136,10 @@ auto Afk::add_engine_bindings(lua_State *lua) {
       .beginClass<Afk::BaseComponent>("component")
       .addFunction("parent", &get_parent<Afk::BaseComponent>)
       .endClass()
+
+      .beginNamespace("keyboard")
+      .addFunction("is_pressed", &key_pressed)
+      .endNamespace()
 
       .beginNamespace("engine")
       .addFunction("delta_time", &get_delta_time)
