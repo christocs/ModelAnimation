@@ -82,6 +82,10 @@ auto Afk::add_engine_bindings(lua_State *lua) -> void {
       .addFunction("scalar_mul", &v3_mul)
       .endClass()
 
+      .beginNamespace("math")
+      .addFunction("clamp", &std::clamp<float>)
+      .endNamespace()
+
       .beginClass<glm::vec2>("vector2")
       .addStaticFunction("new", &new_vec2)
       .addData("x", &glm::vec2::x)
