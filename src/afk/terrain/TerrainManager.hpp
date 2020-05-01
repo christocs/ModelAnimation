@@ -26,6 +26,5 @@ namespace Afk {
 
     auto generate_flat_plane(int width, int length) -> void;
     auto generate_height_map(int width, int length, float roughness, float scaling) -> void;
-    auto centre_terrain() -> void;
   };
 }

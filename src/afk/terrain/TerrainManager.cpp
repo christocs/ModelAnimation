@@ -110,7 +110,6 @@ auto TerrainManager::generate_terrain(int width, int length, float roughness,
 
   this->generate_flat_plane(width, length);
   this->generate_height_map(width, length, roughness, scaling);
-//  this->centre_terrain();
 
   for (auto i = std::size_t{0}; i < this->height_map.heights.size(); ++i) {
     this->mesh.vertices[i].position.y += this->height_map.heights[i];

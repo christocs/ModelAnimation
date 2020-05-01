@@ -63,9 +63,8 @@ auto Engine::initialize() -> void {
   auto terrain_entity           = registry.create();
   auto terrain_transform        = Transform{terrain_entity};
   terrain_transform.translation = glm::vec3{0, 0, 0};
-  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity, "gen/terrain/terrain");
+  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity, terrain_manager.get_model().file_path);
   registry.assign<Afk::Transform>(terrain_entity, terrain_entity);
-  //  const auto a = this->terrain_manager.get_height_map(terrain_width, terrain_length);
   registry.assign<Afk::PhysicsBody>(terrain_entity, terrain_entity, &this->physics_body_system,
                                     terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f,
                                     true, Afk::RigidBodyType::STATIC,

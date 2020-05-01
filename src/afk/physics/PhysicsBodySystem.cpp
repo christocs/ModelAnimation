@@ -39,13 +39,11 @@ auto PhysicsBodySystem::update(entt::registry *registry, float dt) -> void {
         const auto rp3d_position = collision.body->getTransform().getPosition();
         const auto rp3d_orientation = collision.body->getTransform().getOrientation();
 
-//        std::cout << rp3d_position.x << ", " << rp3d_position.y << ", " << rp3d_position.z << std::endl;
-
         transform.translation =
             glm::vec3{rp3d_position.x, rp3d_position.y, rp3d_position.z};
         transform.rotation = glm::quat{rp3d_orientation.w, rp3d_orientation.x,
                                        rp3d_orientation.y, rp3d_orientation.z};
 
-        std::cout << transform.translation.x << ", " << transform.translation.y << ", " << transform.translation.z << std::endl;
+//        std::cout << transform.translation.x << ", " << transform.translation.y << ", " << transform.translation.z << std::endl;
       });
 }
