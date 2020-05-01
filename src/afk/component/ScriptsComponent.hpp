@@ -18,7 +18,8 @@ namespace Afk {
   public:
     ScriptsComponent(GameObject e);
     auto check_live_reload(lua_State *l) -> void;
-    auto add_script(const path &script_path, lua_State *l, EventManager *evt) -> void;
+    auto add_script(const path &script_path, lua_State *l, EventManager *evt)
+        -> ScriptsComponent &;
     auto remove_script(const path &script_path) -> void;
 
   private:
