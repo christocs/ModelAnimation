@@ -46,8 +46,8 @@ auto Engine::initialize() -> void {
   Afk::LuaScript::setup_lua_state(this->lua);
 
   this->terrain_manager.initialize();
-  const int terrain_width  = 64;
-  const int terrain_length = 64;
+  const int terrain_width  = 1024;
+  const int terrain_length = 1024;
   this->terrain_manager.generate_terrain(terrain_width, terrain_length, 0.05f, 7.5f);
   this->renderer.load_model(this->terrain_manager.get_model());
 
