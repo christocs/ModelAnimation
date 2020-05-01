@@ -9,6 +9,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include "afk/asset/AssetFactory.hpp"
+#include "afk/component/LuaScript.hpp"
 #include "afk/debug/Assert.hpp"
 #include "afk/ecs/GameObject.hpp"
 #include "afk/io/Log.hpp"
@@ -18,6 +20,7 @@
 #include "afk/physics/shape/Box.hpp"
 #include "afk/physics/shape/Sphere.hpp"
 #include "afk/renderer/ModelRenderSystem.hpp"
+#include "afk/script/LuaInclude.hpp"
 
 using namespace std::string_literals;
 
@@ -40,7 +43,11 @@ auto Engine::initialize() -> void {
   const int terrain_width  = 64;
   const int terrain_length = 64;
   this->terrain_manager.generate_terrain(terrain_width, terrain_length, 0.05f, 7.5f);
+  this->lua = luaL_newstate();
+  luaL_openlibs(this->lua);
+  Afk::LuaScript::setup_lua_state(this->lua);
   this->terrain_manager.generate_terrain(500, 500, 0.05f, 7.5f);
+  
   this->renderer.load_model(this->terrain_manager.get_model());
 
   // FIXME: Move to key manager
@@ -53,16 +60,6 @@ auto Engine::initialize() -> void {
                                        this->move_keyboard(event);
                                      }});
 
-  auto ball_entity           = registry.create();
-  auto ball_transform        = Transform{ball_entity};
-  ball_transform.translation = vec3{10.0f, 5.0f, 10.0f};
-  registry.assign<Afk::ModelSource>(ball_entity, ball_entity,
-                                    "res/model/basketball/basketball.fbx");
-  registry.assign<Afk::Transform>(ball_entity, ball_transform);
-  registry.assign<Afk::PhysicsBody>(ball_entity, ball_entity, &this->physics_body_system,
-                                    ball_transform, 0.3f, 0.0f, 0.0f, 30.0f, true,
-                                    Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
-
   auto terrain_entity           = registry.create();
   auto terrain_transform        = Transform{terrain_entity};
   terrain_transform.translation = glm::vec3{0, 0, 0};
@@ -73,6 +70,8 @@ auto Engine::initialize() -> void {
                                     terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f,
                                     true, Afk::RigidBodyType::STATIC,
                                     this->terrain_manager.height_map);
+
+  Afk::Asset::game_asset_factory("asset/basketball.lua");
 
   this->is_initialized = true;
 }
