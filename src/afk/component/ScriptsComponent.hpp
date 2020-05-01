@@ -1,5 +1,6 @@
 #include <filesystem>
 #include <map>
+#include <memory>
 
 #include "afk/component/BaseComponent.hpp"
 #include "afk/component/LuaScript.hpp"
@@ -21,7 +22,7 @@ namespace Afk {
     auto remove_script(const path &script_path) -> void;
 
   private:
-    std::map<path, Afk::LuaScript> loaded_files;
+    std::map<path, std::shared_ptr<Afk::LuaScript>> loaded_files;
     std::map<path, std::filesystem::file_time_type> last_write;
   };
 }
