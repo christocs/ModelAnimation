@@ -38,16 +38,16 @@ auto Engine::initialize() -> void {
 
   this->renderer.initialize();
   this->event_manager.initialize(this->renderer.window);
+
   this->ui.initialize(this->renderer.window);
+  this->lua = luaL_newstate();
+  luaL_openlibs(this->lua);
+  Afk::LuaScript::setup_lua_state(this->lua);
+
   this->terrain_manager.initialize();
   const int terrain_width  = 64;
   const int terrain_length = 64;
   this->terrain_manager.generate_terrain(terrain_width, terrain_length, 0.05f, 7.5f);
-  this->lua = luaL_newstate();
-  luaL_openlibs(this->lua);
-  Afk::LuaScript::setup_lua_state(this->lua);
-  this->terrain_manager.generate_terrain(500, 500, 0.05f, 7.5f);
-  
   this->renderer.load_model(this->terrain_manager.get_model());
 
   // FIXME: Move to key manager
@@ -63,7 +63,7 @@ auto Engine::initialize() -> void {
   auto terrain_entity           = registry.create();
   auto terrain_transform        = Transform{terrain_entity};
   terrain_transform.translation = glm::vec3{0, 0, 0};
-  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity, "gen/terrain");
+  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity, "gen/terrain/terrain");
   registry.assign<Afk::Transform>(terrain_entity, terrain_entity);
   //  const auto a = this->terrain_manager.get_height_map(terrain_width, terrain_length);
   registry.assign<Afk::PhysicsBody>(terrain_entity, terrain_entity, &this->physics_body_system,
