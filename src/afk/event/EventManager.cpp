@@ -6,10 +6,22 @@
 #include "afk/io/Log.hpp"
 
 // Must be included after GLAD.
+#include <algorithm>
+
 #include <GLFW/glfw3.h>
 
 using Afk::EventManager;
 using Action = Afk::Event::Action;
+
+std::size_t EventManager::Callback::index = 0;
+EventManager::Callback::Callback(std::function<void(Afk::Event)> fn)
+  : func(fn), id(index++) {}
+auto EventManager::Callback::operator==(const EventManager::Callback &rhs) const -> bool {
+  return this->id == rhs.id;
+}
+auto EventManager::Callback::operator()(const Afk::Event &arg) const -> void {
+  this->func(arg);
+}
 
 auto EventManager::initialize(Renderer::Window window) -> void {
   afk_assert(!this->is_initialized, "Event manager already initialized");
@@ -34,6 +46,11 @@ auto EventManager::pump_events() -> void {
 
 auto EventManager::register_event(Event::Type type, Callback callback) -> void {
   this->callbacks[type].push_back(callback);
+}
+auto EventManager::deregister_event(Event::Type type, Callback callback) -> void {
+  auto &typ_callbacks = this->callbacks[type];
+  auto callback_pos = std::find(typ_callbacks.begin(), typ_callbacks.end(), callback);
+  typ_callbacks.erase(callback_pos);
 }
 
 auto EventManager::setup_callbacks(Renderer::Window window) -> void {
