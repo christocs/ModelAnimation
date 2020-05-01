@@ -224,7 +224,7 @@ auto Renderer::queue_draw(DrawCommand command) -> void {
   this->draw_queue.push(command);
 }
 
-auto Renderer::setup_view(const ShaderProgramHandle &shader_program) -> void {
+auto Renderer::setup_view(const ShaderProgramHandle &shader_program) const -> void {
   const auto &afk        = Engine::get();
   const auto window_size = this->get_window_size();
   const auto projection =
@@ -239,10 +239,12 @@ auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &s
                           Transform transform) const -> void {
   glPolygonMode(GL_FRONT_AND_BACK, this->wireframe_enabled ? GL_LINE : GL_FILL);
   this->use_shader(shader_program);
+  this->setup_view(shader_program);
 
   for (const auto &mesh : model.meshes) {
-
     auto material_bound = vector<bool>(static_cast<size_t>(Texture::Type::Count));
+
+    Io::log << "Num textures: " << mesh.textures.size() << '\n';
 
     // Bind all of the textures to shader uniforms.
     for (auto i = size_t{0}; i < mesh.textures.size(); ++i) {

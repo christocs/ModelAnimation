@@ -9,15 +9,11 @@ using std::exception;
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) -> int {
   auto &afk = Afk::Engine::get();
 
-  try {
-    afk.initialize();
+  afk.initialize();
 
-    while (afk.get_is_running()) {
-      afk.update();
-      afk.render();
-    }
-  } catch (const exception &e) {
-    std::cerr << e.what();
+  while (afk.get_is_running()) {
+    afk.update();
+    afk.render();
   }
 
   return EXIT_SUCCESS;

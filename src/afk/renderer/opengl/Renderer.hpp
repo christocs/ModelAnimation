@@ -90,7 +90,7 @@ namespace Afk {
       auto queue_draw(DrawCommand command) -> void;
       auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader_program,
                       Transform transform) const -> void;
-      auto setup_view(const ShaderProgramHandle &shader_program) -> void;
+      auto setup_view(const ShaderProgramHandle &shader_program) const -> void;
 
       // State management
       auto use_shader(const ShaderProgramHandle &shader) const -> void;

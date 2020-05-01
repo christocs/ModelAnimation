@@ -129,14 +129,11 @@ auto Engine::update_camera() -> void {
 }
 
 auto Engine::render() -> void {
-  // FIXME: Support multiple shader programs properly
-  const auto &shader = this->renderer.get_shader_program("shader/default.prog");
-  this->renderer.queue_draw({"gen/terrain", "shader/default.prog", Transform{}});
+  this->renderer.queue_draw({"gen/terrain/terrain", "shader/terrain.prog", Transform{}});
   Afk::queue_models(&this->registry, &this->renderer, "shader/default.prog");
 
   this->renderer.clear_screen({135.0f, 206.0f, 235.0f, 1.0f});
   this->ui.prepare();
-  this->renderer.setup_view(shader);
   this->renderer.draw();
   this->ui.draw();
   this->renderer.swap_buffers();
