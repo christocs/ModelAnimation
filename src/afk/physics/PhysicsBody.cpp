@@ -108,7 +108,7 @@ PhysicsBody::PhysicsBody(GameObject e, Afk::PhysicsBodySystem *physics_system, A
   }
 
   this->collision_shape = std::make_unique<rp3d::HeightFieldShape>(
-      static_cast<int>(height_map.heights.size() / height_map.width), height_map.width, min_height, max_height,
+      static_cast<int>(static_cast<int>(height_map.heights.size()) / height_map.width), height_map.width, min_height, max_height,
       height_map.heights.data(), rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
   auto temp1 = rp3d::Vector3{-9999, -9999, -9999};
   auto temp2 = rp3d::Vector3{0, 0, 0};

@@ -142,8 +142,6 @@ auto Engine::update_camera() -> void {
 }
 
 auto Engine::render() -> void {
-  // FIXME: Support multiple shader programs properly
-  const auto &shader = this->renderer.get_shader_program("shader/default.prog");
   Afk::queue_models(&this->registry, &this->renderer);
 
   this->renderer.clear_screen({135.0f, 206.0f, 235.0f, 1.0f});
