@@ -19,6 +19,7 @@ using glm::vec3;
 using Afk::Mesh;
 using Afk::Model;
 using Afk::TerrainManager;
+using Afk::Texture;
 using Index = Mesh::Index;
 
 auto TerrainManager::generate_height_map(int width, int length, float roughness,
@@ -66,8 +67,14 @@ auto TerrainManager::generate_flat_plane(int width, int length) -> void {
   auto vertexIndex = size_t{0};
   for (auto y = 0; y < l; ++y) {
     for (auto x = 0; x < w; ++x) {
-      this->mesh.vertices[vertexIndex++].position =
+      this->mesh.vertices[vertexIndex].position =
           vec3{static_cast<float>(x), 0.0f, static_cast<float>(y)};
+
+      // FIXME
+      this->mesh.vertices[vertexIndex].uvs =
+          vec2{static_cast<float>(x) / 2.0f, static_cast<float>(y) / 2.0f};
+
+      ++vertexIndex;
     }
   }
 
@@ -103,8 +110,11 @@ auto TerrainManager::generate_terrain(int width, int length, float roughness,
 auto TerrainManager::get_model() -> Model {
   auto model = Model{};
   model.meshes.push_back(this->mesh);
-  model.file_path = "gen/terrain";
-  model.file_dir  = "gen";
+  model.file_path = "gen/terrain/terrain";
+  model.file_dir  = "gen/terrain";
+  // FIXME
+  model.meshes[0].textures.push_back(
+      Texture{"res/gen/terrain/textures/grass.jpg"});
 
   return model;
 }
