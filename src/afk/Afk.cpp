@@ -38,6 +38,7 @@ auto Engine::initialize() -> void {
 
   this->renderer.initialize();
   this->event_manager.initialize(this->renderer.window);
+  this->renderer.set_wireframe(true);
 
   this->ui.initialize(this->renderer.window);
   this->lua = luaL_newstate();
@@ -62,7 +63,7 @@ auto Engine::initialize() -> void {
 
   auto terrain_entity           = registry.create();
   auto terrain_transform        = Transform{terrain_entity};
-  terrain_transform.translation = glm::vec3{0, 0, 0};
+  terrain_transform.translation = glm::vec3{0.0f, -10.0f, 0.0f};
   registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity, terrain_manager.get_model().file_path);
   registry.assign<Afk::Transform>(terrain_entity, terrain_entity);
   registry.assign<Afk::PhysicsBody>(terrain_entity, terrain_entity, &this->physics_body_system,

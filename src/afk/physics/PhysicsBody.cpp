@@ -99,11 +99,11 @@ PhysicsBody::PhysicsBody(GameObject e, Afk::PhysicsBodySystem *physics_system, A
 
   auto max_height = 0.0f;
   auto min_height = 0.0f;
-  for (auto i = 0; i < (height_map.heights.size()); i++) {
-    if (height_map.heights[i] > max_height) {
-      max_height = height_map.heights[i];
-    } else if (height_map.heights[i] < min_height) {
-      min_height = height_map.heights[i];
+  for (auto height : height_map.heights) {
+    if (height > max_height) {
+      max_height = height;
+    } else if (height < min_height) {
+      min_height = height;
     }
   }
 

@@ -77,7 +77,7 @@ auto TerrainManager::generate_flat_plane(int width, int length) -> void {
   for (auto y = 0; y < l; ++y) {
     for (auto x = 0; x < w; ++x) {
       this->mesh.vertices[vertexIndex].position =
-          vec3{static_cast<float>(x), 0.0f, static_cast<float>(y)};
+          vec3{static_cast<float>(x) - static_cast<float>(width) / 2.0f, 0.0f, static_cast<float>(y) - static_cast<float>(length) / 2.0f};
 
       // FIXME
       this->mesh.vertices[vertexIndex].uvs =
