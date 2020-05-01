@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 
 #include "afk/event/EventManager.hpp"
-#include "afk/physics/PhysicsSystem.hpp"
+#include "afk/physics/PhysicsBodySystem.hpp"
 #include "afk/renderer/Camera.hpp"
 #include "afk/renderer/Renderer.hpp"
 #include "afk/terrain/TerrainManager.hpp"
@@ -35,7 +35,7 @@ namespace Afk {
     auto render() -> void;
     auto update() -> void;
 
-    auto get_time() -> float;
+    auto static get_time() -> float;
     auto get_delta_time() -> float;
     auto get_is_running() const -> bool;
 
@@ -43,13 +43,12 @@ namespace Afk {
     auto update_camera() -> void;
     auto move_keyboard(Event e) -> void;
     auto move_mouse(Event e) -> void;
-    auto handle_mouse() -> void;
 
     bool is_initialized = false;
     bool is_running     = true;
     int frame_count     = {};
     float last_update   = {};
 
-    Afk::PhysicsSystem physics_system;
+    Afk::PhysicsBodySystem physics_body_system;
   };
 }

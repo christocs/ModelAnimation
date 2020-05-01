@@ -7,11 +7,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <utility>
 
 #include "afk/debug/Assert.hpp"
+#include "afk/ecs/GameObject.hpp"
 #include "afk/io/Log.hpp"
 #include "afk/io/ModelSource.hpp"
-#include "afk/physics/Collision.hpp"
+#include "afk/physics/PhysicsBody.hpp"
 #include "afk/physics/RigidBodyType.hpp"
 #include "afk/physics/shape/Box.hpp"
 #include "afk/physics/shape/Sphere.hpp"
@@ -39,14 +41,12 @@ auto Engine::initialize() -> void {
   // FIXME: Move to key manager
   this->event_manager.register_event(Event::Type::MouseMove,
                                      Afk::EventManager::Callback{[this](Event event) {
-                                       this->move_mouse(event);
+                                       this->move_mouse(std::move(event));
                                      }});
   this->event_manager.register_event(Event::Type::KeyDown,
                                      Afk::EventManager::Callback{[this](Event event) {
-                                       this->move_keyboard(event);
+                                       this->move_keyboard(std::move(event));
                                      }});
-
-  this->renderer.set_wireframe(true);
 
   auto city_transform        = Transform{};
   city_transform.scale       = vec3{0.25f};
@@ -54,17 +54,18 @@ auto Engine::initialize() -> void {
   const auto city_entity     = registry.create();
   registry.assign<Afk::Transform>(city_entity, city_transform);
   registry.assign<Afk::ModelSource>(city_entity, "res/model/city/city.fbx");
-  registry.assign<Afk::Collision>(city_entity, &this->physics_system, city_transform,
-                                  0, false, Afk::RigidBodyType::STATIC,
-                                  Afk::Box{100000000.0f, 0.1f, 100000000.0f});
+  registry.assign<Afk::PhysicsBody>(city_entity, &this->physics_body_system,
+                                    city_transform, 0.0f, 0.0f, 0.0f, 0.0f,
+                                    false, Afk::RigidBodyType::STATIC,
+                                    Afk::Box{100000000.0f, 0.1f, 100000000.0f});
 
   auto ball_transform        = Transform{};
   ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
   auto ball_entity           = registry.create();
   registry.assign<Afk::Transform>(ball_entity, ball_transform);
-  registry.assign<Afk::Collision>(ball_entity, &this->physics_system,
-                                  ball_transform, 30.0f, true,
-                                  Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
+  registry.assign<Afk::PhysicsBody>(ball_entity, &this->physics_body_system,
+                                    ball_transform, 0.3f, 0.2f, 0.0f, 30.0f, true,
+                                    Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
   registry.assign<Afk::ModelSource>(ball_entity,
                                     "res/model/basketball/basketball.fbx");
 
@@ -102,6 +103,7 @@ auto Engine::exit() -> void {
 }
 
 // FIXME: Move to key handler.
+// TODO: Assign these keys in Lua
 auto Engine::move_keyboard(Event event) -> void {
   const auto key = std::get<Event::Key>(event.data).key;
 
@@ -164,10 +166,10 @@ auto Engine::update() -> void {
 
   this->update_camera();
 
-  this->physics_system.update(&this->registry, this->get_delta_time());
+  this->physics_body_system.update(&this->registry, this->get_delta_time());
 
   ++this->frame_count;
-  this->last_update = this->get_time();
+  this->last_update = Afk::Engine::get_time();
 }
 
 auto Engine::get_time() -> float {
