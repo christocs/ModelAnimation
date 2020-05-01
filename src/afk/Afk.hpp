@@ -43,10 +43,6 @@ namespace Afk {
     auto get_is_running() const -> bool;
 
   private:
-    auto update_camera() -> void;
-    auto move_keyboard(Event e) -> void;
-    auto move_mouse(Event e) -> void;
-
     bool is_initialized = false;
     bool is_running     = true;
     int frame_count     = {};

@@ -50,16 +50,6 @@ auto Engine::initialize() -> void {
 
   this->renderer.load_model(this->terrain_manager.get_model());
 
-  // FIXME: Move to key manager
-  this->event_manager.register_event(Event::Type::MouseMove,
-                                     Afk::EventManager::Callback{[this](Event event) {
-                                       this->move_mouse(std::move(event));
-                                     }});
-  this->event_manager.register_event(Event::Type::KeyDown,
-                                     Afk::EventManager::Callback{[this](Event event) {
-                                       this->move_keyboard(std::move(event));
-                                     }});
-
   const auto city_entity     = registry.create();
   auto city_transform        = Transform{city_entity};
   city_transform.scale       = vec3{0.25f};
@@ -74,29 +64,10 @@ auto Engine::initialize() -> void {
   Afk::Asset::game_asset_factory("asset/basketball.lua");
 
   auto cam = registry.create();
-  registry.assign<Afk::ScriptsComponent>(cam, cam).add_script(
-      "script/camera_control.lua", this->lua, &this->event_manager);
+  registry.assign<Afk::ScriptsComponent>(cam, cam)
+      .add_script("script/camera_keyboard_control.lua", this->lua, &this->event_manager)
+      .add_script("script/camera_mouse_control.lua", this->lua, &this->event_manager);
   this->is_initialized = true;
-}
-
-auto Engine::move_mouse(Event event) -> void {
-  const auto data = std::get<Event::MouseMove>(event.data);
-
-  static auto last_x      = 0.0f;
-  static auto last_y      = 0.0f;
-  static auto first_frame = true;
-
-  const auto dx = static_cast<float>(data.x) - last_x;
-  const auto dy = static_cast<float>(data.y) - last_y;
-
-  if (!first_frame && !this->ui.show_menu) {
-    this->camera.handle_mouse(dx, dy);
-  } else {
-    first_frame = false;
-  }
-
-  last_x = static_cast<float>(data.x);
-  last_y = static_cast<float>(data.y);
 }
 
 auto Engine::get() -> Engine & {
@@ -107,41 +78,6 @@ auto Engine::get() -> Engine & {
 
 auto Engine::exit() -> void {
   this->is_running = false;
-}
-
-// FIXME: Move to key handler.
-// TODO: Assign these keys in Lua
-auto Engine::move_keyboard(Event event) -> void {
-  const auto key = std::get<Event::Key>(event.data).key;
-
-  if (event.type == Event::Type::KeyDown && key == GLFW_KEY_ESCAPE) {
-    this->exit();
-  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_GRAVE_ACCENT) {
-    this->ui.show_menu = !this->ui.show_menu;
-  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_1) {
-    this->renderer.set_wireframe(!this->renderer.get_wireframe());
-  }
-}
-
-// FIXME: Move somewhere more appropriate.
-auto Engine::update_camera() -> void {
-  if (!this->ui.show_menu) {
-    // if (this->event_manager.key_state.at(Action::Forward)) {
-    //   this->camera.handle_key(Movement::Forward, this->get_delta_time());
-    // }
-
-    // if (this->event_manager.key_state.at(Action::Left)) {
-    //   this->camera.handle_key(Movement::Left, this->get_delta_time());
-    // }
-
-    // if (this->event_manager.key_state.at(Action::Backward)) {
-    //   this->camera.handle_key(Movement::Backward, this->get_delta_time());
-    // }
-
-    // if (this->event_manager.key_state.at(Action::Right)) {
-    //   this->camera.handle_key(Movement::Right, this->get_delta_time());
-    // }
-  }
 }
 
 auto Engine::render() -> void {
