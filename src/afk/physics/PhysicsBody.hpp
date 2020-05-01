@@ -5,6 +5,7 @@
 
 #include <entt/entt.hpp>
 
+#include "afk/component/BaseComponent.hpp"
 #include "afk/physics/PhysicsBodySystem.hpp"
 #include "afk/physics/RigidBodyType.hpp"
 #include "afk/physics/Transform.hpp"
@@ -21,17 +22,17 @@ namespace Afk {
 
   using CollisionShape = rp3d::CollisionShape;
 
-  class PhysicsBody {
+  class PhysicsBody : public BaseComponent {
   public:
     PhysicsBody() = delete;
 
-    PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
-                float bounciness, float linear_dampening,
+    PhysicsBody(GameObject e, Afk::PhysicsBodySystem *physics_system,
+                Afk::Transform transform, float bounciness, float linear_dampening,
                 float angular_dampening, float mass, bool gravity_enabled,
                 Afk::RigidBodyType body_type, Afk::Box bounding_box);
 
-    PhysicsBody(Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
-                float bounciness, float linear_dampening,
+    PhysicsBody(GameObject e, Afk::PhysicsBodySystem *physics_system,
+                Afk::Transform transform, float bounciness, float linear_dampening,
                 float angular_dampening, float mass, bool gravity_enabled,
                 Afk::RigidBodyType body_type, Afk::Sphere bounding_sphere);
 
