@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <map>
 
+#include "afk/component/BaseComponent.hpp"
 #include "afk/component/LuaScript.hpp"
 
 using std::filesystem::path;
@@ -12,9 +13,9 @@ namespace Afk {
    * (However, we can't really do this when it's all in Lua)
    * (So all the scripts are bundled into one ScriptsComponent)
    */
-  class ScriptsComponent {
+  class ScriptsComponent : public BaseComponent {
   public:
-    ScriptsComponent();
+    ScriptsComponent(GameObject e);
     auto check_live_reload(lua_State *l) -> void;
     auto add_script(const path &script_path, lua_State *l, EventManager *evt) -> void;
     auto remove_script(const path &script_path) -> void;
