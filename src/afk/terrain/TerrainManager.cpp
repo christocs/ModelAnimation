@@ -87,18 +87,30 @@ auto TerrainManager::generate_flat_plane(int width, int length) -> void {
   }
 }
 
+auto TerrainManager::generate_terrain(int width, int length, float roughness,
+                                      float scaling) -> void {
+  afk_assert(width >= 1, "Invalid width");
+  afk_assert(length >= 1, "Invalid length");
+
+  this->generate_flat_plane(width, length);
+  this->generate_height_map(width, length, roughness, scaling);
+
+  for (auto i = std::size_t{0}; i < this->height.vertices.size(); ++i) {
+    this->mesh.vertices[i].position.y += this->height.vertices[i].position.y;
+  }
+}
+
+auto TerrainManager::get_model() -> Model {
+  auto model = Model{};
+  model.meshes.push_back(this->mesh);
+  model.file_path = "gen/terrain";
+  model.file_dir  = "gen";
+
+  return model;
+}
+
 auto TerrainManager::initialize() -> void {
   afk_assert(!this->is_initialized, "Terrain manager already initialized");
-
-  // afk_assert(width >= 1, "Invalid width");
-  // afk_assert(length >= 1, "Invalid length");
-
-  // this->generate_flat_plane(width, length);
-  // this->generate_height_map(width, length, roughness, scaling);
-
-  // for (auto i = std::size_t{0}; i < this->height.vertices.size(); ++i) {
-  //   this->mesh.vertices[i].position.y += this->height.vertices[i].position.y;
-  // }
 
   this->is_initialized = true;
 }

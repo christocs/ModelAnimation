@@ -5,6 +5,9 @@
 namespace Afk {
   class TerrainManager {
   public:
+    Mesh height = {};
+    Mesh mesh   = {};
+
     TerrainManager()                       = default;
     TerrainManager(TerrainManager &&)      = delete;
     TerrainManager(const TerrainManager &) = delete;
@@ -12,11 +15,10 @@ namespace Afk {
     auto operator=(TerrainManager &&) -> TerrainManager & = delete;
 
     auto initialize() -> void;
+    auto get_model() -> Afk::Model;
+    auto generate_terrain(int width, int length, float roughness, float scaling) -> void;
 
   private:
-    Mesh height = {};
-    Mesh mesh   = {};
-
     bool is_initialized = false;
 
     auto generate_flat_plane(int width, int length) -> void;

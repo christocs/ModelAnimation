@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 
 function(target_ignore_header_warnings target scope)
     get_target_property(lib_include_dirs ${target} INTERFACE_INCLUDE_DIRECTORIES)
