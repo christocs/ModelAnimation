@@ -67,16 +67,7 @@ auto Engine::initialize() -> void {
                                     false, Afk::RigidBodyType::STATIC,
                                     Afk::Box{100000000.0f, 0.1f, 100000000.0f});
 
-  // auto ball_transform        = Transform{};
-  // ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
-  // auto ball_entity           = registry.create();
-  // registry.assign<Afk::Transform>(ball_entity, ball_transform);
-  // registry.assign<Afk::PhysicsBody>(ball_entity, &this->physics_body_system,
-  //                                   ball_transform, 0.3f, 0.2f, 0.0f, 30.0f, true,
-  //                                   Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
-  // registry.assign<Afk::ModelSource>(ball_entity,
-  //                                   "res/model/basketball/basketball.fbx");
-  Afk::Asset::game_asset_factory("res/asset/basketball.lua");
+  Afk::Asset::game_asset_factory("asset/basketball.lua");
 
   this->is_initialized = true;
 }
