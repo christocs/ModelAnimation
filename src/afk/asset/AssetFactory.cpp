@@ -56,34 +56,31 @@ static auto load_object_asset(lua_State *lua) -> Asset {
     // mass = 0.5, gravity = true, body_type = rigidbody.dynamic,
     // shape = {type = shape.box}
     auto shape      = LuaRef{phys["shape"]};
-    auto shape_type = shape["type"].cast<Shape>();
+    auto shape_type = static_cast<Shape>(shape["type"].cast<int>());
     switch (shape_type) {
       case Shape::Box: {
         auto box = Afk::Box{shape["x"].cast<float>(), shape["y"].cast<float>(),
                             shape["z"].cast<float>()};
         reg.assign<Afk::PhysicsBody>(
             obj.ent,
-            Afk::PhysicsBody{&Afk::Engine::get().physics_body_system,
-                             reg.get<Afk::Transform>(obj.ent),
-                             phys["bounciness"].cast<float>(),
-                             phys["linear_damping"].cast<float>(),
-                             phys["angular_damping"].cast<float>(),
-                             phys["mass"].cast<float>(), phys["gravity"].cast<bool>(),
-                             phys["body_type"].cast<Afk::RigidBodyType>(), box});
+            Afk::PhysicsBody{
+                &Afk::Engine::get().physics_body_system,
+                reg.get<Afk::Transform>(obj.ent), phys["bounciness"].cast<float>(),
+                phys["linear_damping"].cast<float>(), phys["angular_damping"].cast<float>(),
+                phys["mass"].cast<float>(), phys["gravity"].cast<bool>(),
+                static_cast<Afk::RigidBodyType>(phys["body_type"].cast<int>()), box});
         break;
       }
       case Shape::Sphere: {
-
         auto sphere = Afk::Sphere{shape["r"].cast<float>()};
         reg.assign<Afk::PhysicsBody>(
             obj.ent,
-            Afk::PhysicsBody{&Afk::Engine::get().physics_body_system,
-                             reg.get<Afk::Transform>(obj.ent),
-                             phys["bounciness"].cast<float>(),
-                             phys["linear_damping"].cast<float>(),
-                             phys["angular_damping"].cast<float>(),
-                             phys["mass"].cast<float>(), phys["gravity"].cast<bool>(),
-                             phys["body_type"].cast<Afk::RigidBodyType>(), sphere});
+            Afk::PhysicsBody{
+                &Afk::Engine::get().physics_body_system,
+                reg.get<Afk::Transform>(obj.ent), phys["bounciness"].cast<float>(),
+                phys["linear_damping"].cast<float>(), phys["angular_damping"].cast<float>(),
+                phys["mass"].cast<float>(), phys["gravity"].cast<bool>(),
+                static_cast<Afk::RigidBodyType>(phys["body_type"].cast<int>()), sphere});
         break;
       }
     }
@@ -95,7 +92,7 @@ static auto load_object_asset(lua_State *lua) -> Asset {
   }
   auto script = LuaRef{components["script"]};
   if (!script.isNil()) {
-    reg.assign<Afk::ScriptsComponent>(obj.ent, load_script(lua, script));
+    reg.assign<Afk::ScriptsComponent>(obj.ent, load_script(Afk::Engine::get().lua, script));
   }
 
   return Afk::Asset::Asset{Afk::Asset::Asset::AssetData{obj}, Afk::Asset::AssetType::Object};
@@ -142,8 +139,8 @@ auto Afk::Asset::game_asset_factory(const std::filesystem::path &path) -> Asset 
     throw std::runtime_error{"Error loading "s + path.string() + ": "s +
                              lua_tostring(lua, -1)};
   }
-  const int asset_val   = luabridge::getGlobal(lua, "type");
-  const auto asset_type = static_cast<AssetType>(asset_val);
+  const auto asset_type =
+      static_cast<AssetType>(luabridge::getGlobal(lua, "type").cast<int>());
   Asset a;
   switch (asset_type) {
     case AssetType::Object: a = load_object_asset(lua); break;
