@@ -131,6 +131,8 @@ auto Afk::Asset::game_asset_factory(const std::filesystem::path &path) -> Asset 
   constexpr auto SPHERE = static_cast<int>(Shape::Sphere);
   asset_namespace.addVariable("box", const_cast<int *>(&BOX), false);
   asset_namespace.addVariable("sphere", const_cast<int *>(&SPHERE), false);
+  asset_namespace.endNamespace();
+
   auto abs_path   = Afk::get_absolute_path(path);
   auto error_code = luaL_dofile(lua, abs_path.c_str());
   if (error_code != 0) {
