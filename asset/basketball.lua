@@ -15,7 +15,7 @@ components = {
         body_type = rigidbody.dynamic,
         shape = {
             type = shape.sphere,
-            r = 0.8--sphere is type = shape.sphere, r = <radius>
+            r = 1.4--sphere is type = shape.sphere, r = <radius>
         }
     },
     model = {

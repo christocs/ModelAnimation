@@ -11,6 +11,7 @@
 #include "afk/physics/Transform.hpp"
 #include "afk/physics/shape/Box.hpp"
 #include "afk/physics/shape/Sphere.hpp"
+#include "afk/physics/shape/HeightMap.hpp"
 #include "glm/vec3.hpp"
 
 namespace Afk {
@@ -35,6 +36,11 @@ namespace Afk {
                 Afk::Transform transform, float bounciness, float linear_dampening,
                 float angular_dampening, float mass, bool gravity_enabled,
                 Afk::RigidBodyType body_type, Afk::Sphere bounding_sphere);
+
+    PhysicsBody(GameObject e, Afk::PhysicsBodySystem *physics_system, Afk::Transform transform,
+                float bounciness, float linear_dampening,
+                float angular_dampening, float mass, bool gravity_enabled,
+                Afk::RigidBodyType body_type, const Afk::HeightMap& height_map);
 
     // todo add rotate method
 

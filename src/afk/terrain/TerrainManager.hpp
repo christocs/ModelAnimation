@@ -2,25 +2,13 @@
 
 #include <vector>
 
+#include "afk/physics/shape/HeightMap.hpp"
 #include "afk/renderer/Model.hpp"
 
 namespace Afk {
-  struct HeightMap {
-    struct Point {
-      int x = {};
-      int y = {};
-    };
-
-    std::vector<float> heights = {};
-    int width                  = {};
-
-    auto at(Point p) const -> float;
-    auto operator[](Point p) -> float &;
-  };
-
   class TerrainManager {
   public:
-    HeightMap heightMap = {};
+    HeightMap height_map = {};
     Mesh mesh           = {};
 
     TerrainManager()                       = default;

@@ -47,12 +47,12 @@ auto TerrainManager::generate_height_map(int width, int length, float roughness,
   auto *noise_set = noise->GetSimplexFractalSet(0, 0, 0, w, 1, l);
   auto index      = size_t{0};
 
-  this->heightMap.width = width;
-  this->heightMap.heights.resize(num_vertices);
+  this->height_map.width = width;
+  this->height_map.heights.resize(num_vertices);
 
   for (auto y = 0; y < l; ++y) {
     for (auto x = 0; x < w; ++x) {
-      this->heightMap[{x, y}] = noise_set[index] * scaling;
+      this->height_map[{x, y}] = noise_set[index] * scaling;
       ++index;
     }
   }
@@ -77,7 +77,7 @@ auto TerrainManager::generate_flat_plane(int width, int length) -> void {
   for (auto y = 0; y < l; ++y) {
     for (auto x = 0; x < w; ++x) {
       this->mesh.vertices[vertexIndex].position =
-          vec3{static_cast<float>(x), 0.0f, static_cast<float>(y)};
+          vec3{static_cast<float>(x) - static_cast<float>(width) / 2.0f, 0.0f, static_cast<float>(y) - static_cast<float>(length) / 2.0f};
 
       // FIXME
       this->mesh.vertices[vertexIndex].uvs =
@@ -111,8 +111,8 @@ auto TerrainManager::generate_terrain(int width, int length, float roughness,
   this->generate_flat_plane(width, length);
   this->generate_height_map(width, length, roughness, scaling);
 
-  for (auto i = std::size_t{0}; i < this->heightMap.heights.size(); ++i) {
-    this->mesh.vertices[i].position.y += this->heightMap.heights[i];
+  for (auto i = std::size_t{0}; i < this->height_map.heights.size(); ++i) {
+    this->mesh.vertices[i].position.y += this->height_map.heights[i];
   }
 }
 
