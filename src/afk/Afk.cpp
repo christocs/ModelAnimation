@@ -38,18 +38,12 @@ auto Engine::initialize() -> void {
 
   this->renderer.initialize();
   this->event_manager.initialize(this->renderer.window);
-//  this->renderer.set_wireframe(true);
+  //  this->renderer.set_wireframe(true);
 
   this->ui.initialize(this->renderer.window);
   this->lua = luaL_newstate();
   luaL_openlibs(this->lua);
   Afk::LuaScript::setup_lua_state(this->lua);
-
-  this->terrain_manager.initialize();
-  const int terrain_width  = 1024;
-  const int terrain_length = 1024;
-  this->terrain_manager.generate_terrain(terrain_width, terrain_length, 0.05f, 7.5f);
-  this->renderer.load_model(this->terrain_manager.get_model());
 
   // FIXME: Move to key manager
   this->event_manager.register_event(Event::Type::MouseMove,
@@ -61,15 +55,22 @@ auto Engine::initialize() -> void {
                                        this->move_keyboard(event);
                                      }});
 
+  this->terrains.emplace_back(TerrainManager{"overworld"});
+  this->terrains.back().initialize();
+  this->terrains.back().generate_terrain(1024, 1024, 0.05f, 7.5f);
+  this->renderer.load_model(this->terrains.back().get_model());
+
   auto terrain_entity           = registry.create();
   auto terrain_transform        = Transform{terrain_entity};
   terrain_transform.translation = glm::vec3{0.0f, -10.0f, 0.0f};
-  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity, terrain_manager.get_model().file_path, "shader/terrain.prog");
+  registry.assign<Afk::ModelSource>(
+      terrain_entity, terrain_entity,
+      this->terrains.back().get_model().file_path, "shader/terrain.prog");
   registry.assign<Afk::Transform>(terrain_entity, terrain_entity);
-  registry.assign<Afk::PhysicsBody>(terrain_entity, terrain_entity, &this->physics_body_system,
-                                    terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f,
-                                    true, Afk::RigidBodyType::STATIC,
-                                    this->terrain_manager.height_map);
+  registry.assign<Afk::PhysicsBody>(
+      terrain_entity, terrain_entity, &this->physics_body_system,
+      terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f, true, Afk::RigidBodyType::STATIC,
+      this->terrains.back().height_map);
 
   Afk::Asset::game_asset_factory("asset/basketball.lua");
 

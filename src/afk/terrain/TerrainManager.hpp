@@ -9,13 +9,10 @@ namespace Afk {
   class TerrainManager {
   public:
     HeightMap height_map = {};
-    Mesh mesh           = {};
+    Mesh mesh            = {};
 
-    TerrainManager()                       = default;
-    TerrainManager(TerrainManager &&)      = delete;
-    TerrainManager(const TerrainManager &) = delete;
-    auto operator=(const TerrainManager &) -> TerrainManager & = delete;
-    auto operator=(TerrainManager &&) -> TerrainManager & = delete;
+    TerrainManager(std::string filename);
+    TerrainManager() = delete;
 
     auto initialize() -> void;
     auto get_model() -> Afk::Model;
@@ -23,6 +20,8 @@ namespace Afk {
 
   private:
     bool is_initialized = false;
+
+    std::string filename_;
 
     auto generate_flat_plane(int width, int length) -> void;
     auto generate_height_map(int width, int length, float roughness, float scaling) -> void;

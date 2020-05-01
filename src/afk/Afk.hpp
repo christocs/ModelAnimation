@@ -20,7 +20,7 @@ namespace Afk {
     EventManager event_manager     = {};
     Ui ui                          = {};
     Camera camera                  = {};
-    TerrainManager terrain_manager = {};
+    std::vector<TerrainManager> terrains;
     entt::registry registry;
     Afk::PhysicsBodySystem physics_body_system;
     lua_State *lua;

@@ -24,6 +24,10 @@ using Afk::TerrainManager;
 using Afk::Texture;
 using Index = Mesh::Index;
 
+TerrainManager::TerrainManager(std::string filename) {
+  this->filename_ = std::move(filename);
+}
+
 auto TerrainManager::generate_height_map(int width, int length, float roughness,
                                          float scaling) -> void {
   afk_assert(width >= 1, "Invalid width");
@@ -112,7 +116,7 @@ auto TerrainManager::generate_terrain(int width, int length, float roughness,
 auto TerrainManager::get_model() -> Model {
   auto model = Model{};
   model.meshes.push_back(this->mesh);
-  model.file_path = "gen/terrain/terrain";
+  model.file_path = "gen/terrain/" + this->filename_;
   model.file_dir  = "gen/terrain";
 
   return model;
