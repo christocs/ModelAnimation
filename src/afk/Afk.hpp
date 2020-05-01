@@ -10,6 +10,7 @@
 #include "afk/terrain/TerrainManager.hpp"
 #include "afk/ui/Ui.hpp"
 
+struct lua_State;
 namespace Afk {
   class Engine {
   public:
@@ -22,6 +23,7 @@ namespace Afk {
     TerrainManager terrain_manager = {};
     entt::registry registry;
     Afk::PhysicsBodySystem physics_body_system;
+    lua_State *lua;
 
     Engine()               = default;
     Engine(Engine &&)      = delete;

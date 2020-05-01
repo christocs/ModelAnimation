@@ -2,13 +2,15 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <utility>
 
+#include "afk/asset/AssetFactory.hpp"
+#include "afk/component/LuaScript.hpp"
 #include "afk/debug/Assert.hpp"
 #include "afk/ecs/GameObject.hpp"
 #include "afk/io/Log.hpp"
@@ -18,6 +20,7 @@
 #include "afk/physics/shape/Box.hpp"
 #include "afk/physics/shape/Sphere.hpp"
 #include "afk/renderer/ModelRenderSystem.hpp"
+#include "afk/script/LuaInclude.hpp"
 
 using namespace std::string_literals;
 
@@ -37,6 +40,9 @@ auto Engine::initialize() -> void {
   this->event_manager.initialize(this->renderer.window);
   this->ui.initialize(this->renderer.window);
   this->terrain_manager.initialize();
+  this->lua = luaL_newstate();
+  luaL_openlibs(this->lua);
+  Afk::LuaScript::setup_lua_state(this->lua);
 
   // FIXME: Move to key manager
   this->event_manager.register_event(Event::Type::MouseMove,
@@ -59,15 +65,16 @@ auto Engine::initialize() -> void {
                                     false, Afk::RigidBodyType::STATIC,
                                     Afk::Box{100000000.0f, 0.1f, 100000000.0f});
 
-  auto ball_transform        = Transform{};
-  ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
-  auto ball_entity           = registry.create();
-  registry.assign<Afk::Transform>(ball_entity, ball_transform);
-  registry.assign<Afk::PhysicsBody>(ball_entity, &this->physics_body_system,
-                                    ball_transform, 0.3f, 0.2f, 0.0f, 30.0f, true,
-                                    Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
-  registry.assign<Afk::ModelSource>(ball_entity,
-                                    "res/model/basketball/basketball.fbx");
+  // auto ball_transform        = Transform{};
+  // ball_transform.translation = vec3{0.0f, 100.0f, 0.0f};
+  // auto ball_entity           = registry.create();
+  // registry.assign<Afk::Transform>(ball_entity, ball_transform);
+  // registry.assign<Afk::PhysicsBody>(ball_entity, &this->physics_body_system,
+  //                                   ball_transform, 0.3f, 0.2f, 0.0f, 30.0f, true,
+  //                                   Afk::RigidBodyType::DYNAMIC, Afk::Sphere{0.8f});
+  // registry.assign<Afk::ModelSource>(ball_entity,
+  //                                   "res/model/basketball/basketball.fbx");
+  Afk::Asset::game_asset_factory("res/asset/basketball.lua");
 
   this->is_initialized = true;
 }
