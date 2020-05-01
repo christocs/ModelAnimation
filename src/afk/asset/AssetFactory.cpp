@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "afk/component/BaseComponent.hpp"
 #include "afk/debug/Assert.hpp"
 #include "afk/io/ModelSource.hpp"
 #include "afk/io/Path.hpp"
@@ -24,8 +25,9 @@ using Afk::Asset::Asset;
 using namespace std::string_literals;
 enum class Shape { Box, Sphere };
 
-static auto load_script(lua_State *lua, LuaRef tbl) -> Afk::ScriptsComponent {
-  auto script = Afk::ScriptsComponent{};
+static auto load_script(lua_State *lua, LuaRef tbl, Afk::GameObject owner)
+    -> Afk::ScriptsComponent {
+  auto script = Afk::ScriptsComponent{owner};
   for (int i = 1; i <= tbl.length(); i++) {
     script.add_script(tbl[i], lua, &Afk::Engine::get().event_manager);
   }
@@ -40,13 +42,13 @@ static auto load_object_asset(lua_State *lua) -> Asset {
   afk_assert(components.isTable(), "components must be a table");
   auto tf = LuaRef{components["transform"]};
   if (!tf.isNil()) {
-    auto transform          = Afk::Transform{};
+    auto transform          = Afk::Transform{obj.ent};
     transform.translation.x = tf["x"];
     transform.translation.y = tf["y"];
     transform.translation.z = tf["z"];
     reg.assign<Afk::Transform>(obj.ent, transform);
   } else {
-    auto transform = Afk::Transform{};
+    auto transform = Afk::Transform{obj.ent};
     reg.assign<Afk::Transform>(obj.ent, transform);
   }
   auto phys = LuaRef{components["phys"]};
@@ -62,37 +64,34 @@ static auto load_object_asset(lua_State *lua) -> Asset {
         auto box = Afk::Box{shape["x"].cast<float>(), shape["y"].cast<float>(),
                             shape["z"].cast<float>()};
         reg.assign<Afk::PhysicsBody>(
-            obj.ent,
-            Afk::PhysicsBody{
-                &Afk::Engine::get().physics_body_system,
-                reg.get<Afk::Transform>(obj.ent), phys["bounciness"].cast<float>(),
-                phys["linear_damping"].cast<float>(), phys["angular_damping"].cast<float>(),
-                phys["mass"].cast<float>(), phys["gravity"].cast<bool>(),
-                static_cast<Afk::RigidBodyType>(phys["body_type"].cast<int>()), box});
+            obj.ent, obj.ent, &Afk::Engine::get().physics_body_system,
+            reg.get<Afk::Transform>(obj.ent), phys["bounciness"].cast<float>(),
+            phys["linear_damping"].cast<float>(), phys["angular_damping"].cast<float>(),
+            phys["mass"].cast<float>(), phys["gravity"].cast<bool>(),
+            static_cast<Afk::RigidBodyType>(phys["body_type"].cast<int>()), box);
         break;
       }
       case Shape::Sphere: {
         auto sphere = Afk::Sphere{shape["r"].cast<float>()};
         reg.assign<Afk::PhysicsBody>(
-            obj.ent,
-            Afk::PhysicsBody{
-                &Afk::Engine::get().physics_body_system,
-                reg.get<Afk::Transform>(obj.ent), phys["bounciness"].cast<float>(),
-                phys["linear_damping"].cast<float>(), phys["angular_damping"].cast<float>(),
-                phys["mass"].cast<float>(), phys["gravity"].cast<bool>(),
-                static_cast<Afk::RigidBodyType>(phys["body_type"].cast<int>()), sphere});
+            obj.ent, obj.ent, &Afk::Engine::get().physics_body_system,
+            reg.get<Afk::Transform>(obj.ent), phys["bounciness"].cast<float>(),
+            phys["linear_damping"].cast<float>(), phys["angular_damping"].cast<float>(),
+            phys["mass"].cast<float>(), phys["gravity"].cast<bool>(),
+            static_cast<Afk::RigidBodyType>(phys["body_type"].cast<int>()), sphere);
         break;
       }
     }
   } // phys
   auto mdl = LuaRef{components["model"]};
   if (!mdl.isNil()) {
-    reg.assign<Afk::ModelSource>(obj.ent,
-                                 Afk::ModelSource{mdl["path"].cast<std::string>()});
+    reg.assign<Afk::ModelSource>(
+        obj.ent, Afk::ModelSource{obj.ent, mdl["path"].cast<std::string>()});
   }
   auto script = LuaRef{components["script"]};
   if (!script.isNil()) {
-    reg.assign<Afk::ScriptsComponent>(obj.ent, load_script(Afk::Engine::get().lua, script));
+    reg.assign<Afk::ScriptsComponent>(
+        obj.ent, load_script(Afk::Engine::get().lua, script, obj.ent));
   }
 
   return Afk::Asset::Asset{Afk::Asset::Asset::AssetData{obj}, Afk::Asset::AssetType::Object};

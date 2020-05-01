@@ -56,13 +56,13 @@ auto Engine::initialize() -> void {
                                        this->move_keyboard(std::move(event));
                                      }});
 
-  auto city_transform        = Transform{};
+  const auto city_entity     = registry.create();
+  auto city_transform        = Transform{city_entity};
   city_transform.scale       = vec3{0.25f};
   city_transform.translation = vec3{0.0f, -1.0f, 0.0f};
-  const auto city_entity     = registry.create();
   registry.assign<Afk::Transform>(city_entity, city_transform);
-  registry.assign<Afk::ModelSource>(city_entity, "res/model/city/city.fbx");
-  registry.assign<Afk::PhysicsBody>(city_entity, &this->physics_body_system,
+  registry.assign<Afk::ModelSource>(city_entity, city_entity, "res/model/city/city.fbx");
+  registry.assign<Afk::PhysicsBody>(city_entity, city_entity, &this->physics_body_system,
                                     city_transform, 0.0f, 0.0f, 0.0f, 0.0f,
                                     false, Afk::RigidBodyType::STATIC,
                                     Afk::Box{100000000.0f, 0.1f, 100000000.0f});
