@@ -31,9 +31,34 @@ static auto new_quat(float x, float y, float z, float w) -> glm::quat {
 static auto get_delta_time() -> float {
   return Afk::Engine::get().get_delta_time();
 }
+
+struct GameObjectWrapped {
+  Afk::GameObject e;
+  template<typename T>
+  auto get_component() -> T * {
+    return Afk::Engine::get().registry.try_get<T>(this->e);
+  }
+};
+
 template<typename T>
-static auto get_component(Afk::GameObject o) -> T * {
-  return Afk::Engine::get().registry.try_get<T>(o)
+static auto get_parent(T *bc) -> ENTT_ID_TYPE {
+  return static_cast<ENTT_ID_TYPE>(bc->owning_entity);
+}
+
+static auto v3_add(glm::vec3 *a, glm::vec3 b) -> glm::vec3 {
+  auto n = glm::vec3{*a};
+  n += b;
+  return n;
+}
+static auto v3_sub(glm::vec3 *a, glm::vec3 b) -> glm::vec3 {
+  auto n = glm::vec3{*a};
+  n -= b;
+  return n;
+}
+static auto v3_mul(glm::vec3 *a, float f) -> glm::vec3 {
+  auto n = glm::vec3{*a};
+  n *= f;
+  return n;
 }
 
 using namespace luabridge;
@@ -41,15 +66,18 @@ auto Afk::add_engine_bindings(lua_State *lua) {
   getGlobalNamespace(lua)
       .beginClass<glm::vec3>("vector3")
       .addStaticFunction("new", &new_vec3)
-      .addProperty("x", &glm::vec3::x)
-      .addProperty("y", &glm::vec3::y)
-      .addProperty("z", &glm::vec3::z)
+      .addData("x", &glm::vec3::x)
+      .addData("y", &glm::vec3::y)
+      .addData("z", &glm::vec3::z)
+      .addFunction("vec_add", &v3_add)
+      .addFunction("vec_sub", &v3_sub)
+      .addFunction("sc_mul", &v3_mul)
       .endClass()
 
       .beginClass<glm::vec2>("vector2")
       .addStaticFunction("new", &new_vec2)
-      .addProperty("x", &glm::vec2::x)
-      .addProperty("y", &glm::vec2::y)
+      .addData("x", &glm::vec2::x)
+      .addData("y", &glm::vec2::y)
       .endClass()
 
       .beginClass<glm::quat>("quaternion")
@@ -66,36 +94,39 @@ auto Afk::add_engine_bindings(lua_State *lua) {
       .addFunction("set_pos", &Afk::Camera::set_position)
       .addFunction("get_angle", &Afk::Camera::get_angles)
       .addFunction("set_angle", &Afk::Camera::set_angles)
+      .addFunction("front", &Afk::Camera::get_front)
+      .addFunction("right", &Afk::Camera::get_right)
+      .addFunction("up", &Afk::Camera::get_up)
       .endClass()
 
-      .beginClass<Afk::GameObject>("entity")
-      .addFunction("get_transform", &get_component<Transform>)
-      .addFunction("get_physics", &get_component<PhysicsBody>)
-      .addFunction("get_model", &get_component<ModelSource>)
-      .addFunction("get_script", &get_component<ScriptsComponent>)
-      .endClass()
-
-      .beginClass<Afk::BaseComponent>("component")
-      .addData("parent", &Afk::BaseComponent::owning_entity, false)
+      .beginClass<GameObjectWrapped>("entity")
+      .addFunction("get_transform", &GameObjectWrapped::get_component<Transform>)
+      .addFunction("get_physics", &GameObjectWrapped::get_component<PhysicsBody>)
+      .addFunction("get_model", &GameObjectWrapped::get_component<ModelSource>)
+      .addFunction("get_script", &GameObjectWrapped::get_component<ScriptsComponent>)
       .endClass()
 
       .beginClass<Afk::PhysicsBody>("physics_component")
-      .addData("parent", &Afk::BaseComponent::owning_entity, false)
+      .addFunction("parent", &get_parent<Afk::PhysicsBody>)
       .addFunction("apply_force", &Afk::PhysicsBody::apply_force)
       .addFunction("apply_torque", &Afk::PhysicsBody::apply_torque)
       .addFunction("translate", &Afk::PhysicsBody::translate)
       .endClass()
 
       .beginClass<Afk::Transform>("transform_component")
-      .addData("parent", &Afk::BaseComponent::owning_entity, false)
+      .addFunction("parent", &get_parent<Afk::Transform>)
       .addData("translation", &Afk::Transform::translation)
       .addData("rotation", &Afk::Transform::rotation)
       .addData("scale", &Afk::Transform::scale)
       .endClass()
 
       .beginClass<Afk::ModelSource>("model_component")
-      .addData("parent", &Afk::BaseComponent::owning_entity, false)
+      .addFunction("parent", &get_parent<Afk::ModelSource>)
       .addData("name", &Afk::ModelSource::name)
+      .endClass()
+
+      .beginClass<Afk::BaseComponent>("component")
+      .addFunction("parent", &get_parent<Afk::BaseComponent>)
       .endClass()
 
       .beginNamespace("engine")
