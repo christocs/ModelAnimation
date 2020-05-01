@@ -18,6 +18,9 @@ namespace Afk {
     auto get_angles() const -> glm::vec2;
     auto set_position(glm::vec3 v) -> void;
     auto set_angles(glm::vec2 v) -> void;
+    auto get_front() const -> glm::vec3;
+    auto get_right() const -> glm::vec3;
+    auto get_up() const -> glm::vec3;
 
   private:
     float fov         = 75.0f;
@@ -25,10 +28,6 @@ namespace Afk {
     float far         = 1000.0f;
     float speed       = 10.0f;
     float sensitivity = 0.1f;
-
-    auto get_front() const -> glm::vec3;
-    auto get_right() const -> glm::vec3;
-    auto get_up() const -> glm::vec3;
 
     glm::vec2 angles   = {};
     glm::vec3 position = {};
