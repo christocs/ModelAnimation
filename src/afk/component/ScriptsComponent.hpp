@@ -1,5 +1,6 @@
 #include <filesystem>
 #include <map>
+#include <memory>
 
 #include "afk/component/BaseComponent.hpp"
 #include "afk/component/LuaScript.hpp"
@@ -17,11 +18,12 @@ namespace Afk {
   public:
     ScriptsComponent(GameObject e);
     auto check_live_reload(lua_State *l) -> void;
-    auto add_script(const path &script_path, lua_State *l, EventManager *evt) -> void;
+    auto add_script(const path &script_path, lua_State *l, EventManager *evt)
+        -> ScriptsComponent &;
     auto remove_script(const path &script_path) -> void;
 
   private:
-    std::map<path, Afk::LuaScript> loaded_files;
+    std::map<path, std::shared_ptr<Afk::LuaScript>> loaded_files;
     std::map<path, std::filesystem::file_time_type> last_write;
   };
 }

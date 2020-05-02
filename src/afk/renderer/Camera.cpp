@@ -80,3 +80,10 @@ auto Camera::get_position() const -> vec3 {
 auto Camera::get_angles() const -> vec2 {
   return this->angles;
 }
+
+auto Camera::set_position(glm::vec3 v) -> void {
+  this->position = v;
+}
+auto Camera::set_angles(glm::vec2 v) -> void {
+  this->angles = v;
+}

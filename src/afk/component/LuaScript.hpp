@@ -34,13 +34,12 @@ namespace Afk {
     ~LuaScript();
     auto load(const std::filesystem::path &filename, lua_State *lua) -> void;
     auto unload() -> void;
-    static auto setup_lua_state(lua_State *lua) -> void;
-
-  private:
     /**
      * Allows script to register its functions into the event system
      */
     auto register_fn(int event_val, LuaRef func) -> void;
+
+  private:
     EventManager *event_manager;
     std::shared_ptr<std::vector<RegisteredLuaCall>> registered_events;
   };

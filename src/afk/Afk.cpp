@@ -10,7 +10,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "afk/asset/AssetFactory.hpp"
-#include "afk/component/LuaScript.hpp"
+#include "afk/component/ScriptsComponent.hpp"
 #include "afk/debug/Assert.hpp"
 #include "afk/ecs/GameObject.hpp"
 #include "afk/io/Log.hpp"
@@ -20,6 +20,7 @@
 #include "afk/physics/shape/Box.hpp"
 #include "afk/physics/shape/Sphere.hpp"
 #include "afk/renderer/ModelRenderSystem.hpp"
+#include "afk/script/Bindings.hpp"
 #include "afk/script/LuaInclude.hpp"
 
 using namespace std::string_literals;
@@ -38,12 +39,12 @@ auto Engine::initialize() -> void {
 
   this->renderer.initialize();
   this->event_manager.initialize(this->renderer.window);
-//  this->renderer.set_wireframe(true);
+  //  this->renderer.set_wireframe(true);
 
   this->ui.initialize(this->renderer.window);
   this->lua = luaL_newstate();
   luaL_openlibs(this->lua);
-  Afk::LuaScript::setup_lua_state(this->lua);
+  Afk::add_engine_bindings(this->lua);
 
   this->terrain_manager.initialize();
   const int terrain_width  = 1024;
@@ -51,20 +52,12 @@ auto Engine::initialize() -> void {
   this->terrain_manager.generate_terrain(terrain_width, terrain_length, 0.05f, 7.5f);
   this->renderer.load_model(this->terrain_manager.get_model());
 
-  // FIXME: Move to key manager
-  this->event_manager.register_event(Event::Type::MouseMove,
-                                     Afk::EventManager::Callback{[this](Event event) {
-                                       this->move_mouse(event);
-                                     }});
-  this->event_manager.register_event(Event::Type::KeyDown,
-                                     Afk::EventManager::Callback{[this](Event event) {
-                                       this->move_keyboard(event);
-                                     }});
-
   auto terrain_entity           = registry.create();
   auto terrain_transform        = Transform{terrain_entity};
   terrain_transform.translation = glm::vec3{0.0f, -10.0f, 0.0f};
-  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity, terrain_manager.get_model().file_path, "shader/terrain.prog");
+  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity,
+                                    terrain_manager.get_model().file_path,
+                                    "shader/terrain.prog");
   registry.assign<Afk::Transform>(terrain_entity, terrain_entity);
   registry.assign<Afk::PhysicsBody>(terrain_entity, terrain_entity, &this->physics_body_system,
                                     terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f,
@@ -73,27 +66,11 @@ auto Engine::initialize() -> void {
 
   Afk::Asset::game_asset_factory("asset/basketball.lua");
 
+  auto cam = registry.create();
+  registry.assign<Afk::ScriptsComponent>(cam, cam)
+      .add_script("script/camera_keyboard_control.lua", this->lua, &this->event_manager)
+      .add_script("script/camera_mouse_control.lua", this->lua, &this->event_manager);
   this->is_initialized = true;
-}
-
-auto Engine::move_mouse(Event event) -> void {
-  const auto data = std::get<Event::MouseMove>(event.data);
-
-  static auto last_x      = 0.0f;
-  static auto last_y      = 0.0f;
-  static auto first_frame = true;
-
-  const auto dx = static_cast<float>(data.x) - last_x;
-  const auto dy = static_cast<float>(data.y) - last_y;
-
-  if (!first_frame && !this->ui.show_menu) {
-    this->camera.handle_mouse(dx, dy);
-  } else {
-    first_frame = false;
-  }
-
-  last_x = static_cast<float>(data.x);
-  last_y = static_cast<float>(data.y);
 }
 
 auto Engine::get() -> Engine & {
@@ -104,41 +81,6 @@ auto Engine::get() -> Engine & {
 
 auto Engine::exit() -> void {
   this->is_running = false;
-}
-
-// FIXME: Move to key handler.
-// TODO: Assign these keys in Lua
-auto Engine::move_keyboard(Event event) -> void {
-  const auto key = std::get<Event::Key>(event.data).key;
-
-  if (event.type == Event::Type::KeyDown && key == GLFW_KEY_ESCAPE) {
-    this->exit();
-  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_GRAVE_ACCENT) {
-    this->ui.show_menu = !this->ui.show_menu;
-  } else if (event.type == Event::Type::KeyDown && key == GLFW_KEY_1) {
-    this->renderer.set_wireframe(!this->renderer.get_wireframe());
-  }
-}
-
-// FIXME: Move somewhere more appropriate.
-auto Engine::update_camera() -> void {
-  if (!this->ui.show_menu) {
-    if (this->event_manager.key_state.at(Action::Forward)) {
-      this->camera.handle_key(Movement::Forward, this->get_delta_time());
-    }
-
-    if (this->event_manager.key_state.at(Action::Left)) {
-      this->camera.handle_key(Movement::Left, this->get_delta_time());
-    }
-
-    if (this->event_manager.key_state.at(Action::Backward)) {
-      this->camera.handle_key(Movement::Backward, this->get_delta_time());
-    }
-
-    if (this->event_manager.key_state.at(Action::Right)) {
-      this->camera.handle_key(Movement::Right, this->get_delta_time());
-    }
-  }
 }
 
 auto Engine::render() -> void {
@@ -164,7 +106,7 @@ auto Engine::update() -> void {
     glfwSetInputMode(this->renderer.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   }
 
-  this->update_camera();
+  // this->update_camera();
 
   this->physics_body_system.update(&this->registry, this->get_delta_time());
 
