@@ -9,8 +9,11 @@ namespace Afk {
     struct TextureHandle {
       using Type = Texture::Type;
 
-      Type type = {};
-      GLuint id = {};
+      Type type    = {};
+      GLuint id    = {};
+      int width    = {};
+      int height   = {};
+      int channels = 4;
     };
   }
 }

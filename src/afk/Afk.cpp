@@ -71,6 +71,7 @@ auto Engine::initialize() -> void {
       .add_script("script/component/camera_keyboard_control.lua", this->lua, &this->event_manager)
       .add_script("script/component/camera_mouse_control.lua", this->lua, &this->event_manager)
       .add_script("script/component/debug.lua", this->lua, &this->event_manager);
+
   this->is_initialized = true;
 }
 

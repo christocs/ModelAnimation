@@ -40,6 +40,7 @@ namespace Afk {
     bool show_log                = false;
     bool show_model_viewer       = false;
     bool show_terrain_controller = false;
+    bool show_exit_screen        = false;
     bool is_initialized          = false;
     float scale                  = 1.5f;
 
@@ -51,5 +52,6 @@ namespace Afk {
     auto draw_log() -> void;
     auto draw_model_viewer() -> void;
     auto draw_terrain_controller() -> void;
+    auto draw_exit_screen() -> void;
   };
 }

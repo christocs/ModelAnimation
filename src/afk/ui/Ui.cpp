@@ -74,6 +74,7 @@ auto Ui::draw() -> void {
   this->draw_log();
   this->draw_model_viewer();
   this->draw_terrain_controller();
+  this->draw_exit_screen();
 
   if (this->show_imgui) {
     ImGui::ShowDemoWindow(&this->show_imgui);
@@ -127,7 +128,8 @@ auto Ui::draw_menu_bar() -> void {
     }
 
     if (ImGui::MenuItem("Exit")) {
-      afk.exit();
+      // afk.exit();
+      this->show_exit_screen = true;
     }
 
     ImGui::EndMainMenuBar();
@@ -269,5 +271,25 @@ auto Ui::draw_terrain_controller() -> void {
   if (ImGui::Begin("Terrain controller", &this->show_terrain_controller)) {
     // ImGui::SliderFloat("slider float", &f1, 0.0f, 1.0f, "ratio = %.3f");
   }
+  ImGui::End();
+}
+
+auto Ui::draw_exit_screen() -> void {
+  if (!this->show_exit_screen) {
+    return;
+  }
+
+  auto &afk          = Engine::get();
+  const auto texture = afk.renderer.get_texture("res/ui/exit.png");
+
+  ImGui::SetNextWindowSize({525, 600});
+  ImGui::Begin("Exit screen", &this->show_exit_screen);
+  ImGui::Image(reinterpret_cast<void *>(texture.id),
+               {static_cast<float>(texture.width), static_cast<float>(texture.height)});
+
+  if (ImGui::Button("Exit")) {
+    afk.exit();
+  }
+
   ImGui::End();
 }
