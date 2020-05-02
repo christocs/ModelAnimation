@@ -397,8 +397,11 @@ auto Renderer::load_texture(const Texture &texture) -> TextureHandle {
   afk_assert(image != nullptr,
              "Failed to load image: '"s + texture.file_path.string() + "'"s);
 
-  auto texture_handle = TextureHandle{};
-  texture_handle.type = texture.type;
+  auto texture_handle     = TextureHandle{};
+  texture_handle.type     = texture.type;
+  texture_handle.width    = width;
+  texture_handle.height   = height;
+  texture_handle.channels = channels;
 
   // Send the texture to the GPU.
   glGenTextures(1, &texture_handle.id);
