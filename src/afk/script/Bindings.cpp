@@ -79,6 +79,14 @@ static auto gameobject_get_entity(Afk::Asset::Asset *e) -> GameObjectWrapped {
   return GameObjectWrapped{std::get<Afk::Asset::Asset::Object>(e->data).ent};
 }
 
+static auto get_wireframe() -> bool {
+  return Afk::Engine::get().renderer.get_wireframe();
+}
+
+static auto set_wireframe(bool b) -> void {
+  Afk::Engine::get().renderer.set_wireframe(b);
+}
+
 using namespace luabridge;
 auto Afk::add_engine_bindings(lua_State *lua) -> void {
   getGlobalNamespace(lua)
@@ -169,8 +177,7 @@ auto Afk::add_engine_bindings(lua_State *lua) -> void {
       .beginNamespace("engine")
       .addFunction("delta_time", &get_delta_time)
       .addFunction("load_asset", &Afk::Asset::game_asset_factory)
-      .addProperty("wireframe", &Afk::Engine::get().renderer.get_wireframe,
-                   &Afk::Engine::get().renderer.set_wireframe)
+      .addProperty("wireframe", &get_wireframe, &set_wireframe)
       .endNamespace();
 
   auto key_ns = luabridge::getGlobalNamespace(lua).beginNamespace("key");
