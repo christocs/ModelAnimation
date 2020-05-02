@@ -148,7 +148,7 @@ auto Afk::Asset::game_asset_factory(const std::filesystem::path &path) -> Asset 
   shape_enum.endNamespace();
 
   auto abs_path   = Afk::get_absolute_path(path);
-  auto error_code = luaL_dofile(lua, abs_path.c_str());
+  auto error_code = luaL_dofile(lua, abs_path.string().c_str());
   if (error_code != 0) {
     throw std::runtime_error{"Error loading "s + path.string() + ": "s +
                              lua_tostring(lua, -1)};
