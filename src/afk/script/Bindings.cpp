@@ -7,6 +7,8 @@ extern "C" {
 #include <LuaBridge/LuaBridge.h>
 
 #include "afk/Afk.hpp"
+#include "afk/asset/Asset.hpp"
+#include "afk/asset/AssetFactory.hpp"
 #include "afk/component/BaseComponent.hpp"
 #include "afk/component/ScriptsComponent.hpp"
 #include "afk/ecs/GameObject.hpp"
@@ -64,10 +66,17 @@ static auto v3_mul(glm::vec3 *a, float f) -> glm::vec3 {
   n *= f;
   return n;
 }
+static auto v3_normal(glm::vec3 *a) -> glm::vec3 {
+  return glm::normalize(*a);
+}
 
 // todo move to keyboard mgmt
 static auto key_pressed(int key_code) -> bool {
   return glfwGetKey(Afk::Engine::get().renderer.window, key_code) == GLFW_PRESS;
+}
+
+static auto gameobject_get_entity(Afk::Asset::Asset *e) -> GameObjectWrapped {
+  return GameObjectWrapped{std::get<Afk::GameObject>(e->data)};
 }
 
 using namespace luabridge;
@@ -78,6 +87,7 @@ auto Afk::add_engine_bindings(lua_State *lua) -> void {
       .addData("x", &glm::vec3::x)
       .addData("y", &glm::vec3::y)
       .addData("z", &glm::vec3::z)
+      .addFunction("normalized", &v3_normal)
       .addFunction("vec_add", &v3_add)
       .addFunction("vec_sub", &v3_sub)
       .addFunction("scalar_mul", &v3_mul)
@@ -133,6 +143,12 @@ auto Afk::add_engine_bindings(lua_State *lua) -> void {
       .addData("scale", &Afk::Transform::scale)
       .endClass()
 
+      .beginClass<Afk::ScriptsComponent>("script_component")
+      .addFunction("parent", &get_parent<Afk::ScriptsComponent>)
+      .addFunction("add", &Afk::ScriptsComponent::add_script)
+      .addFunction("remove", &Afk::ScriptsComponent::remove_script)
+      .endClass()
+
       .beginClass<Afk::ModelSource>("model_component")
       .addFunction("parent", &get_parent<Afk::ModelSource>)
       .addData("name", &Afk::ModelSource::name)
@@ -146,8 +162,15 @@ auto Afk::add_engine_bindings(lua_State *lua) -> void {
       .addFunction("is_pressed", &key_pressed)
       .endNamespace()
 
+      .beginClass<Afk::Asset::Asset>("asset")
+      .addFunction("unwrap", &gameobject_get_entity)
+      .endClass()
+
       .beginNamespace("engine")
       .addFunction("delta_time", &get_delta_time)
+      .addFunction("load_asset", &Afk::Asset::game_asset_factory)
+      .addProperty("wireframe", &Afk::Engine::get().renderer.get_wireframe,
+                   &Afk::Engine::get().renderer.set_wireframe)
       .endNamespace();
 
   auto key_ns = luabridge::getGlobalNamespace(lua).beginNamespace("key");
@@ -210,7 +233,7 @@ auto Afk::add_engine_bindings(lua_State *lua) -> void {
   afk_event_class.endClass();
 
   auto script_class = luabridge::getGlobalNamespace(lua)
-                          .beginClass<LuaScript>("script")
+                          .beginClass<LuaScript>("__AFK__SCRIPT")
                           .addFunction("register_event", &Afk::LuaScript::register_fn)
                           .endClass();
 }
