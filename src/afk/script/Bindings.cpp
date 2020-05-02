@@ -76,7 +76,7 @@ static auto key_pressed(int key_code) -> bool {
 }
 
 static auto gameobject_get_entity(Afk::Asset::Asset *e) -> GameObjectWrapped {
-  return GameObjectWrapped{std::get<Afk::GameObject>(e->data)};
+  return GameObjectWrapped{std::get<Afk::Asset::Asset::Object>(e->data).ent};
 }
 
 using namespace luabridge;
