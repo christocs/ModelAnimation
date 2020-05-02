@@ -46,6 +46,18 @@ static auto load_object_asset(lua_State *lua) -> Asset {
     transform.translation.x = tf["x"];
     transform.translation.y = tf["y"];
     transform.translation.z = tf["z"];
+    auto xs                 = tf["x_scale"];
+    auto ys                 = tf["y_scale"];
+    auto zs                 = tf["z_scale"];
+    if (!xs.isNil()) {
+      transform.scale.x = xs;
+    }
+    if (!ys.isNil()) {
+      transform.scale.y = ys;
+    }
+    if (!zs.isNil()) {
+      transform.scale.z = zs;
+    }
     reg.assign<Afk::Transform>(obj.ent, transform);
   } else {
     auto transform = Afk::Transform{obj.ent};
