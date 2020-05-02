@@ -1,7 +1,8 @@
 #include "ModelSource.hpp"
 
-Afk::ModelSource::ModelSource(GameObject e, std::string path, std::filesystem::path shader_path) {
+Afk::ModelSource::ModelSource(GameObject e, const std::filesystem::path &name_,
+                              const std::filesystem::path &shader_path) {
   this->owning_entity = e;
-  this->name          = path;
+  this->name          = name_;
   this->shader_program_path = shader_path;
 }
