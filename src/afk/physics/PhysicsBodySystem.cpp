@@ -4,6 +4,7 @@
 
 #include "afk/physics/PhysicsBody.hpp"
 #include "afk/physics/Transform.hpp"
+#include <iostream>
 
 using Afk::PhysicsBodySystem;
 
@@ -42,5 +43,7 @@ auto PhysicsBodySystem::update(entt::registry *registry, float dt) -> void {
             glm::vec3{rp3d_position.x, rp3d_position.y, rp3d_position.z};
         transform.rotation = glm::quat{rp3d_orientation.w, rp3d_orientation.x,
                                        rp3d_orientation.y, rp3d_orientation.z};
+
+//        std::cout << transform.translation.x << ", " << transform.translation.y << ", " << transform.translation.z << std::endl;
       });
 }
