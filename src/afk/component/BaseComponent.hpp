@@ -2,7 +2,7 @@
 
 #include <entt/entt.hpp>
 
-#include "afk/ecs/GameObject.hpp"
+#include "afk/component/GameObject.hpp"
 namespace Afk {
   class BaseComponent {
   public:
