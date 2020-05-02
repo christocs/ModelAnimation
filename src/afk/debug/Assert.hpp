@@ -35,6 +35,10 @@
 #endif
 
 namespace Afk {
+  /**
+   * assertion. use macro afk_assert(expr, msg)
+   * @see afk_assert
+   */
   auto assertion(bool condition, const std::string &msg,
                  const std::string &expression, const std::string &file_name,
                  std::size_t line_num, const std::string &function_name) -> void;
@@ -42,6 +46,10 @@ namespace Afk {
                                 const std::string &function_name) -> void;
 }
 
+/**
+ * assertion. use macro afk_assert(expr, msg)
+ * @see afk_assert
+ */
 inline auto Afk::assertion(bool condition, const std::string &msg,
                            const std::string &expression, const std::string &file_path,
                            size_t line_num, const std::string &function_name) -> void {
@@ -54,6 +62,10 @@ inline auto Afk::assertion(bool condition, const std::string &msg,
   }
 }
 
+/**
+ * unreachable code. use macro afk_unreachable()
+ * @see afk_assert
+ */
 inline auto Afk::unreachable(const std::string &file_path, size_t line_num,
                              const std::string &function_name) -> void {
 

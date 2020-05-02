@@ -1,10 +1,10 @@
 #include "afk/physics/PhysicsBodySystem.hpp"
 
+#include <iostream>
 #include <memory>
 
 #include "afk/physics/PhysicsBody.hpp"
 #include "afk/physics/Transform.hpp"
-#include <iostream>
 
 using Afk::PhysicsBodySystem;
 
@@ -17,7 +17,7 @@ PhysicsBodySystem::PhysicsBodySystem(glm::vec3 gravity) {
       rp3d::Vector3{gravity.x, gravity.y, gravity.z});
 }
 
-auto PhysicsBodySystem::get_gravity() {
+auto PhysicsBodySystem::get_gravity() -> glm::vec3 {
   return glm::vec3{this->world->getGravity().x, this->world->getGravity().y,
                    this->world->getGravity().z};
 }
@@ -44,6 +44,6 @@ auto PhysicsBodySystem::update(entt::registry *registry, float dt) -> void {
         transform.rotation = glm::quat{rp3d_orientation.w, rp3d_orientation.x,
                                        rp3d_orientation.y, rp3d_orientation.z};
 
-//        std::cout << transform.translation.x << ", " << transform.translation.y << ", " << transform.translation.z << std::endl;
+        //        std::cout << transform.translation.x << ", " << transform.translation.y << ", " << transform.translation.z << std::endl;
       });
 }

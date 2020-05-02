@@ -5,6 +5,9 @@
 #include <vector>
 
 namespace Afk {
+  /**
+   * texture
+   */
   struct Texture {
     enum class Type : std::size_t {
       Diffuse = 0,

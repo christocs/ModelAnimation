@@ -11,6 +11,9 @@
 #include "afk/renderer/Texture.hpp"
 
 namespace Afk {
+  /**
+   * vertex
+   */
   struct Vertex {
     glm::vec3 position  = {};
     glm::vec3 normal    = {};
@@ -18,7 +21,9 @@ namespace Afk {
     glm::vec3 tangent   = {};
     glm::vec3 bitangent = {};
   };
-
+  /**
+   * mesh
+   */
   struct Mesh {
     using Vertices = std::vector<Vertex>;
     using Index    = uint32_t;

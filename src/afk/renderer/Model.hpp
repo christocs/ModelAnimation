@@ -7,6 +7,9 @@
 #include "afk/renderer/Texture.hpp"
 
 namespace Afk {
+  /**
+   * model
+   */
   struct Model {
     using Meshes = std::vector<Mesh>;
 

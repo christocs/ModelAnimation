@@ -9,7 +9,15 @@ namespace Afk {
 
     enum class Movement { Forward, Backward, Left, Right };
 
+    /**
+     * unused
+     * @todo remove
+     */
     auto handle_mouse(float deltaX, float deltaY) -> void;
+    /**
+     * unused
+     * @todo remove
+     */
     auto handle_key(Movement movement, float deltaTime) -> void;
 
     auto get_view_matrix() const -> glm::mat4;

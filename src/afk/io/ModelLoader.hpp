@@ -9,10 +9,19 @@
 #include "afk/renderer/Texture.hpp"
 
 namespace Afk {
+  /**
+   * model loader
+   */
   class ModelLoader {
   public:
+    /**
+     * model as it is loading
+     * @todo maybe should not be public
+     */
     Model model = {};
-
+    /**
+     * load a model
+     */
     auto load(const std::filesystem::path &file_path) -> Model;
 
   private:
