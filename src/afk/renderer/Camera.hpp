@@ -20,14 +20,41 @@ namespace Afk {
      */
     auto handle_key(Movement movement, float deltaTime) -> void;
 
+    /**
+     * current view matrix
+     */
     auto get_view_matrix() const -> glm::mat4;
+    /**
+     * current projection matrix
+     */
     auto get_projection_matrix(int width, int height) const -> glm::mat4;
+    /**
+     * camera pos in worldspace
+     */
     auto get_position() const -> glm::vec3;
+    /**
+     * camera view angle
+     */
     auto get_angles() const -> glm::vec2;
+    /**
+     * set pos in worldspace
+     */
     auto set_position(glm::vec3 v) -> void;
+    /**
+     * set viewing angle
+     */
     auto set_angles(glm::vec2 v) -> void;
+    /**
+     * get front facing vector
+     */
     auto get_front() const -> glm::vec3;
+    /**
+     * get right facing vector
+     */
     auto get_right() const -> glm::vec3;
+    /**
+     * get up facing vector
+     */
     auto get_up() const -> glm::vec3;
 
   private:
