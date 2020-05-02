@@ -8,8 +8,9 @@
 namespace Afk {
   class ModelSource : public BaseComponent {
   public:
-    ModelSource(GameObject e, std::string name, std::filesystem::path shader_path);
-    std::string name;
+    ModelSource(GameObject e, const std::filesystem::path &name_,
+                const std::filesystem::path &shader_path);
+    std::filesystem::path name;
     std::filesystem::path shader_program_path;
   };
 }
