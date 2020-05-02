@@ -17,6 +17,7 @@ extern "C" {
 #include "afk/physics/Transform.hpp"
 #include "afk/renderer/Camera.hpp"
 #include "afk/script/Script.hpp"
+#include "afk/ui/Ui.hpp"
 
 // todo move to keyboard mgmt
 #include <GLFW/glfw3.h>
@@ -79,12 +80,13 @@ static auto gameobject_get_entity(Afk::Asset::Asset *e) -> GameObjectWrapped {
   return GameObjectWrapped{std::get<Afk::Asset::Asset::Object>(e->data).ent};
 }
 
-static auto get_wireframe() -> bool {
-  return Afk::Engine::get().renderer.get_wireframe();
+static auto toggle_wireframe() -> void {
+  auto &renderer = Afk::Engine::get().renderer;
+  renderer.set_wireframe(!renderer.get_wireframe());
 }
-
-static auto set_wireframe(bool b) -> void {
-  Afk::Engine::get().renderer.set_wireframe(b);
+static auto toggle_menu() -> void {
+  auto &ui     = Afk::Engine::get().ui;
+  ui.show_menu = !ui.show_menu;
 }
 
 using namespace luabridge;
@@ -118,6 +120,10 @@ auto Afk::add_engine_bindings(lua_State *lua) -> void {
       .addProperty("z", &glm::quat::y)
       .addProperty("w", &glm::quat::w)
       .endClass()
+
+      .beginNamespace("ui")
+      .addFunction("toggle_menu", &toggle_menu)
+      .endNamespace()
 
       .beginClass<Afk::Camera>("camera")
       .addStaticFunction("current", &get_camera)
@@ -177,7 +183,7 @@ auto Afk::add_engine_bindings(lua_State *lua) -> void {
       .beginNamespace("engine")
       .addFunction("delta_time", &get_delta_time)
       .addFunction("load_asset", &Afk::Asset::game_asset_factory)
-      .addProperty("wireframe", &get_wireframe, &set_wireframe)
+      .addFunction("toggle_wireframe", &toggle_wireframe)
       .endNamespace();
 
   auto key_ns = luabridge::getGlobalNamespace(lua).beginNamespace("key");

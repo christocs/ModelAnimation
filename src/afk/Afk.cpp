@@ -69,7 +69,8 @@ auto Engine::initialize() -> void {
   auto cam = registry.create();
   registry.assign<Afk::ScriptsComponent>(cam, cam)
       .add_script("script/component/camera_keyboard_control.lua", this->lua, &this->event_manager)
-      .add_script("script/component/camera_mouse_control.lua", this->lua, &this->event_manager);
+      .add_script("script/component/camera_mouse_control.lua", this->lua, &this->event_manager)
+      .add_script("script/component/debug.lua", this->lua, &this->event_manager);
   this->is_initialized = true;
 }
 
