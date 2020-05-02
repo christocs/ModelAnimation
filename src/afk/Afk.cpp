@@ -10,9 +10,9 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "afk/asset/AssetFactory.hpp"
+#include "afk/component/GameObject.hpp"
 #include "afk/component/ScriptsComponent.hpp"
 #include "afk/debug/Assert.hpp"
-#include "afk/ecs/GameObject.hpp"
 #include "afk/io/Log.hpp"
 #include "afk/io/ModelSource.hpp"
 #include "afk/physics/PhysicsBody.hpp"
@@ -68,8 +68,8 @@ auto Engine::initialize() -> void {
 
   auto cam = registry.create();
   registry.assign<Afk::ScriptsComponent>(cam, cam)
-      .add_script("script/camera_keyboard_control.lua", this->lua, &this->event_manager)
-      .add_script("script/camera_mouse_control.lua", this->lua, &this->event_manager);
+      .add_script("script/component/camera_keyboard_control.lua", this->lua, &this->event_manager)
+      .add_script("script/component/camera_mouse_control.lua", this->lua, &this->event_manager);
   this->is_initialized = true;
 }
 
