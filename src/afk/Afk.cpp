@@ -10,7 +10,6 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "afk/asset/AssetFactory.hpp"
-#include "afk/component/LuaScript.hpp"
 #include "afk/component/ScriptsComponent.hpp"
 #include "afk/debug/Assert.hpp"
 #include "afk/ecs/GameObject.hpp"
