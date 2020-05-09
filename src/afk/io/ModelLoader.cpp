@@ -82,8 +82,8 @@ auto ModelLoader::load(const path &file_path) -> Model {
 
 auto ModelLoader::process_node(const aiScene *scene, const aiNode *node) -> void {
   this->model.nodes.push_back(Afk::ModelNode{});
-  this->model.nodes.back().name      = node->mName.C_Str();
   this->model.nodes.back().transform = to_glm(node->mTransformation);
+  this->model.node_map.insert(std::pair<std::string, unsigned int>(node->mName.C_Str(), static_cast<unsigned int>(this->model.nodes.size() - 1)));
 
   // Process all meshes at this node.
   for (auto i = size_t{0}; i < node->mNumMeshes; ++i) {
@@ -116,6 +116,7 @@ auto ModelLoader::get_bones(const aiMesh *mesh, Mesh::Bones &bones, Mesh::BoneMa
   for (unsigned int i = 0; i < mesh->mNumBones; i++) {
     bones.emplace_back(Bone{to_glm(mesh->mBones[i]->mOffsetMatrix), to_glm(mesh->mBones[i]->mOffsetMatrix)});
     if (bone_map.count(mesh->mBones[i]->mName.C_Str()) < 1) {
+      std::cout << "bone name: " << mesh->mBones[i]->mName.C_Str() << std::endl;
       bone_map.insert(std::make_pair<std::string, size_t>(mesh->mBones[i]->mName.C_Str(), bones.size()-1));
     }
   }

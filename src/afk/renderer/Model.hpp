@@ -11,11 +11,13 @@
 
 namespace Afk {
   struct Model {
-    using Meshes = std::vector<Mesh>;
-    using Nodes  = std::vector<ModelNode>;
+    using Meshes  = std::vector<Mesh>;
+    using Nodes   = std::vector<ModelNode>;
+    using NodeMap = std::unordered_map<std::string, unsigned int>;
 
-    Nodes nodes   = {};
-    Meshes meshes = {};
+    Nodes nodes      = {};
+    NodeMap node_map = {};
+    Meshes meshes    = {};
 
     size_t root_node_index = 0;
 
