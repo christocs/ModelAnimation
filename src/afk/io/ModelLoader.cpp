@@ -96,7 +96,7 @@ auto ModelLoader::process_node(const aiScene *scene, const aiNode *node) -> void
   // Process all child nodes.
   for (auto i = size_t{0}; i < node->mNumChildren; ++i) {
     // add index of child about to be added
-    this->model.nodes.back().childrenIds.push_back(this->model.nodes.size());
+    this->model.nodes.back().child_ids.push_back(this->model.nodes.size());
     this->process_node(scene, node->mChildren[i]);
   }
 }

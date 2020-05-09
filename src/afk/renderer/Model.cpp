@@ -15,9 +15,10 @@ Model::Model(const path &_file_path) {
   this->meshes    = std::move(tmp.meshes);
   this->file_path = std::move(tmp.file_path);
   this->file_dir  = std::move(tmp.file_dir);
+  this->nodes     = std::move(tmp.nodes);
 }
 
-//auto Afk::Model::find_bone_index(const std::string& name, const Bones& bones) -> int
+// auto Afk::Model::find_bone_index(const std::string& name, const Bones& bones) -> int
 //{
 //  int index = -1;
 //

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "afk/physics/Transform.hpp"
+#include "glm/mat4x4.hpp"
 #include "afk/renderer/Mesh.hpp"
 
 namespace Afk {
@@ -11,9 +11,9 @@ namespace Afk {
 
     std::string name;
     // points to index of child nodes
-    ChildIds childrenIds = {};
+    ChildIds child_ids = {};
     // points to index of meshes contained in node
     MeshIds meshIds      = {};
-    Transform transform  = {};
+    glm::mat4 transform  = {};
   };
 }

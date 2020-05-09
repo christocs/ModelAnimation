@@ -287,7 +287,7 @@ auto Renderer::use_shader(const ShaderProgramHandle &shader) const -> void {
   glUseProgram(shader.id);
 }
 
-auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
+auto Renderer::load_mesh(const Mesh &mesh, glm::mat4 &transform) -> MeshHandle {
   afk_assert(mesh.vertices.size() > 0, "Mesh missing vertices");
   afk_assert(mesh.indices.size() > 0, "Mesh missing indices");
   afk_assert(mesh.indices.size() < std::numeric_limits<Mesh::Index>::max(),
@@ -297,7 +297,7 @@ auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
 
   auto mesh_handle        = MeshHandle{};
   mesh_handle.num_indices = mesh.indices.size();
-  mesh_handle.transform   = std::move(mesh.transform);
+  mesh_handle.transform   = transform;
 
   // Create new buffers.
   glGenVertexArrays(1, &mesh_handle.vao);
@@ -353,13 +353,27 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
 
   afk_assert(!is_loaded, "Model with path '"s + model.file_path.string() + "' already loaded"s);
 
-  auto modelHandle = ModelHandle{};
+  auto model_handle = ModelHandle{};
 
-  // Load meshes and textures.
-  for (const auto &mesh : model.meshes) {
-    auto mesh_handle = this->load_mesh(mesh);
+  this->load_node(model, model.root_node_index, mat4{1.0f}, model_handle);
 
-    for (const auto &texture : mesh.textures) {
+  this->models[model.file_path] = std::move(model_handle);
+
+  return this->models[model.file_path];
+}
+
+auto Renderer::load_node(const Model &model, size_t node_index, const glm::mat4 &parent_transform, ModelHandle &model_handle) -> void
+{
+  afk_assert(node_index < model.nodes.size(), "invalid node index");
+  const auto &node = model.nodes[node_index];
+  // add parent and local transform together
+  auto local_transform = parent_transform * node.transform;
+
+  for (const auto &mesh_id : node.meshIds) {
+    afk_assert(mesh_id < model.meshes.size(), "invalid mesh id");
+    auto mesh_handle = this->load_mesh(model.meshes[mesh_id], local_transform);
+
+    for (const auto &texture : model.meshes[mesh_id].textures) {
       const auto &texture_handle = this->get_texture(texture.file_path);
       auto &loaded_handle        = this->textures[texture.file_path];
 
@@ -370,13 +384,13 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
 
       mesh_handle.textures.push_back(std::move(texture_handle));
     }
-
-    modelHandle.meshes.push_back(std::move(mesh_handle));
+    model_handle.meshes.push_back(std::move(mesh_handle));
   }
 
-  this->models[model.file_path] = std::move(modelHandle);
-
-  return this->models[model.file_path];
+  // process childreen
+  for (const auto &child_id : node.child_ids) {
+    this->load_node(model, child_id, local_transform, model_handle);
+  }
 }
 
 auto Renderer::load_texture(const Texture &texture) -> TextureHandle {

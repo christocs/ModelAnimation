@@ -106,8 +106,9 @@ namespace Afk {
 
       // Resource loading
       auto load_model(const Model &model) -> ModelHandle;
+      auto load_node(const Model &model, size_t node_index, const glm::mat4& transform, ModelHandle &model_handle) -> void;
       auto load_texture(const Texture &texture) -> TextureHandle;
-      auto load_mesh(const Mesh &meshData) -> MeshHandle;
+      auto load_mesh(const Mesh &meshData, glm::mat4 &transform) -> MeshHandle;
       auto compile_shader(const Shader &shader) -> ShaderHandle;
       auto link_shaders(const ShaderProgram &shader_program) -> ShaderProgramHandle;
 

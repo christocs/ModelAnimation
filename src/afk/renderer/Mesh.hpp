@@ -35,8 +35,6 @@ namespace Afk {
     Vertices vertices          = {};
     Indices indices            = {};
     Textures textures          = {};
-    Transform transform        = {};
-    Transform offset_transform = {};
     std::string node_name;
   };
 }
