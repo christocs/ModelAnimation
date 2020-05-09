@@ -19,11 +19,16 @@ namespace Afk {
     glm::vec3 bitangent = {};
 
     unsigned int no_bones                        = 0;
-    static const size_t MAX_BONES                = 8;
+    static const unsigned int MAX_BONES          = 8;
     std::array<unsigned int, MAX_BONES> bone_ids = {};
     std::array<float, MAX_BONES> bone_weights    = {};
 
     auto add_bone(unsigned int id, float weight) -> void;
+  };
+
+  struct Bone {
+    glm::mat4 offset_transform;
+    glm::mat4 final_transform;
   };
 
   struct Mesh {
@@ -31,10 +36,14 @@ namespace Afk {
     using Index    = uint32_t;
     using Indices  = std::vector<Index>;
     using Textures = std::vector<Texture>;
+    using Bones    = std::vector<Bone>;
+    using BoneMap  = std::unordered_map<std::string, size_t>;
 
-    Vertices vertices          = {};
-    Indices indices            = {};
-    Textures textures          = {};
+    Vertices vertices = {};
+    Indices indices   = {};
+    Textures textures = {};
+    Bones bones       = {};
+    BoneMap bone_map  = {};
     std::string node_name;
   };
 }
