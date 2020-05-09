@@ -74,35 +74,39 @@ auto ModelLoader::load(const path &file_path) -> Model {
              "Model load error: "s + importer.GetErrorString());
 
   this->model.meshes.reserve(scene->mNumMeshes);
-  this->process_node(scene, scene->mRootNode, to_glm(scene->mRootNode->mTransformation));
+  this->model.root_node_index = 0;
+  this->process_node(scene, scene->mRootNode);
 
   return std::move(this->model);
 }
 
-auto ModelLoader::process_node(const aiScene *scene, const aiNode *node,
-                               glm::mat4 transform) -> void {
+auto ModelLoader::process_node(const aiScene *scene, const aiNode *node) -> void {
+  this->model.nodes.push_back(Afk::ModelNode{});
+  this->model.nodes.back().name = node->mName.C_Str();
+  this->model.nodes.back().transform = to_glm(node->mTransformation);
+
   // Process all meshes at this node.
   for (auto i = size_t{0}; i < node->mNumMeshes; ++i) {
     const auto *mesh = scene->mMeshes[node->mMeshes[i]];
 
-    this->model.meshes.push_back(
-        this->process_mesh(scene, mesh, transform * to_glm(node->mTransformation)));
+    this->model.meshes.push_back(this->process_mesh(scene, mesh));
+    this->model.nodes.back().meshIds.push_back(this->model.meshes.size() - 1);
   }
 
   // Process all child nodes.
   for (auto i = size_t{0}; i < node->mNumChildren; ++i) {
-    this->process_node(scene, node->mChildren[i], transform * to_glm(node->mTransformation));
+    // add index of child about to be added
+    this->model.nodes.back().childrenIds.push_back(this->model.nodes.size());
+    this->process_node(scene, node->mChildren[i]);
   }
 }
 
-auto ModelLoader::process_mesh(const aiScene *scene, const aiMesh *mesh, mat4 transform)
-    -> Mesh {
+auto ModelLoader::process_mesh(const aiScene *scene, const aiMesh *mesh) -> Mesh {
   auto newMesh = Mesh{};
 
   newMesh.vertices = this->get_vertices(mesh);
   newMesh.indices  = this->get_indices(mesh);
   newMesh.textures = this->get_textures(scene->mMaterials[mesh->mMaterialIndex]);
-  newMesh.transform = transform;
 
   return newMesh;
 }

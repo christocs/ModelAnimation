@@ -5,6 +5,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ShaderProgram.cpp
     Texture.cpp
     ModelRenderSystem.cpp
+    Mesh.cpp
 
     opengl/Renderer.cpp
 )
