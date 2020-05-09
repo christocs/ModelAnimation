@@ -15,7 +15,9 @@ namespace Afk {
 
     auto load(const std::filesystem::path &file_path) -> Model;
 
+    constexpr const static double DEFAULT_TICKS_PER_SECOND = 25;
   private:
+    auto get_animations(const aiScene *scene) -> void;
     auto process_node(const aiScene *scene, const aiNode *node) -> void;
     auto process_mesh(const aiScene *scene, const aiMesh *mesh) -> Mesh;
     auto get_bones(const aiMesh *mesh, Mesh::Bones &bones, Mesh::BoneMap &bone_map) -> void;

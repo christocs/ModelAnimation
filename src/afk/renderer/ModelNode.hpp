@@ -12,7 +12,7 @@ namespace Afk {
     // points to index of child nodes
     ChildIds child_ids = {};
     // points to index of meshes contained in node
-    MeshIds meshIds      = {};
+    MeshIds mesh_ids     = {};
     glm::mat4 transform  = {};
   };
 }

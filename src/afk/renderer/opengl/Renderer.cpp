@@ -369,7 +369,7 @@ auto Renderer::load_node(const Model &model, size_t node_index, const glm::mat4 
   // add parent and local transform together
   auto local_transform = parent_transform * node.transform;
 
-  for (const auto &mesh_id : node.meshIds) {
+  for (const auto &mesh_id : node.mesh_ids) {
     afk_assert(mesh_id < model.meshes.size(), "invalid mesh id");
     auto mesh_handle = this->load_mesh(model.meshes[mesh_id], local_transform);
 
