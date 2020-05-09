@@ -17,6 +17,13 @@ namespace Afk {
     glm::vec2 uvs       = {};
     glm::vec3 tangent   = {};
     glm::vec3 bitangent = {};
+
+    unsigned int no_bones                        = 0;
+    static const size_t MAX_BONES                = 8;
+    std::array<unsigned int, MAX_BONES> bone_ids = {};
+    std::array<float, MAX_BONES> bone_weights    = {};
+
+    auto add_bone(unsigned int id, float weight) -> void;
   };
 
   struct Mesh {
@@ -25,9 +32,11 @@ namespace Afk {
     using Indices  = std::vector<Index>;
     using Textures = std::vector<Texture>;
 
-    Vertices vertices   = {};
-    Indices indices     = {};
-    Textures textures   = {};
-    Transform transform = {};
+    Vertices vertices          = {};
+    Indices indices            = {};
+    Textures textures          = {};
+    Transform transform        = {};
+    Transform offset_transform = {};
+    std::string node_name;
   };
 }

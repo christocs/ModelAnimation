@@ -16,8 +16,8 @@ namespace Afk {
     auto load(const std::filesystem::path &file_path) -> Model;
 
   private:
-    auto process_node(const aiScene *scene, const aiNode *node, glm::mat4 transform) -> void;
-    auto process_mesh(const aiScene *scene, const aiMesh *mesh, glm::mat4 transform) -> Mesh;
+    auto process_node(const aiScene *scene, const aiNode *node) -> void;
+    auto process_mesh(const aiScene *scene, const aiMesh *mesh) -> Mesh;
     auto get_vertices(const aiMesh *mesh) -> Mesh::Vertices;
     auto get_indices(const aiMesh *mesh) -> Mesh::Indices;
     auto get_textures(const aiMaterial *material) -> Mesh::Textures;
