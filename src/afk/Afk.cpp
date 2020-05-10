@@ -46,23 +46,23 @@ auto Engine::initialize() -> void {
   luaL_openlibs(this->lua);
   Afk::add_engine_bindings(this->lua);
 
-//  this->terrain_manager.initialize();
-//  const int terrain_width  = 1024;
-//  const int terrain_length = 1024;
-//  this->terrain_manager.generate_terrain(terrain_width, terrain_length, 0.05f, 7.5f);
-//  this->renderer.load_model(this->terrain_manager.get_model());
-//
-//  auto terrain_entity           = registry.create();
-//  auto terrain_transform        = Transform{terrain_entity};
-//  terrain_transform.translation = glm::vec3{0.0f, -10.0f, 0.0f};
-//  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity,
-//                                    terrain_manager.get_model().file_path,
-//                                    "shader/terrain.prog");
-//  registry.assign<Afk::Transform>(terrain_entity, terrain_entity);
-//  registry.assign<Afk::PhysicsBody>(terrain_entity, terrain_entity, &this->physics_body_system,
-//                                    terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f,
-//                                    true, Afk::RigidBodyType::STATIC,
-//                                    this->terrain_manager.height_map);
+  this->terrain_manager.initialize();
+  const int terrain_width  = 1024;
+  const int terrain_length = 1024;
+  this->terrain_manager.generate_terrain(terrain_width, terrain_length, 0.05f, 7.5f);
+  this->renderer.load_model(this->terrain_manager.get_model());
+
+  auto terrain_entity           = registry.create();
+  auto terrain_transform        = Transform{terrain_entity};
+  terrain_transform.translation = glm::vec3{0.0f, -10.0f, 0.0f};
+  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity,
+                                    terrain_manager.get_model().file_path,
+                                    "shader/terrain.prog");
+  registry.assign<Afk::Transform>(terrain_entity, terrain_entity);
+  registry.assign<Afk::PhysicsBody>(terrain_entity, terrain_entity, &this->physics_body_system,
+                                    terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f,
+                                    true, Afk::RigidBodyType::STATIC,
+                                    this->terrain_manager.height_map);
 
   auto animation           = registry.create();
   auto animation_transform = Transform{};
@@ -70,7 +70,7 @@ auto Engine::initialize() -> void {
   animation_transform.scale = glm::vec3{50.0f, 50.0f, 50.0f};
   registry.assign<Afk::ModelSource>(animation, animation,
                                     "res/model/thanos-gangnam-style/Gangnam Style.fbx",
-                                    "shader/default.prog");
+                                    "shader/animation.prog");
   registry.assign<Afk::Transform>(animation, animation_transform);
 
 //  Afk::Asset::game_asset_factory("asset/basketball.lua");

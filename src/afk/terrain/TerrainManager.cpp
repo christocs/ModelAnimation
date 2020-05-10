@@ -114,6 +114,11 @@ auto TerrainManager::get_model() -> Model {
   model.meshes.push_back(this->mesh);
   model.file_path = "gen/terrain/terrain";
   model.file_dir  = "gen/terrain";
+  ModelNode node;
+  const auto mesh_index = model.meshes.size() - 1;
+  node.mesh_ids.push_back(mesh_index);
+  model.nodes.push_back(std::move(node));
+  model.root_node_index = mesh_index;
 
   return model;
 }

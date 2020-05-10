@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <cmath>
 
 #include <frozen/unordered_map.h>
 #include <glad/glad.h>
@@ -216,7 +217,7 @@ auto Renderer::draw() -> void {
     const auto &program = this->get_shader_program(command.shader_program_path);
 
     this->draw_queue.pop();
-    this->draw_model(model, program, command.transform);
+    this->draw_model(model, program, command.transform, command.current_animation);
   }
 }
 
@@ -235,24 +236,36 @@ auto Renderer::setup_view(const ShaderProgramHandle &shader_program) const -> vo
   this->set_uniform(shader_program, "u_matrices.view", view);
 }
 
-auto Renderer::draw_model(const ModelHandle &model, const ShaderProgramHandle &shader_program,
-                          Transform transform) const -> void {
+auto Renderer::draw_model(const ModelHandle &model,
+                          const ShaderProgramHandle &shader_program, Transform transform,
+                          const AnimationFrame &animation_frame) const -> void {
   glPolygonMode(GL_FRONT_AND_BACK, this->wireframe_enabled ? GL_LINE : GL_FILL);
   this->use_shader(shader_program);
   this->setup_view(shader_program);
 
-    auto parent_transform = mat4{1.0f};
-    // Apply parent tranformation.
-    parent_transform = glm::translate(parent_transform, transform.translation);
-    parent_transform *= glm::mat4_cast(transform.rotation);
-    parent_transform = glm::scale(parent_transform, transform.scale);
+  auto parent_transform = mat4{1.0f};
+  // Apply parent tranformation.
+  parent_transform = glm::translate(parent_transform, transform.translation);
+  parent_transform *= glm::mat4_cast(transform.rotation);
+  parent_transform = glm::scale(parent_transform, transform.scale);
 
-  this->draw_model_node(model, model.root_node_index, parent_transform, shader_program);
+  this->draw_model_node(model, model.root_node_index, parent_transform, animation_frame, shader_program);
 }
 
-auto Renderer::draw_model_node(const ModelHandle &model, size_t node_index, glm::mat4 node_matrix,
+auto Renderer::draw_model_node(const ModelHandle &model, size_t node_index,
+                               glm::mat4 node_matrix, const AnimationFrame &animation_frame,
                                const ShaderProgramHandle &shader_program) const -> void {
   const auto &node = model.nodes[node_index];
+
+  bool has_animation = false;
+  // if animation found with matching name
+  if (model.animations.count(animation_frame.name) == 1) {
+    const auto animation = model.animations.at(animation_frame.name);
+    // if current node is in animation
+    if (animation.animation_nodes.count(static_cast<unsigned int>(node_index)) == 1) {
+      has_animation = true;
+    }
+  }
 
   // Apply local transformation.
   node_matrix = glm::translate(node_matrix, node.transform.translation);
@@ -262,8 +275,15 @@ auto Renderer::draw_model_node(const ModelHandle &model, size_t node_index, glm:
   for (const auto &mesh_id : node.mesh_ids) {
     const auto mesh = model.meshes[mesh_id];
 
-    auto material_bound = vector<bool>(static_cast<size_t>(Texture::Type::Count));
+    if (has_animation) {
+      const auto animation = model.animations.at(animation_frame.name);
+      const auto animation_node = animation.animation_nodes.at(static_cast<unsigned int>(node_index));
+      const double current_tick = std::fmod(static_cast<double>(animation_frame.time) * animation.ticks_per_second, animation.duration);
 
+//      mesh.
+    }
+
+    auto material_bound = vector<bool>(static_cast<size_t>(Texture::Type::Count));
     // Bind all of the textures to shader uniforms.
     for (auto i = size_t{0}; i < mesh.textures.size(); ++i) {
       this->set_texture_unit(GL_TEXTURE0 + i);
@@ -290,7 +310,7 @@ auto Renderer::draw_model_node(const ModelHandle &model, size_t node_index, glm:
   }
 
   for (const auto &child_id : node.child_ids) {
-      this->draw_model_node(model, child_id, node_matrix, shader_program);
+    this->draw_model_node(model, child_id, node_matrix, animation_frame, shader_program);
   }
 }
 
@@ -354,6 +374,16 @@ auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                         reinterpret_cast<void *>(offsetof(Vertex, bitangent)));
 
+  // Vertex bone ids
+  glEnableVertexAttribArray(Vertex::MAX_BONES);
+  glVertexAttribPointer(5, Vertex::MAX_BONES, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex),
+                        reinterpret_cast<void *>(offsetof(Vertex, bone_ids)));
+
+  // Vertex bone weights
+  glEnableVertexAttribArray(Vertex::MAX_BONES);
+  glVertexAttribPointer(6, Vertex::MAX_BONES, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        reinterpret_cast<void *>(offsetof(Vertex, bone_weights)));
+
   glBindVertexArray(0);
 
   return mesh_handle;
@@ -368,16 +398,17 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
 
   model_handle.root_node_index = model.root_node_index;
   model_handle.nodes           = model.nodes;
+  model_handle.animations      = model.animations;
 
-  this->load_node(model, model.root_node_index, model_handle);
+  this->load_model_node(model, model.root_node_index, model_handle);
 
   this->models[model.file_path] = std::move(model_handle);
 
   return this->models[model.file_path];
 }
 
-auto Renderer::load_node(const Model &model, size_t node_index,
-                         ModelHandle &model_handle) -> void {
+auto Renderer::load_model_node(const Model &model, size_t node_index,
+                               ModelHandle &model_handle) -> void {
   afk_assert(node_index < model.nodes.size(), "invalid node index");
   const auto &node = model.nodes[node_index];
 
@@ -401,7 +432,7 @@ auto Renderer::load_node(const Model &model, size_t node_index,
 
   // process children
   for (const auto &child_id : node.child_ids) {
-    this->load_node(model, child_id, model_handle);
+    this->load_model_node(model, child_id, model_handle);
   }
 }
 

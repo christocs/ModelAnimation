@@ -27,8 +27,8 @@ namespace Afk {
   };
 
   struct Bone {
-    glm::mat4 offset_transform;
-    glm::mat4 final_transform;
+    glm::mat4 offset_transform = glm::mat4(1.0f);
+    glm::mat4 final_transform = glm::mat4(1.0f);
   };
 
   struct Mesh {

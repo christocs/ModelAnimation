@@ -20,6 +20,7 @@
 #include "afk/renderer/opengl/ShaderHandle.hpp"
 #include "afk/renderer/opengl/ShaderProgramHandle.hpp"
 #include "afk/renderer/opengl/TextureHandle.hpp"
+#include "afk/component/AnimationFrame.hpp"
 
 namespace Afk {
   struct Model;
@@ -54,6 +55,7 @@ namespace Afk {
         const std::filesystem::path model_path          = {};
         const std::filesystem::path shader_program_path = {};
         const Transform transform                       = {};
+        const AnimationFrame current_animation = {};
       };
 
       using Models =
@@ -89,8 +91,8 @@ namespace Afk {
       auto draw() -> void;
       auto queue_draw(DrawCommand command) -> void;
       auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader_program,
-                      Transform transform) const -> void;
-      auto draw_model_node(const ModelHandle &model, size_t node_index, glm::mat4 node_matrix, const ShaderProgramHandle &shader_program) const -> void;
+                      Transform transform, const AnimationFrame& animation_frame) const -> void;
+      auto draw_model_node(const ModelHandle &model, size_t node_index, glm::mat4 node_matrix, const AnimationFrame &animation_frame, const ShaderProgramHandle &shader_program) const -> void;
       auto setup_view(const ShaderProgramHandle &shader_program) const -> void;
 
       // State management
@@ -107,7 +109,7 @@ namespace Afk {
 
       // Resource loading
       auto load_model(const Model &model) -> ModelHandle;
-      auto load_node(const Model &model, size_t node_index, ModelHandle &model_handle) -> void;
+      auto load_model_node(const Model &model, size_t node_index, ModelHandle &model_handle) -> void;
       auto load_texture(const Texture &texture) -> TextureHandle;
       auto load_mesh(const Mesh &meshData) -> MeshHandle;
       auto compile_shader(const Shader &shader) -> ShaderHandle;
