@@ -1,5 +1,6 @@
 #include "afk/renderer/opengl/Renderer.hpp"
 
+#include <cmath>
 #include <filesystem>
 #include <limits>
 #include <memory>
@@ -7,7 +8,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <cmath>
 
 #include <frozen/unordered_map.h>
 #include <glad/glad.h>
@@ -160,7 +160,7 @@ auto Renderer::swap_buffers() -> void {
   glfwSwapBuffers(this->window);
 }
 
-auto Renderer::get_model(const path &file_path) -> const ModelHandle & {
+auto Renderer::get_model(const path &file_path) -> ModelHandle & {
   const auto is_loaded = this->models.count(file_path) == 1;
 
   if (!is_loaded) {
@@ -213,7 +213,7 @@ auto Renderer::bind_texture(const TextureHandle &texture) const -> void {
 auto Renderer::draw() -> void {
   while (!this->draw_queue.empty()) {
     const auto command  = this->draw_queue.front();
-    const auto &model   = this->get_model(command.model_path);
+    auto &model         = this->get_model(command.model_path);
     const auto &program = this->get_shader_program(command.shader_program_path);
 
     this->draw_queue.pop();
@@ -221,7 +221,7 @@ auto Renderer::draw() -> void {
   }
 }
 
-auto Renderer::queue_draw(DrawCommand command) -> void {
+auto Renderer::queue_draw(const DrawCommand& command) -> void {
   this->draw_queue.push(command);
 }
 
@@ -236,9 +236,9 @@ auto Renderer::setup_view(const ShaderProgramHandle &shader_program) const -> vo
   this->set_uniform(shader_program, "u_matrices.view", view);
 }
 
-auto Renderer::draw_model(const ModelHandle &model,
-                          const ShaderProgramHandle &shader_program, Transform transform,
-                          const AnimationFrame &animation_frame) const -> void {
+auto Renderer::draw_model(ModelHandle &model, const ShaderProgramHandle &shader_program,
+                          Transform transform,
+                          const AnimationFrame &animation_frame) -> void {
   glPolygonMode(GL_FRONT_AND_BACK, this->wireframe_enabled ? GL_LINE : GL_FILL);
   this->use_shader(shader_program);
   this->setup_view(shader_program);
@@ -249,39 +249,61 @@ auto Renderer::draw_model(const ModelHandle &model,
   parent_transform *= glm::mat4_cast(transform.rotation);
   parent_transform = glm::scale(parent_transform, transform.scale);
 
-  this->draw_model_node(model, model.root_node_index, parent_transform, animation_frame, shader_program);
+  this->draw_model_node(model, model.root_node_index, parent_transform,
+                        animation_frame, shader_program);
 }
 
-auto Renderer::draw_model_node(const ModelHandle &model, size_t node_index,
-                               glm::mat4 node_matrix, const AnimationFrame &animation_frame,
+auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, glm::mat4 parent_transform,
+                               const AnimationFrame &animation_frame,
                                const ShaderProgramHandle &shader_program) const -> void {
+  afk_assert(node_index < model.nodes.size(), "Invalid node index");
   const auto &node = model.nodes[node_index];
 
-  bool has_animation = false;
-  // if animation found with matching name
-  if (model.animations.count(animation_frame.name) == 1) {
-    const auto animation = model.animations.at(animation_frame.name);
-    // if current node is in animation
-    if (animation.animation_nodes.count(static_cast<unsigned int>(node_index)) == 1) {
-      has_animation = true;
-    }
+  // Get local transformation.
+  auto local_transform = glm::mat4(1.0f);
+  local_transform = glm::translate(local_transform, node.transform.translation);
+  local_transform *= glm::mat4_cast(node.transform.rotation);
+  local_transform = glm::scale(local_transform, node.transform.scale);
+
+  // if animation exists
+  if (model.animations.count(animation_frame.name) > 0 &&
+      model.animations.at(animation_frame.name).animation_nodes.count(static_cast<unsigned int>(node_index))) {
+    const auto &animation = model.animations.at(animation_frame.name);
+    const auto &animation_node =
+        animation.animation_nodes.at(static_cast<unsigned int>(node_index));
+
+    const auto position =
+        Renderer::get_animation_position(animation_frame.time, animation_node,
+                                         animation.ticks_per_second, animation.duration);
+    const auto rotation =
+        Renderer::get_animation_rotation(animation_frame.time, animation_node,
+                                         animation.ticks_per_second, animation.duration);
+    const auto scale =
+        Renderer::get_animation_scale(animation_frame.time, animation_node,
+                                      animation.ticks_per_second, animation.duration);
+
+    // apply animation transform
+    local_transform = glm::translate(local_transform, position);
+    local_transform *= glm::mat4_cast(rotation);
+    local_transform = glm::scale(local_transform, scale);
   }
 
-  // Apply local transformation.
-  node_matrix = glm::translate(node_matrix, node.transform.translation);
-  node_matrix *= glm::mat4_cast(node.transform.rotation);
-  node_matrix = glm::scale(node_matrix, node.transform.scale);
+  glm::mat4 global_transform = parent_transform * local_transform;
+
+  // apply transform to bone if it exists
+  if (model.bone_map.count(node.name) > 0) {
+    const auto bone_index = model.bone_map.at(node.name);
+    afk_assert(bone_index < model.bones.size(), "Invalid bone index");
+    model.bones[bone_index].final_transform =
+        global_transform * model.bones[bone_index].offset_transform;
+    // TODO only set one bone instead of all at once
+    this->set_uniform(shader_program, "u_bone_transforms", model.bones);
+  }
 
   for (const auto &mesh_id : node.mesh_ids) {
     const auto mesh = model.meshes[mesh_id];
 
-    if (has_animation) {
-      const auto animation = model.animations.at(animation_frame.name);
-      const auto animation_node = animation.animation_nodes.at(static_cast<unsigned int>(node_index));
-      const double current_tick = std::fmod(static_cast<double>(animation_frame.time) * animation.ticks_per_second, animation.duration);
-
-//      mesh.
-    }
+    this->set_uniform(shader_program, "u_bone_transforms", model.bones);
 
     auto material_bound = vector<bool>(static_cast<size_t>(Texture::Type::Count));
     // Bind all of the textures to shader uniforms.
@@ -299,7 +321,7 @@ auto Renderer::draw_model_node(const ModelHandle &model, size_t node_index,
       this->bind_texture(mesh.textures[i]);
     }
 
-    this->set_uniform(shader_program, "u_matrices.model", node_matrix);
+    this->set_uniform(shader_program, "u_matrices.model", global_transform);
 
     // Draw the mesh.
     glBindVertexArray(mesh.vao);
@@ -309,8 +331,8 @@ auto Renderer::draw_model_node(const ModelHandle &model, size_t node_index,
     this->set_texture_unit(GL_TEXTURE0);
   }
 
-  for (const auto &child_id : node.child_ids) {
-    this->draw_model_node(model, child_id, node_matrix, animation_frame, shader_program);
+  for (const auto child_id : node.child_ids) {
+    this->draw_model_node(model, child_id, parent_transform, animation_frame, shader_program);
   }
 }
 
@@ -399,6 +421,8 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
   model_handle.root_node_index = model.root_node_index;
   model_handle.nodes           = model.nodes;
   model_handle.animations      = model.animations;
+  model_handle.bones           = model.bones;
+  model_handle.bone_map        = model.bone_map;
 
   this->load_model_node(model, model.root_node_index, model_handle);
 
@@ -592,6 +616,21 @@ auto Renderer::set_uniform(const ShaderProgramHandle &program,
                      GL_FALSE, glm::value_ptr(value));
 }
 
+auto Renderer::set_uniform(const ShaderProgramHandle &program,
+                           const string &name, const Bones &bones) const -> void {
+  afk_assert_debug(program.id > 0, "Invalid shader program ID");
+    std::array<glm::mat4, 100> bones_final_transform{};
+    for (unsigned int i = 0; i < bones_final_transform.size(); i++) {
+      if (i < bones.size()) {
+        bones_final_transform[i] = bones[i].final_transform;
+      } else {
+        bones_final_transform[i] = glm::mat4(1.0f);
+      }
+    }
+    glUniformMatrix4fv(glGetUniformLocation(program.id, name.c_str()),
+                       bones_final_transform.size(), GL_FALSE, glm::value_ptr(bones_final_transform[0]));
+}
+
 auto Renderer::set_wireframe(bool status) -> void {
   this->wireframe_enabled = status;
 }
@@ -613,4 +652,108 @@ auto Renderer::get_shaders() const -> const Shaders & {
 }
 auto Renderer::get_shader_programs() const -> const ShaderPrograms & {
   return this->shader_programs;
+}
+
+auto Renderer::get_animation_position(float time, const Animation::AnimationNode &animation_node,
+                                      double ticks_per_second, double duration)
+    -> glm::vec3 {
+  afk_assert(!animation_node.position_keys.empty(),
+             "No animation key positions found");
+  glm::vec3 out;
+
+  // if only one key is available, choose that one
+  if (animation_node.position_keys.size() == 1) {
+    out = animation_node.position_keys[0].position;
+  } else {
+    // TODO: interpolate between current and next tick
+    const auto index = Renderer::find_animation_position(
+        time, animation_node.position_keys, ticks_per_second, duration);
+    out = animation_node.position_keys[index].position;
+  }
+
+  return out;
+}
+
+auto Renderer::get_animation_scale(float time, const Animation::AnimationNode &animation_node,
+                                   double ticks_per_second, double duration) -> glm::vec3 {
+  afk_assert(!animation_node.scaling_keys.empty(),
+             "No animation key scales found");
+  glm::vec3 out;
+
+  // if only one key is available, choose that one
+  if (animation_node.scaling_keys.size() == 1) {
+    out = animation_node.scaling_keys[0].scale;
+  } else {
+    // TODO: interpolate between current and next tick
+    const auto index = Renderer::find_animation_position(
+        time, animation_node.scaling_keys, ticks_per_second, duration);
+    out = animation_node.scaling_keys[index].scale;
+  }
+
+  return out;
+}
+
+auto Renderer::get_animation_rotation(float time, const Animation::AnimationNode &animation_node,
+                                      double ticks_per_second, double duration)
+    -> glm::quat {
+  afk_assert(!animation_node.rotation_keys.empty(),
+             "No animation key rotations found");
+  glm::quat out;
+
+  // if only one key is available, choose that one
+  if (animation_node.rotation_keys.size() == 1) {
+    out = animation_node.rotation_keys[0].rotation;
+  } else {
+    // TODO: interpolate between current and next tick
+    const auto index = Renderer::find_animation_position(
+        time, animation_node.rotation_keys, ticks_per_second, duration);
+    out = animation_node.rotation_keys[index].rotation;
+  }
+
+  return out;
+}
+
+auto Renderer::find_animation_position(float time,
+                                       const Animation::AnimationNode::PositionKeys &keys,
+                                       double ticks_per_second, double duration)
+    -> unsigned int {
+  const double current_tick =
+      std::fmod(static_cast<double>(time) * ticks_per_second, duration);
+  for (unsigned int i = 0; i < keys.size() - 1; i++) {
+    if (static_cast<double>(current_tick) < keys[i + 1].time) {
+      return i;
+    }
+  }
+  afk_assert(false, "animation position not found");
+  return 0;
+}
+
+auto Renderer::find_animation_position(float time,
+                                       const Animation::AnimationNode::RotationKeys &keys,
+                                       double ticks_per_second, double duration)
+    -> unsigned int {
+  const double current_tick =
+      std::fmod(static_cast<double>(time) * ticks_per_second, duration);
+  for (unsigned int i = 0; i < keys.size() - 1; i++) {
+    if (static_cast<double>(current_tick) < keys[i + 1].time) {
+      return i;
+    }
+  }
+  afk_assert(false, "animation position not found");
+  return 0;
+}
+
+auto Renderer::find_animation_position(float time,
+                                       const Animation::AnimationNode::ScaleKeys &keys,
+                                       double ticks_per_second, double duration)
+    -> unsigned int {
+  const double current_tick =
+      std::fmod(static_cast<double>(time) * ticks_per_second, duration);
+  for (unsigned int i = 0; i < keys.size() - 1; i++) {
+    if (static_cast<double>(current_tick) < keys[i + 1].time) {
+      return i;
+    }
+  }
+  afk_assert(false, "animation position not found");
+  return 0;
 }

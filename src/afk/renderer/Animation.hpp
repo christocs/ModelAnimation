@@ -1,8 +1,9 @@
 #pragma once
 
+#include <map>
 #include <unordered_map>
 #include <vector>
-#include <map>
+
 #include <glm/glm.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
@@ -26,9 +27,13 @@ namespace Afk {
         double time;
       };
 
-      std::vector<PositionKey> position_keys;
-      std::vector<ScaleKey> scaling_keys;
-      std::vector<RotationKey> rotation_keys;
+      using PositionKeys = std::vector<PositionKey>;
+      using ScaleKeys    = std::vector<ScaleKey>;
+      using RotationKeys = std::vector<RotationKey>;
+
+      PositionKeys position_keys;
+      ScaleKeys scaling_keys;
+      RotationKeys rotation_keys;
     };
 
     using AnimationNodes = std::unordered_map<unsigned int, AnimationNode>;

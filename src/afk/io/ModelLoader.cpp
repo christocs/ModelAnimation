@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <glob.h>
 #include <iterator>
 #include <map>
 #include <string>
@@ -85,6 +86,7 @@ auto ModelLoader::load(const path &file_path) -> Model {
 auto ModelLoader::process_node(const aiScene *scene, const aiNode *node) -> void {
   this->model.nodes.push_back(Afk::ModelNode{});
   this->model.nodes.back().transform = to_glm(node->mTransformation);
+  this->model.nodes.back().name      = node->mName.C_Str();
   this->model.node_map.insert(std::pair<std::string, unsigned int>(
       node->mName.C_Str(), static_cast<unsigned int>(this->model.nodes.size() - 1)));
 
@@ -92,7 +94,8 @@ auto ModelLoader::process_node(const aiScene *scene, const aiNode *node) -> void
   for (auto i = size_t{0}; i < node->mNumMeshes; ++i) {
     const auto *mesh = scene->mMeshes[node->mMeshes[i]];
 
-    this->model.meshes.push_back(this->process_mesh(scene, mesh));
+    this->model.meshes.push_back(
+        this->process_mesh(scene, mesh));
     this->model.nodes.back().mesh_ids.push_back(this->model.meshes.size() - 1);
   }
 
@@ -107,27 +110,26 @@ auto ModelLoader::process_node(const aiScene *scene, const aiNode *node) -> void
 auto ModelLoader::process_mesh(const aiScene *scene, const aiMesh *mesh) -> Mesh {
   auto newMesh = Mesh{};
 
-  this->get_bones(mesh, newMesh.bones, newMesh.bone_map);
-  newMesh.vertices = this->get_vertices(mesh, newMesh.bone_map);
+  this->get_bones(mesh);
+  newMesh.vertices = this->get_vertices(mesh);
   newMesh.indices  = this->get_indices(mesh);
   newMesh.textures = this->get_textures(scene->mMaterials[mesh->mMaterialIndex]);
 
   return newMesh;
 }
 
-auto ModelLoader::get_bones(const aiMesh *mesh, Mesh::Bones &bones,
-                            Mesh::BoneMap &bone_map) -> void {
+auto ModelLoader::get_bones(const aiMesh *mesh) -> void {
   for (unsigned int i = 0; i < mesh->mNumBones; i++) {
-    bones.emplace_back(Bone{to_glm(mesh->mBones[i]->mOffsetMatrix),
-                            to_glm(mesh->mBones[i]->mOffsetMatrix)});
-    if (bone_map.count(mesh->mBones[i]->mName.C_Str()) < 1) {
-      bone_map.insert(std::make_pair<std::string, size_t>(
-          mesh->mBones[i]->mName.C_Str(), bones.size() - 1));
+    if (this->model.bone_map.count(mesh->mBones[i]->mName.C_Str()) < 1) {
+      this->model.bones.push_back(Bone{to_glm(mesh->mBones[i]->mOffsetMatrix),
+                                       to_glm(mesh->mBones[i]->mOffsetMatrix)});
+      this->model.bone_map.insert(std::make_pair<std::string, size_t>(
+          mesh->mBones[i]->mName.C_Str(), this->model.bones.size() - 1));
     }
   }
 }
 
-auto ModelLoader::get_vertices(const aiMesh *mesh, Mesh::BoneMap &bone_map) -> Mesh::Vertices {
+auto ModelLoader::get_vertices(const aiMesh *mesh) -> Mesh::Vertices {
   auto vertices      = Mesh::Vertices{};
   const auto has_uvs = mesh->HasTextureCoords(0);
 
@@ -150,11 +152,11 @@ auto ModelLoader::get_vertices(const aiMesh *mesh, Mesh::BoneMap &bone_map) -> M
 
   for (unsigned int i = 0; i < mesh->mNumBones; i++) {
     for (unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; j++) {
-      const auto vertex_id = mesh->mBones[i]->mWeights[j].mVertexId;
-      const auto weight    = mesh->mBones[i]->mWeights[j].mWeight;
-      const auto name      = std::string(mesh->mBones[i]->mName.C_Str());
+      const auto &vertex_id = mesh->mBones[i]->mWeights[j].mVertexId;
+      const auto &weight    = mesh->mBones[i]->mWeights[j].mWeight;
+      const auto &name      = std::string(mesh->mBones[i]->mName.C_Str());
       afk_assert(vertex_id < vertices.size(), "vertex id out of range");
-      const auto bone_id = bone_map.at(name);
+      const auto bone_id = this->model.bone_map.at(name);
       vertices[vertex_id].add_bone(static_cast<unsigned int>(bone_id), weight);
     }
   }
@@ -214,14 +216,14 @@ auto ModelLoader::get_animations(const aiScene *scene) -> void {
         auto &rotation_key = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k];
         auto rotation = glm::quat(rotation_key.mValue.w, rotation_key.mValue.x,
                                   rotation_key.mValue.y, rotation_key.mValue.z);
-//        animation_node.scaling_keys.emplace_back(
-//            Animation::AnimationNode::RotationKey{rotation, rotation_key.mTime});
+                animation_node.rotation_keys.emplace_back(
+                    Animation::AnimationNode::RotationKey{rotation, rotation_key.mTime});
       }
 
-      auto node_id = this->model.node_map.at(std::string(scene->mAnimations[i]->mChannels[j]->mNodeName.C_Str()));
-      animation.animation_nodes.insert(
-          std::make_pair<unsigned int, Animation::AnimationNode>(std::move(node_id), std::move(animation_node))
-      );
+      auto node_id = this->model.node_map.at(
+          std::string(scene->mAnimations[i]->mChannels[j]->mNodeName.C_Str()));
+      animation.animation_nodes.insert(std::make_pair<unsigned int, Animation::AnimationNode>(
+          std::move(node_id), std::move(animation_node)));
     }
 
     this->model.animations.insert(std::make_pair<std::string, Animation>(

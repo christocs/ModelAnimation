@@ -14,13 +14,13 @@
 // Must be included after GLAD.
 #include <GLFW/glfw3.h>
 
+#include "afk/component/AnimationFrame.hpp"
 #include "afk/renderer/Shader.hpp"
 #include "afk/renderer/opengl/MeshHandle.hpp"
 #include "afk/renderer/opengl/ModelHandle.hpp"
 #include "afk/renderer/opengl/ShaderHandle.hpp"
 #include "afk/renderer/opengl/ShaderProgramHandle.hpp"
 #include "afk/renderer/opengl/TextureHandle.hpp"
-#include "afk/component/AnimationFrame.hpp"
 
 namespace Afk {
   struct Model;
@@ -55,7 +55,7 @@ namespace Afk {
         const std::filesystem::path model_path          = {};
         const std::filesystem::path shader_program_path = {};
         const Transform transform                       = {};
-        const AnimationFrame current_animation = {};
+        const AnimationFrame current_animation          = {};
       };
 
       using Models =
@@ -89,10 +89,13 @@ namespace Afk {
       auto swap_buffers() -> void;
       auto set_viewport(int x, int y, int width, int height) const -> void;
       auto draw() -> void;
-      auto queue_draw(DrawCommand command) -> void;
-      auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader_program,
-                      Transform transform, const AnimationFrame& animation_frame) const -> void;
-      auto draw_model_node(const ModelHandle &model, size_t node_index, glm::mat4 node_matrix, const AnimationFrame &animation_frame, const ShaderProgramHandle &shader_program) const -> void;
+      auto queue_draw(const DrawCommand& command) -> void;
+      auto draw_model(ModelHandle &model,
+                      const ShaderProgramHandle &shader_program, Transform transform,
+                      const AnimationFrame &animation_frame) -> void;
+      auto draw_model_node(ModelHandle &model, size_t node_index,
+                           glm::mat4 parent_transform, const AnimationFrame &animation_frame,
+                           const ShaderProgramHandle &shader_program) const -> void;
       auto setup_view(const ShaderProgramHandle &shader_program) const -> void;
 
       // State management
@@ -101,7 +104,7 @@ namespace Afk {
       auto bind_texture(const TextureHandle &texture) const -> void;
 
       // Resource management
-      auto get_model(const std::filesystem::path &file_path) -> const ModelHandle &;
+      auto get_model(const std::filesystem::path &file_path) -> ModelHandle &;
       auto get_texture(const std::filesystem::path &file_path) -> const TextureHandle &;
       auto get_shader(const std::filesystem::path &file_path) -> const ShaderHandle &;
       auto get_shader_program(const std::filesystem::path &file_path)
@@ -109,7 +112,8 @@ namespace Afk {
 
       // Resource loading
       auto load_model(const Model &model) -> ModelHandle;
-      auto load_model_node(const Model &model, size_t node_index, ModelHandle &model_handle) -> void;
+      auto load_model_node(const Model &model, size_t node_index,
+                           ModelHandle &model_handle) -> void;
       auto load_texture(const Texture &texture) -> TextureHandle;
       auto load_mesh(const Mesh &meshData) -> MeshHandle;
       auto compile_shader(const Shader &shader) -> ShaderHandle;
@@ -126,6 +130,8 @@ namespace Afk {
                        const std::string &name, glm::vec3 value) const -> void;
       auto set_uniform(const ShaderProgramHandle &program,
                        const std::string &name, glm::mat4 value) const -> void;
+      auto set_uniform(const ShaderProgramHandle &program, const std::string &name,
+                       const Bones &bones) const -> void;
 
       auto set_wireframe(bool status) -> void;
       auto get_wireframe() const -> bool;
@@ -134,6 +140,15 @@ namespace Afk {
       auto get_textures() const -> const Textures &;
       auto get_shaders() const -> const Shaders &;
       auto get_shader_programs() const -> const ShaderPrograms &;
+
+      // animations
+      static auto get_animation_position(float time, const Animation::AnimationNode &animation_node, double ticks_per_second, double duration) -> glm::vec3;
+      static auto get_animation_scale(float time, const Animation::AnimationNode &animation_node, double ticks_per_second, double duration) -> glm::vec3;
+      static auto get_animation_rotation(float time, const Animation::AnimationNode &animation_node, double ticks_per_second, double duration) -> glm::quat;
+      static auto find_animation_position(float time, const Animation::AnimationNode::PositionKeys &keys, double ticks_per_second, double duration) -> unsigned int;
+      static auto find_animation_position(float time, const Animation::AnimationNode::RotationKeys &keys, double ticks_per_second, double duration) -> unsigned int;
+      static auto find_animation_position(float time, const Animation::AnimationNode::ScaleKeys &keys, double ticks_per_second, double duration) -> unsigned int;
+
 
     private:
       const int opengl_major_version = 4;

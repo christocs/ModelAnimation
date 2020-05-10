@@ -66,12 +66,13 @@ auto Engine::initialize() -> void {
 
   auto animation           = registry.create();
   auto animation_transform = Transform{};
-  animation_transform.translation = glm::vec3{0.0f, 0.0f, -5.0f};
-  animation_transform.scale = glm::vec3{50.0f, 50.0f, 50.0f};
   registry.assign<Afk::ModelSource>(animation, animation,
                                     "res/model/thanos-gangnam-style/Gangnam Style.fbx",
                                     "shader/animation.prog");
   registry.assign<Afk::Transform>(animation, animation_transform);
+  // set a single animation frame
+  const auto model = this->renderer.get_model("res/model/thanos-gangnam-style/Gangnam Style.fbx");
+  registry.assign<Afk::AnimationFrame>(animation, model.animations.begin()->first, 2.5f);
 
 //  Afk::Asset::game_asset_factory("asset/basketball.lua");
 
