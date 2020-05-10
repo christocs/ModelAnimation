@@ -90,6 +90,7 @@ namespace Afk {
       auto queue_draw(DrawCommand command) -> void;
       auto draw_model(const ModelHandle &model, const ShaderProgramHandle &shader_program,
                       Transform transform) const -> void;
+      auto draw_model_node(const ModelHandle &model, size_t node_index, glm::mat4 node_matrix, const ShaderProgramHandle &shader_program) const -> void;
       auto setup_view(const ShaderProgramHandle &shader_program) const -> void;
 
       // State management
@@ -106,9 +107,9 @@ namespace Afk {
 
       // Resource loading
       auto load_model(const Model &model) -> ModelHandle;
-      auto load_node(const Model &model, size_t node_index, const glm::mat4& transform, ModelHandle &model_handle) -> void;
+      auto load_node(const Model &model, size_t node_index, ModelHandle &model_handle) -> void;
       auto load_texture(const Texture &texture) -> TextureHandle;
-      auto load_mesh(const Mesh &meshData, glm::mat4 &transform) -> MeshHandle;
+      auto load_mesh(const Mesh &meshData) -> MeshHandle;
       auto compile_shader(const Shader &shader) -> ShaderHandle;
       auto link_shaders(const ShaderProgram &shader_program) -> ShaderProgramHandle;
 

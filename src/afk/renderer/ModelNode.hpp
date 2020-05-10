@@ -2,6 +2,7 @@
 
 #include "glm/mat4x4.hpp"
 #include "afk/renderer/Mesh.hpp"
+#include "afk/physics/Transform.hpp"
 
 namespace Afk {
   struct ModelNode {
@@ -13,6 +14,6 @@ namespace Afk {
     ChildIds child_ids = {};
     // points to index of meshes contained in node
     MeshIds mesh_ids     = {};
-    glm::mat4 transform  = {};
+    Transform transform  = {};
   };
 }

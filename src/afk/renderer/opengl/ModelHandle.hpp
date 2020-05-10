@@ -3,14 +3,19 @@
 #include <vector>
 
 #include "afk/physics/Transform.hpp"
+#include "afk/renderer/ModelNode.hpp"
 #include "afk/renderer/Renderer.hpp"
 
 namespace Afk {
   namespace OpenGl {
     struct ModelHandle {
       using Meshes = std::vector<MeshHandle>;
+      using Nodes  = std::vector<ModelNode>;
 
+      size_t root_node_index = 0;
+
+      Nodes nodes   = {};
       Meshes meshes = {};
     };
   }
-};
+}

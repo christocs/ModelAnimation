@@ -43,8 +43,6 @@ namespace Afk {
       GLuint ibo              = {};
       Textures textures       = {};
       std::size_t num_indices = {};
-
-      Transform transform = {};
     };
   }
 }
