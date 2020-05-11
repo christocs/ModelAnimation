@@ -20,7 +20,7 @@ namespace Afk {
   private:
     auto get_animations(const aiScene *scene) -> void;
     auto process_node(const aiScene *scene, const aiNode *node) -> void;
-    auto process_mesh(const aiScene *scene, const aiMesh *mesh) -> Mesh;
+    auto process_mesh(const aiScene *scene, const aiMesh *mesh, unsigned long node_id) -> Mesh;
     auto get_bones(const aiMesh *mesh) -> void;
     auto get_vertices(const aiMesh *mesh) -> Mesh::Vertices;
     auto get_indices(const aiMesh *mesh) -> Mesh::Indices;

@@ -245,15 +245,15 @@ auto Renderer::draw_model(ModelHandle &model, const ShaderProgramHandle &shader_
 
   auto parent_transform = mat4{1.0f};
   // Apply parent tranformation.
-  parent_transform = glm::translate(parent_transform, transform.translation);
-  parent_transform *= glm::mat4_cast(transform.rotation);
-  parent_transform = glm::scale(parent_transform, transform.scale);
-
+  //  parent_transform = glm::translate(parent_transform, transform.translation);
+  //  parent_transform *= glm::mat4_cast(transform.rotation);
+  //  parent_transform = glm::scale(parent_transform, transform.scale);
+//std::cout << "ANIMATION DRAW: " << animation_frame.name << std::endl;
   this->draw_model_node(model, model.root_node_index, parent_transform,
                         animation_frame, shader_program);
 }
 
-auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, glm::mat4 parent_transform,
+auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, const glm::mat4 &parent_transform,
                                const AnimationFrame &animation_frame,
                                const ShaderProgramHandle &shader_program) const -> void {
   afk_assert(node_index < model.nodes.size(), "Invalid node index");
@@ -261,9 +261,9 @@ auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, glm::mat4 
 
   // Get local transformation.
   auto local_transform = glm::mat4(1.0f);
-  local_transform = glm::translate(local_transform, node.transform.translation);
-  local_transform *= glm::mat4_cast(node.transform.rotation);
-  local_transform = glm::scale(local_transform, node.transform.scale);
+//    local_transform = glm::translate(local_transform, node.transform.translation);
+//    local_transform *= glm::mat4_cast(node.transform.rotation);
+//    local_transform = glm::scale(local_transform, node.transform.scale);
 
   // if animation exists
   if (model.animations.count(animation_frame.name) > 0 &&
@@ -272,31 +272,44 @@ auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, glm::mat4 
     const auto &animation_node =
         animation.animation_nodes.at(static_cast<unsigned int>(node_index));
 
+//    const auto position =
+//        Renderer::get_animation_position(animation_frame.time, animation_node,
+//                                         animation.ticks_per_second, animation.duration);
+//    const auto rotation =
+//        Renderer::get_animation_rotation(animation_frame.time, animation_node,
+//                                         animation.ticks_per_second, animation.duration);
+//    const auto scale =
+//        Renderer::get_animation_scale(animation_frame.time, animation_node,
+//                                      animation.ticks_per_second, animation.duration);
     const auto position =
-        Renderer::get_animation_position(animation_frame.time, animation_node,
+        Renderer::get_animation_position(Afk::Engine::get().get_delta_time(), animation_node,
                                          animation.ticks_per_second, animation.duration);
     const auto rotation =
-        Renderer::get_animation_rotation(animation_frame.time, animation_node,
+        Renderer::get_animation_rotation(Afk::Engine::get().get_delta_time(), animation_node,
                                          animation.ticks_per_second, animation.duration);
     const auto scale =
-        Renderer::get_animation_scale(animation_frame.time, animation_node,
+        Renderer::get_animation_scale(Afk::Engine::get().get_delta_time(), animation_node,
                                       animation.ticks_per_second, animation.duration);
 
     // apply animation transform
-    local_transform = glm::translate(local_transform, position);
-    local_transform *= glm::mat4_cast(rotation);
-    local_transform  = glm::scale(local_transform, scale);
+    auto bone_transform = glm::mat4(1.0f);
+    bone_transform      = glm::translate(bone_transform, position);
+    bone_transform *= glm::mat4_cast(rotation);
+    bone_transform = glm::scale(bone_transform, scale);
+    // TODO remove below, implement above
+    // test apply 90 degree rotation
+    //    local_transform = glm::mat4_cast(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+    // apply transform to bone if it exists
+    if (model.bone_map.count(node.name) > 0) {
+      const auto bone_index = model.bone_map.at(node.name);
+      afk_assert(bone_index < model.bones.size(), "Invalid bone index");
+      model.bones[bone_index].final_transform =
+          bone_transform * model.bones[bone_index].offset_transform;
+    }
   }
 
   glm::mat4 global_transform = parent_transform * local_transform;
 
-  // apply transform to bone if it exists
-  if (model.bone_map.count(node.name) > 0) {
-    const auto bone_index = model.bone_map.at(node.name);
-    afk_assert(bone_index < model.bones.size(), "Invalid bone index");
-    model.bones[bone_index].final_transform =
-        global_transform * model.bones[bone_index].offset_transform;
-  }
   // TODO only set one bone instead of all at once
   this->set_uniform(shader_program, "u_bone_transforms", model.bones);
 
@@ -340,8 +353,8 @@ auto Renderer::use_shader(const ShaderProgramHandle &shader) const -> void {
 }
 
 auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
-  afk_assert(mesh.vertices.size() > 0, "Mesh missing vertices");
-  afk_assert(mesh.indices.size() > 0, "Mesh missing indices");
+  afk_assert(!mesh.vertices.empty(), "Mesh missing vertices");
+  afk_assert(!mesh.indices.empty(), "Mesh missing indices");
   afk_assert(mesh.indices.size() < std::numeric_limits<Mesh::Index>::max(),
              "Mesh contains too many indices; "s +
                  std::to_string(mesh.indices.size()) + " requested, max "s +
@@ -395,12 +408,12 @@ auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
                         reinterpret_cast<void *>(offsetof(Vertex, bitangent)));
 
   // Vertex bone ids
-  glEnableVertexAttribArray(Vertex::MAX_BONES);
+  glEnableVertexAttribArray(5);
   glVertexAttribPointer(5, Vertex::MAX_BONES, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex),
                         reinterpret_cast<void *>(offsetof(Vertex, bone_ids)));
-  //
-  //  // Vertex bone weights
-  glEnableVertexAttribArray(Vertex::MAX_BONES);
+
+  // Vertex bone weights
+  glEnableVertexAttribArray(6);
   glVertexAttribPointer(6, Vertex::MAX_BONES, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                         reinterpret_cast<void *>(offsetof(Vertex, bone_weights)));
 
@@ -423,23 +436,19 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
   model_handle.bone_map        = model.bone_map;
   model_handle.global_inverse  = model.global_inverse;
 
-  this->load_model_node(model, model.root_node_index, model_handle);
+  this->load_meshes(model, model_handle);
 
   this->models[model.file_path] = std::move(model_handle);
 
   return this->models[model.file_path];
 }
 
-auto Renderer::load_model_node(const Model &model, size_t node_index,
-                               ModelHandle &model_handle) -> void {
-  afk_assert(node_index < model.nodes.size(), "invalid node index");
-  const auto &node = model.nodes[node_index];
+auto Renderer::load_meshes(const Model &model, ModelHandle &model_handle) -> void {
+  model_handle.meshes.reserve(model.meshes.size());
+  for (unsigned int i = 0; i < model.meshes.size(); i++) {
+    auto mesh_handle = this->load_mesh(model.meshes[i]);
 
-  for (const auto &mesh_id : node.mesh_ids) {
-    afk_assert(mesh_id < model.meshes.size(), "invalid mesh id");
-    auto mesh_handle = this->load_mesh(model.meshes[mesh_id]);
-
-    for (const auto &texture : model.meshes[mesh_id].textures) {
+    for (const auto &texture : model.meshes[i].textures) {
       const auto &texture_handle = this->get_texture(texture.file_path);
       auto &loaded_handle        = this->textures[texture.file_path];
 
@@ -451,11 +460,6 @@ auto Renderer::load_model_node(const Model &model, size_t node_index,
       mesh_handle.textures.push_back(std::move(texture_handle));
     }
     model_handle.meshes.push_back(std::move(mesh_handle));
-  }
-
-  // process children
-  for (const auto &child_id : node.child_ids) {
-    this->load_model_node(model, child_id, model_handle);
   }
 }
 
@@ -620,13 +624,16 @@ auto Renderer::set_uniform(const ShaderProgramHandle &program,
   afk_assert_debug(program.id > 0, "Invalid shader program ID");
   std::array<glm::mat4, 100> bones_final_transform{};
   for (unsigned int i = 0; i < bones_final_transform.size(); i++) {
+//    bones_final_transform[i] = glm::mat4_cast(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
     if (i < bones.size()) {
       bones_final_transform[i] = bones[i].final_transform;
     } else {
       bones_final_transform[i] = glm::mat4(1.0f);
+//      bones_final_transform[i] = glm::mat4_cast(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
     }
-    //      bones_final_transform[i] = glm::mat4(10000.0f);
+//    bones_final_transform[i] = glm::mat4(1.0f);
   }
+//  bones_final_transform[0] = glm::mat4_cast(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
   glUniformMatrix4fv(glGetUniformLocation(program.id, name.c_str()),
                      bones_final_transform.size(), GL_FALSE,
                      glm::value_ptr(bones_final_transform[0]));

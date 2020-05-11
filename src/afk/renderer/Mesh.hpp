@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <glob.h>
 #include <string>
 #include <vector>
 
@@ -18,25 +19,24 @@ namespace Afk {
     glm::vec3 tangent   = {};
     glm::vec3 bitangent = {};
 
-    unsigned int no_bones                        = 0;
-    static const unsigned int MAX_BONES          = 8;
+    glm::uvec4 bone_ids                  = glm::uvec4(0);
+    glm::vec4 bone_weights               = glm::vec4(0.0f);
+    int no_bones                         = 0;
+    static constexpr const int MAX_BONES = 4;
 
-    std::array<unsigned int, MAX_BONES> bone_ids = {};
-    std::array<float, MAX_BONES> bone_weights    = {};
-
-    Vertex();
     auto add_bone(unsigned int id, float weight) -> void;
   };
 
   struct Mesh {
-    using Vertices    = std::vector<Vertex>;
-    using Index       = uint32_t;
-    using Indices     = std::vector<Index>;
-    using Textures    = std::vector<Texture>;
+    using Vertices = std::vector<Vertex>;
+    using Index    = uint32_t;
+    using Indices  = std::vector<Index>;
+    using Textures = std::vector<Texture>;
 
-    Vertices vertices        = {};
-    Indices indices          = {};
-    Textures textures        = {};
-    std::string node_name;
+    Vertices vertices = {};
+    Indices indices   = {};
+    Textures textures = {};
+
+    size_t node_id = 0;
   };
 }

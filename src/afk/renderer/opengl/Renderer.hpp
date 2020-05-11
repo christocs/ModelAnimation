@@ -94,7 +94,7 @@ namespace Afk {
                       const ShaderProgramHandle &shader_program, Transform transform,
                       const AnimationFrame &animation_frame) -> void;
       auto draw_model_node(ModelHandle &model, size_t node_index,
-                           glm::mat4 parent_transform, const AnimationFrame &animation_frame,
+                           const glm::mat4 &parent_transform, const AnimationFrame &animation_frame,
                            const ShaderProgramHandle &shader_program) const -> void;
       auto setup_view(const ShaderProgramHandle &shader_program) const -> void;
 
@@ -112,7 +112,7 @@ namespace Afk {
 
       // Resource loading
       auto load_model(const Model &model) -> ModelHandle;
-      auto load_model_node(const Model &model, size_t node_index,
+      auto load_meshes(const Model &model,
                            ModelHandle &model_handle) -> void;
       auto load_texture(const Texture &texture) -> TextureHandle;
       auto load_mesh(const Mesh &meshData) -> MeshHandle;

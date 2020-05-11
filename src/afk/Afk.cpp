@@ -64,16 +64,22 @@ auto Engine::initialize() -> void {
                                     true, Afk::RigidBodyType::STATIC,
                                     this->terrain_manager.height_map);
 
-  auto animation           = registry.create();
-  auto animation_transform = Transform{};
-  animation_transform.scale = glm::vec3(50.0f);
-  registry.assign<Afk::ModelSource>(animation, animation,
-                                    "res/model/thanos-gangnam-style/Gangnam Style.fbx",
+  auto animation            = registry.create();
+  auto animation_transform  = Transform{};
+  animation_transform.scale = glm::vec3(0.5f);
+//  registry.assign<Afk::ModelSource>(animation, animation, "res/model/cowboy/model.dae",
+//                                    "shader/animation.prog");
+  auto const animation_model_name = std::string("res/model/creeper/Tutorial.dae");
+  registry.assign<Afk::ModelSource>(animation, animation, animation_model_name,
                                     "shader/animation.prog");
   registry.assign<Afk::Transform>(animation, animation_transform);
   // set a single animation frame
-  const auto model = this->renderer.get_model("res/model/thanos-gangnam-style/Gangnam Style.fbx");
-  registry.assign<Afk::AnimationFrame>(animation, model.animations.begin()->first, 2.5f);
+  const auto &model = this->renderer.get_model(
+      animation_model_name);
+  if (!model.animations.empty()) {
+    registry.assign<Afk::AnimationFrame>(animation, model.animations.begin()->first, 0.5f);
+    std::cout << "ANIMATION SET: " << model.animations.begin()->first << std::endl;
+  }
 
   auto cam = registry.create();
   registry.assign<Afk::ScriptsComponent>(cam, cam)

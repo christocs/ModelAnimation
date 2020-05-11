@@ -39,7 +39,7 @@ using Afk::Texture;
 
 constexpr unsigned ASSIMP_OPTIONS =
     aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs |
-    aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace | aiProcess_GlobalScale;
+    aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace | aiProcess_GlobalScale | aiProcess_LimitBoneWeights ;
 
 constexpr auto assimp_texture_types =
     frozen::make_unordered_map<Texture::Type, aiTextureType>({
@@ -96,7 +96,7 @@ auto ModelLoader::process_node(const aiScene *scene, const aiNode *node) -> void
     const auto *mesh = scene->mMeshes[node->mMeshes[i]];
 
     this->model.meshes.push_back(
-        this->process_mesh(scene, mesh));
+        this->process_mesh(scene, mesh, this->model.nodes.size() - 1));
     this->model.nodes.back().mesh_ids.push_back(this->model.meshes.size() - 1);
   }
 
@@ -108,13 +108,14 @@ auto ModelLoader::process_node(const aiScene *scene, const aiNode *node) -> void
   }
 }
 
-auto ModelLoader::process_mesh(const aiScene *scene, const aiMesh *mesh) -> Mesh {
+auto ModelLoader::process_mesh(const aiScene *scene, const aiMesh *mesh, unsigned long node_id) -> Mesh {
   auto newMesh = Mesh{};
 
   this->get_bones(mesh);
   newMesh.vertices = this->get_vertices(mesh);
   newMesh.indices  = this->get_indices(mesh);
   newMesh.textures = this->get_textures(scene->mMaterials[mesh->mMaterialIndex]);
+  newMesh.node_id = node_id;
 
   return newMesh;
 }
