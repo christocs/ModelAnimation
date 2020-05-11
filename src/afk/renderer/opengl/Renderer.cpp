@@ -282,23 +282,21 @@ auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, const glm:
 //        Renderer::get_animation_scale(animation_frame.time, animation_node,
 //                                      animation.ticks_per_second, animation.duration);
     const auto position =
-        Renderer::get_animation_position(Afk::Engine::get().get_delta_time(), animation_node,
+        Renderer::get_animation_position(Afk::Engine::get().get_time(), animation_node,
                                          animation.ticks_per_second, animation.duration);
     const auto rotation =
-        Renderer::get_animation_rotation(Afk::Engine::get().get_delta_time(), animation_node,
+        Renderer::get_animation_rotation(Afk::Engine::get().get_time(), animation_node,
                                          animation.ticks_per_second, animation.duration);
     const auto scale =
-        Renderer::get_animation_scale(Afk::Engine::get().get_delta_time(), animation_node,
+        Renderer::get_animation_scale(Afk::Engine::get().get_time(), animation_node,
                                       animation.ticks_per_second, animation.duration);
 
-    // apply animation transform
+    // calc animation transform
     auto bone_transform = glm::mat4(1.0f);
     bone_transform      = glm::translate(bone_transform, position);
     bone_transform *= glm::mat4_cast(rotation);
     bone_transform = glm::scale(bone_transform, scale);
-    // TODO remove below, implement above
-    // test apply 90 degree rotation
-    //    local_transform = glm::mat4_cast(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+
     // apply transform to bone if it exists
     if (model.bone_map.count(node.name) > 0) {
       const auto bone_index = model.bone_map.at(node.name);
