@@ -221,7 +221,7 @@ auto Renderer::draw() -> void {
   }
 }
 
-auto Renderer::queue_draw(const DrawCommand& command) -> void {
+auto Renderer::queue_draw(const DrawCommand &command) -> void {
   this->draw_queue.push(command);
 }
 
@@ -285,7 +285,7 @@ auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, glm::mat4 
     // apply animation transform
     local_transform = glm::translate(local_transform, position);
     local_transform *= glm::mat4_cast(rotation);
-    local_transform = glm::scale(local_transform, scale);
+    local_transform  = glm::scale(local_transform, scale);
   }
 
   glm::mat4 global_transform = parent_transform * local_transform;
@@ -296,14 +296,12 @@ auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, glm::mat4 
     afk_assert(bone_index < model.bones.size(), "Invalid bone index");
     model.bones[bone_index].final_transform =
         global_transform * model.bones[bone_index].offset_transform;
-    // TODO only set one bone instead of all at once
-    this->set_uniform(shader_program, "u_bone_transforms", model.bones);
   }
+  // TODO only set one bone instead of all at once
+  this->set_uniform(shader_program, "u_bone_transforms", model.bones);
 
   for (const auto &mesh_id : node.mesh_ids) {
     const auto mesh = model.meshes[mesh_id];
-
-    this->set_uniform(shader_program, "u_bone_transforms", model.bones);
 
     auto material_bound = vector<bool>(static_cast<size_t>(Texture::Type::Count));
     // Bind all of the textures to shader uniforms.
@@ -332,7 +330,7 @@ auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, glm::mat4 
   }
 
   for (const auto child_id : node.child_ids) {
-    this->draw_model_node(model, child_id, parent_transform, animation_frame, shader_program);
+    this->draw_model_node(model, child_id, global_transform, animation_frame, shader_program);
   }
 }
 
@@ -400,8 +398,8 @@ auto Renderer::load_mesh(const Mesh &mesh) -> MeshHandle {
   glEnableVertexAttribArray(Vertex::MAX_BONES);
   glVertexAttribPointer(5, Vertex::MAX_BONES, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex),
                         reinterpret_cast<void *>(offsetof(Vertex, bone_ids)));
-
-  // Vertex bone weights
+  //
+  //  // Vertex bone weights
   glEnableVertexAttribArray(Vertex::MAX_BONES);
   glVertexAttribPointer(6, Vertex::MAX_BONES, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                         reinterpret_cast<void *>(offsetof(Vertex, bone_weights)));
@@ -423,6 +421,7 @@ auto Renderer::load_model(const Model &model) -> ModelHandle {
   model_handle.animations      = model.animations;
   model_handle.bones           = model.bones;
   model_handle.bone_map        = model.bone_map;
+  model_handle.global_inverse  = model.global_inverse;
 
   this->load_model_node(model, model.root_node_index, model_handle);
 
@@ -619,16 +618,18 @@ auto Renderer::set_uniform(const ShaderProgramHandle &program,
 auto Renderer::set_uniform(const ShaderProgramHandle &program,
                            const string &name, const Bones &bones) const -> void {
   afk_assert_debug(program.id > 0, "Invalid shader program ID");
-    std::array<glm::mat4, 100> bones_final_transform{};
-    for (unsigned int i = 0; i < bones_final_transform.size(); i++) {
-      if (i < bones.size()) {
-        bones_final_transform[i] = bones[i].final_transform;
-      } else {
-        bones_final_transform[i] = glm::mat4(1.0f);
-      }
+  std::array<glm::mat4, 100> bones_final_transform{};
+  for (unsigned int i = 0; i < bones_final_transform.size(); i++) {
+    if (i < bones.size()) {
+      bones_final_transform[i] = bones[i].final_transform;
+    } else {
+      bones_final_transform[i] = glm::mat4(1.0f);
     }
-    glUniformMatrix4fv(glGetUniformLocation(program.id, name.c_str()),
-                       bones_final_transform.size(), GL_FALSE, glm::value_ptr(bones_final_transform[0]));
+    //      bones_final_transform[i] = glm::mat4(10000.0f);
+  }
+  glUniformMatrix4fv(glGetUniformLocation(program.id, name.c_str()),
+                     bones_final_transform.size(), GL_FALSE,
+                     glm::value_ptr(bones_final_transform[0]));
 }
 
 auto Renderer::set_wireframe(bool status) -> void {

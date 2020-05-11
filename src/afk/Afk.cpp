@@ -66,6 +66,7 @@ auto Engine::initialize() -> void {
 
   auto animation           = registry.create();
   auto animation_transform = Transform{};
+  animation_transform.scale = glm::vec3(50.0f);
   registry.assign<Afk::ModelSource>(animation, animation,
                                     "res/model/thanos-gangnam-style/Gangnam Style.fbx",
                                     "shader/animation.prog");
@@ -73,8 +74,6 @@ auto Engine::initialize() -> void {
   // set a single animation frame
   const auto model = this->renderer.get_model("res/model/thanos-gangnam-style/Gangnam Style.fbx");
   registry.assign<Afk::AnimationFrame>(animation, model.animations.begin()->first, 2.5f);
-
-//  Afk::Asset::game_asset_factory("asset/basketball.lua");
 
   auto cam = registry.create();
   registry.assign<Afk::ScriptsComponent>(cam, cam)

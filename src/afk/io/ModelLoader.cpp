@@ -77,6 +77,7 @@ auto ModelLoader::load(const path &file_path) -> Model {
 
   this->model.meshes.reserve(scene->mNumMeshes);
   this->model.root_node_index = 0;
+  this->model.global_inverse = to_glm(scene->mRootNode->mTransformation.Inverse());
   this->process_node(scene, scene->mRootNode);
   this->get_animations(scene);
 

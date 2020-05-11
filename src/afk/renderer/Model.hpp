@@ -27,6 +27,8 @@ namespace Afk {
     Bones bones            = {};
     BoneStringMap bone_map = {};
 
+    glm::mat4 global_inverse;
+
     size_t root_node_index = 0;
 
     std::filesystem::path file_path = {};

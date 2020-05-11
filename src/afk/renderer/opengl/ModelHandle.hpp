@@ -24,6 +24,7 @@ namespace Afk {
       BoneStringMap bone_map = {};
       Meshes meshes          = {};
       Animations animations  = {};
+      glm::mat4 global_inverse;
     };
   }
 }

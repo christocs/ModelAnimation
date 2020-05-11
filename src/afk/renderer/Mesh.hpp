@@ -20,9 +20,11 @@ namespace Afk {
 
     unsigned int no_bones                        = 0;
     static const unsigned int MAX_BONES          = 8;
+
     std::array<unsigned int, MAX_BONES> bone_ids = {};
     std::array<float, MAX_BONES> bone_weights    = {};
 
+    Vertex();
     auto add_bone(unsigned int id, float weight) -> void;
   };
 
