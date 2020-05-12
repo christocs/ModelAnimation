@@ -142,13 +142,12 @@ namespace Afk {
       auto get_shader_programs() const -> const ShaderPrograms &;
 
       // animations
-      static auto get_animation_position(float time, const Animation::AnimationNode &animation_node, double ticks_per_second, double duration) -> glm::vec3;
-      static auto get_animation_scale(float time, const Animation::AnimationNode &animation_node, double ticks_per_second, double duration) -> glm::vec3;
-      static auto get_animation_rotation(float time, const Animation::AnimationNode &animation_node, double ticks_per_second, double duration) -> glm::quat;
-      static auto find_animation_position(float time, const Animation::AnimationNode::PositionKeys &keys, double ticks_per_second, double duration) -> unsigned int;
-      static auto find_animation_position(float time, const Animation::AnimationNode::RotationKeys &keys, double ticks_per_second, double duration) -> unsigned int;
-      static auto find_animation_position(float time, const Animation::AnimationNode::ScaleKeys &keys, double ticks_per_second, double duration) -> unsigned int;
-
+      static auto get_animation_position(double time, const Animation::AnimationNode &animation_node, double ticks_per_second, double duration) -> glm::vec3;
+      static auto get_animation_scale(double time, const Animation::AnimationNode &animation_node, double ticks_per_second, double duration) -> glm::vec3;
+      static auto get_animation_rotation(double time, const Animation::AnimationNode &animation_node, double ticks_per_second, double duration) -> glm::quat;
+      static auto find_animation_position(double time, const Animation::AnimationNode::PositionKeys &keys, double ticks_per_second, double duration) -> unsigned int;
+      static auto find_animation_position(double time, const Animation::AnimationNode::RotationKeys &keys, double ticks_per_second, double duration) -> unsigned int;
+      static auto find_animation_position(double time, const Animation::AnimationNode::ScaleKeys &keys, double ticks_per_second, double duration) -> unsigned int;
 
     private:
       const int opengl_major_version = 4;

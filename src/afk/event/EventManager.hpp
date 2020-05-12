@@ -45,6 +45,10 @@ namespace Afk {
         {Event::Action::Left, false},
         {Event::Action::Backward, false},
         {Event::Action::Right, false},
+        {Event::Action::ForwardArrow, false},
+        {Event::Action::LeftArrow, false},
+        {Event::Action::BackwardArrow, false},
+        {Event::Action::RightArrow, false},
     };
 
   private:

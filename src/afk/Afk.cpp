@@ -39,7 +39,6 @@ auto Engine::initialize() -> void {
 
   this->renderer.initialize();
   this->event_manager.initialize(this->renderer.window);
-  //  this->renderer.set_wireframe(true);
 
   this->ui.initialize(this->renderer.window);
   this->lua = luaL_newstate();
@@ -55,9 +54,9 @@ auto Engine::initialize() -> void {
   auto terrain_entity           = registry.create();
   auto terrain_transform        = Transform{terrain_entity};
   terrain_transform.translation = glm::vec3{0.0f, -10.0f, 0.0f};
-  registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity,
-                                    terrain_manager.get_model().file_path,
-                                    "shader/terrain.prog");
+    registry.assign<Afk::ModelSource>(terrain_entity, terrain_entity,
+                                      terrain_manager.get_model().file_path,
+                                      "shader/terrain.prog");
   registry.assign<Afk::Transform>(terrain_entity, terrain_entity);
   registry.assign<Afk::PhysicsBody>(terrain_entity, terrain_entity, &this->physics_body_system,
                                     terrain_transform, 0.3f, 0.0f, 0.0f, 0.0f,
@@ -66,20 +65,23 @@ auto Engine::initialize() -> void {
 
   auto animation            = registry.create();
   auto animation_transform  = Transform{};
-  animation_transform.scale = glm::vec3(0.5f);
-//  registry.assign<Afk::ModelSource>(animation, animation, "res/model/cowboy/model.dae",
-//                                    "shader/animation.prog");
-  auto const animation_model_name = std::string("res/model/creeper/Tutorial.dae");
+  auto const animation_model_name =
+      std::string("res/model/creeper/Tutorial.dae");
+//      std::string("res/model/cowboy/model.dae");
+
   registry.assign<Afk::ModelSource>(animation, animation, animation_model_name,
                                     "shader/animation.prog");
   registry.assign<Afk::Transform>(animation, animation_transform);
-  // set a single animation frame
-  const auto &model = this->renderer.get_model(
-      animation_model_name);
+  // set the first existing animation
+  const auto &model = this->renderer.get_model(animation_model_name);
   if (!model.animations.empty()) {
-    registry.assign<Afk::AnimationFrame>(animation, model.animations.begin()->first, 0.5f);
-    std::cout << "ANIMATION SET: " << model.animations.begin()->first << std::endl;
+    registry.assign<Afk::AnimationFrame>(animation, model.animations.begin()->first);
+
   }
+//  registry.assign<Afk::PhysicsBody>(animation, animation, &this->physics_body_system,
+//                                    animation_transform, 0.2f, 0.2f, 0.2f,
+//                                    10.0f, true, Afk::RigidBodyType::DYNAMIC,
+//                                    Afk::Box(1.0f, 3.0f, 1.0f));
 
   auto cam = registry.create();
   registry.assign<Afk::ScriptsComponent>(cam, cam)
@@ -126,6 +128,7 @@ auto Engine::update() -> void {
   // this->update_camera();
 
   this->physics_body_system.update(&this->registry, this->get_delta_time());
+  this->animation_control_system.update(&this->registry, this->get_delta_time());
 
   ++this->frame_count;
   this->last_update = Afk::Engine::get_time();

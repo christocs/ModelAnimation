@@ -101,6 +101,18 @@ auto EventManager::key_callback([[maybe_unused]] GLFWwindow *window, int key,
       case GLFW_KEY_D:
         afk.event_manager.key_state[Action::Right] = new_state;
         break;
+      case GLFW_KEY_RIGHT:
+        afk.event_manager.key_state[Action::RightArrow] = new_state;
+        break;
+      case GLFW_KEY_LEFT:
+        afk.event_manager.key_state[Action::LeftArrow] = new_state;
+        break;
+      case GLFW_KEY_UP:
+        afk.event_manager.key_state[Action::ForwardArrow] = new_state;
+        break;
+      case GLFW_KEY_DOWN:
+        afk.event_manager.key_state[Action::BackwardArrow] = new_state;
+        break;
     }
   }
 }

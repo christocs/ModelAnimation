@@ -40,7 +40,7 @@ namespace Afk {
     };
 
     // FIXME: Move to keyboard  handler.
-    enum class Action { Forward, Backward, Left, Right };
+    enum class Action { Forward, Backward, Left, Right, ForwardArrow, BackwardArrow, LeftArrow, RightArrow };
 
     enum class Type {
       MouseDown,

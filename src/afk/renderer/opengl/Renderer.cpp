@@ -245,15 +245,16 @@ auto Renderer::draw_model(ModelHandle &model, const ShaderProgramHandle &shader_
 
   auto parent_transform = mat4{1.0f};
   // Apply parent tranformation.
-  //  parent_transform = glm::translate(parent_transform, transform.translation);
-  //  parent_transform *= glm::mat4_cast(transform.rotation);
-  //  parent_transform = glm::scale(parent_transform, transform.scale);
-//std::cout << "ANIMATION DRAW: " << animation_frame.name << std::endl;
+  parent_transform = glm::translate(parent_transform, transform.translation);
+  parent_transform *= glm::mat4_cast(transform.rotation);
+  parent_transform = glm::scale(parent_transform, transform.scale);
+
   this->draw_model_node(model, model.root_node_index, parent_transform,
                         animation_frame, shader_program);
 }
 
-auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, const glm::mat4 &parent_transform,
+auto Renderer::draw_model_node(ModelHandle &model, size_t node_index,
+                               const glm::mat4 &parent_transform,
                                const AnimationFrame &animation_frame,
                                const ShaderProgramHandle &shader_program) const -> void {
   afk_assert(node_index < model.nodes.size(), "Invalid node index");
@@ -261,9 +262,9 @@ auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, const glm:
 
   // Get local transformation.
   auto local_transform = glm::mat4(1.0f);
-//    local_transform = glm::translate(local_transform, node.transform.translation);
-//    local_transform *= glm::mat4_cast(node.transform.rotation);
-//    local_transform = glm::scale(local_transform, node.transform.scale);
+//  local_transform = glm::translate(local_transform, node.transform.translation);
+//  local_transform *= glm::mat4_cast(node.transform.rotation);
+//  local_transform = glm::scale(local_transform, node.transform.scale);
 
   // if animation exists
   if (model.animations.count(animation_frame.name) > 0 &&
@@ -272,23 +273,14 @@ auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, const glm:
     const auto &animation_node =
         animation.animation_nodes.at(static_cast<unsigned int>(node_index));
 
-//    const auto position =
-//        Renderer::get_animation_position(animation_frame.time, animation_node,
-//                                         animation.ticks_per_second, animation.duration);
-//    const auto rotation =
-//        Renderer::get_animation_rotation(animation_frame.time, animation_node,
-//                                         animation.ticks_per_second, animation.duration);
-//    const auto scale =
-//        Renderer::get_animation_scale(animation_frame.time, animation_node,
-//                                      animation.ticks_per_second, animation.duration);
     const auto position =
-        Renderer::get_animation_position(Afk::Engine::get().get_time(), animation_node,
+        Renderer::get_animation_position(animation_frame.time, animation_node,
                                          animation.ticks_per_second, animation.duration);
     const auto rotation =
-        Renderer::get_animation_rotation(Afk::Engine::get().get_time(), animation_node,
+        Renderer::get_animation_rotation(animation_frame.time, animation_node,
                                          animation.ticks_per_second, animation.duration);
     const auto scale =
-        Renderer::get_animation_scale(Afk::Engine::get().get_time(), animation_node,
+        Renderer::get_animation_scale(animation_frame.time, animation_node,
                                       animation.ticks_per_second, animation.duration);
 
     // calc animation transform
@@ -301,15 +293,14 @@ auto Renderer::draw_model_node(ModelHandle &model, size_t node_index, const glm:
     if (model.bone_map.count(node.name) > 0) {
       const auto bone_index = model.bone_map.at(node.name);
       afk_assert(bone_index < model.bones.size(), "Invalid bone index");
-      model.bones[bone_index].final_transform =
-          bone_transform * model.bones[bone_index].offset_transform;
+      model.bones[bone_index].final_transform = bone_transform;
+
+      // TODO only set one bone instead of all at once
+      this->set_uniform(shader_program, "u_bone_transforms", model.bones);
     }
   }
 
   glm::mat4 global_transform = parent_transform * local_transform;
-
-  // TODO only set one bone instead of all at once
-  this->set_uniform(shader_program, "u_bone_transforms", model.bones);
 
   for (const auto &mesh_id : node.mesh_ids) {
     const auto mesh = model.meshes[mesh_id];
@@ -622,16 +613,13 @@ auto Renderer::set_uniform(const ShaderProgramHandle &program,
   afk_assert_debug(program.id > 0, "Invalid shader program ID");
   std::array<glm::mat4, 100> bones_final_transform{};
   for (unsigned int i = 0; i < bones_final_transform.size(); i++) {
-//    bones_final_transform[i] = glm::mat4_cast(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+    // if index is valid, set it, if not set an identity matrix
     if (i < bones.size()) {
       bones_final_transform[i] = bones[i].final_transform;
     } else {
       bones_final_transform[i] = glm::mat4(1.0f);
-//      bones_final_transform[i] = glm::mat4_cast(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
     }
-//    bones_final_transform[i] = glm::mat4(1.0f);
   }
-//  bones_final_transform[0] = glm::mat4_cast(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
   glUniformMatrix4fv(glGetUniformLocation(program.id, name.c_str()),
                      bones_final_transform.size(), GL_FALSE,
                      glm::value_ptr(bones_final_transform[0]));
@@ -660,7 +648,7 @@ auto Renderer::get_shader_programs() const -> const ShaderPrograms & {
   return this->shader_programs;
 }
 
-auto Renderer::get_animation_position(float time, const Animation::AnimationNode &animation_node,
+auto Renderer::get_animation_position(double time, const Animation::AnimationNode &animation_node,
                                       double ticks_per_second, double duration)
     -> glm::vec3 {
   afk_assert(!animation_node.position_keys.empty(),
@@ -680,7 +668,7 @@ auto Renderer::get_animation_position(float time, const Animation::AnimationNode
   return out;
 }
 
-auto Renderer::get_animation_scale(float time, const Animation::AnimationNode &animation_node,
+auto Renderer::get_animation_scale(double time, const Animation::AnimationNode &animation_node,
                                    double ticks_per_second, double duration) -> glm::vec3 {
   afk_assert(!animation_node.scaling_keys.empty(),
              "No animation key scales found");
@@ -699,7 +687,7 @@ auto Renderer::get_animation_scale(float time, const Animation::AnimationNode &a
   return out;
 }
 
-auto Renderer::get_animation_rotation(float time, const Animation::AnimationNode &animation_node,
+auto Renderer::get_animation_rotation(double time, const Animation::AnimationNode &animation_node,
                                       double ticks_per_second, double duration)
     -> glm::quat {
   afk_assert(!animation_node.rotation_keys.empty(),
@@ -719,7 +707,7 @@ auto Renderer::get_animation_rotation(float time, const Animation::AnimationNode
   return out;
 }
 
-auto Renderer::find_animation_position(float time,
+auto Renderer::find_animation_position(double time,
                                        const Animation::AnimationNode::PositionKeys &keys,
                                        double ticks_per_second, double duration)
     -> unsigned int {
@@ -734,7 +722,7 @@ auto Renderer::find_animation_position(float time,
   return 0;
 }
 
-auto Renderer::find_animation_position(float time,
+auto Renderer::find_animation_position(double time,
                                        const Animation::AnimationNode::RotationKeys &keys,
                                        double ticks_per_second, double duration)
     -> unsigned int {
@@ -749,7 +737,7 @@ auto Renderer::find_animation_position(float time,
   return 0;
 }
 
-auto Renderer::find_animation_position(float time,
+auto Renderer::find_animation_position(double time,
                                        const Animation::AnimationNode::ScaleKeys &keys,
                                        double ticks_per_second, double duration)
     -> unsigned int {

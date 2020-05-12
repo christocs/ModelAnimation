@@ -5,6 +5,6 @@
 namespace Afk {
   struct AnimationFrame {
     std::string name;
-    float time = 0.0f;
+    double time = 0.0;
   };
 }

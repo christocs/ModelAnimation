@@ -9,6 +9,7 @@
 #include "afk/renderer/Renderer.hpp"
 #include "afk/terrain/TerrainManager.hpp"
 #include "afk/ui/Ui.hpp"
+#include "afk/component/AnimationControlSystem.hpp"
 
 struct lua_State;
 namespace Afk {
@@ -23,6 +24,7 @@ namespace Afk {
     TerrainManager terrain_manager = {};
     entt::registry registry;
     Afk::PhysicsBodySystem physics_body_system;
+    Afk::AnimationControlSystem animation_control_system;
     lua_State *lua;
 
     Engine()               = default;

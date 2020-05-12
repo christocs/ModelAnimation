@@ -1,6 +1,7 @@
 #include "afk/renderer/Model.hpp"
 
 #include <filesystem>
+#include <iostream>
 
 #include "afk/io/ModelLoader.hpp"
 
@@ -21,5 +22,14 @@ Model::Model(const path &_file_path) {
   this->animations      = std::move(tmp.animations);
   this->bone_map        = std::move(tmp.bone_map);
   this->bones           = std::move(tmp.bones);
+
+  std::cout << "BONE MAP" << std::endl;
+  for(auto it = bone_map.begin(); it != bone_map.end(); ++it) {
+    std::cout << "\t" << it->first << " " << it->second << std::endl;
+  }
+  std::cout << "NODE MAP" << std::endl;
+  for(auto it = node_map.begin(); it != node_map.end(); ++it) {
+    std::cout << "\t" << it->first << " " << it->second << std::endl;
+  }
 }
 
